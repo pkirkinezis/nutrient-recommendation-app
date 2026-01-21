@@ -185,11 +185,17 @@ The development server features:
 - 📝 TypeScript error reporting
 - 🎨 Tailwind CSS JIT compilation
 
-### 5. Run Type Checking (Optional)
+### 5. Run Linting & Type Checking (Optional)
 
 ```bash
+# Run ESLint to check for code quality issues
+npm run lint
+
+# Run ESLint and auto-fix issues
+npm run lint:fix
+
 # TypeScript type checking
-npx tsc --noEmit
+npm run typecheck
 ```
 
 ---
@@ -935,10 +941,11 @@ We welcome contributions! Here's how:
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes
 4. Run linting: `npm run lint`
-5. Build to verify: `npm run build`
-6. Commit: `git commit -m 'Add amazing feature'`
-7. Push: `git push origin feature/amazing-feature`
-8. Open a Pull Request
+5. Run type checking: `npm run typecheck`
+6. Build to verify: `npm run build`
+7. Commit: `git commit -m 'Add amazing feature'`
+8. Push: `git push origin feature/amazing-feature`
+9. Open a Pull Request
 
 ### Guidelines
 
