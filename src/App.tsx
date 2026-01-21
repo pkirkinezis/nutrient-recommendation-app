@@ -3,6 +3,7 @@ import { Supplement, UserProfile, Recommendation } from './types/index';
 import { formGuidance, supplementComparisons, misinformationAlerts } from './data/supplements';
 import { analyzeGoal, checkInteractions, getSuggestedTiming } from './utils/analyzer';
 import { AdvancedBrowse } from './components/AdvancedBrowse';
+import EducationalGuide from './components/EducationalGuide';
 
 // Helper functions for display
 const getTypeColor = (type: Supplement['type']): string => {
@@ -87,7 +88,7 @@ export function App() {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile>({});
-  const [activeTab, setActiveTab] = useState<'recommend' | 'browse' | 'learn'>('recommend');
+  const [activeTab, setActiveTab] = useState<'recommend' | 'browse' | 'learn' | 'guide'>('recommend');
 
   // Analyze the user's goal
   const handleAnalyze = () => {
@@ -158,6 +159,12 @@ export function App() {
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'learn' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
               >
                 Learn
+              </button>
+              <button
+                onClick={() => { setActiveTab('guide'); setHasAnalyzed(false); }}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'guide' ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                📚 Guide
               </button>
               <button
                 onClick={() => setShowProfile(!showProfile)}
@@ -273,6 +280,8 @@ export function App() {
             onSelectSupplement={toggleSupplementSelection}
             selectedSupplements={selectedSupplements}
           />
+        ) : activeTab === 'guide' && !hasAnalyzed ? (
+          <EducationalGuide />
         ) : activeTab === 'learn' && !hasAnalyzed ? (
           <div className="space-y-8">
             {/* Comparisons Section */}
