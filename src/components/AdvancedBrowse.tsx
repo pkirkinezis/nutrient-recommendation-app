@@ -53,6 +53,10 @@ const typeConfig: Record<Supplement['type'], { icon: string; label: string; colo
   'mushroom': { icon: '🍄', label: 'Mushroom', color: 'text-rose-700', bg: 'bg-rose-100' },
   'probiotic': { icon: '🦠', label: 'Probiotic', color: 'text-cyan-700', bg: 'bg-cyan-100' },
   'fatty-acid': { icon: '🐟', label: 'Fatty Acid', color: 'text-indigo-700', bg: 'bg-indigo-100' },
+  'protein': { icon: '💪', label: 'Protein', color: 'text-pink-700', bg: 'bg-pink-100' },
+  'performance': { icon: '🏋️', label: 'Performance', color: 'text-red-700', bg: 'bg-red-100' },
+  'enzyme': { icon: '🔬', label: 'Enzyme', color: 'text-lime-700', bg: 'bg-lime-100' },
+  'antioxidant': { icon: '🛡️', label: 'Antioxidant', color: 'text-violet-700', bg: 'bg-violet-100' },
   'other': { icon: '✨', label: 'Supplement', color: 'text-gray-700', bg: 'bg-gray-100' },
 };
 
@@ -109,13 +113,17 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
   const personalizedRecommendations = useMemo(() => {
     const recs: { id: string; reason: string }[] = [];
     
-    if (userProfile.dietType === 'vegan') {
+    // Support both old and new property names
+    const diet = userProfile.diet || userProfile.dietType;
+    const age = userProfile.age || userProfile.ageRange;
+    
+    if (diet === 'vegan') {
       recs.push({ id: 'vitamin-b12', reason: 'Essential for vegans' });
       recs.push({ id: 'omega-3', reason: 'Algae-based omega-3 for vegans' });
       recs.push({ id: 'iron', reason: 'Plant iron less bioavailable' });
       recs.push({ id: 'zinc', reason: 'Higher needs on plant-based diet' });
     }
-    if (userProfile.dietType === 'vegetarian') {
+    if (diet === 'vegetarian') {
       recs.push({ id: 'vitamin-b12', reason: 'Important for vegetarians' });
     }
     if (userProfile.sleepQuality === 'poor') {
@@ -123,7 +131,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       recs.push({ id: 'glycine', reason: 'Improves sleep quality' });
       recs.push({ id: 'l-theanine', reason: 'Promotes calm for sleep' });
     }
-    if (userProfile.stressLevel === 'high') {
+    if (userProfile.stressLevel === 'high' || userProfile.stressLevel === 'very-high') {
       recs.push({ id: 'ashwagandha', reason: 'Proven cortisol reducer' });
       recs.push({ id: 'rhodiola', reason: 'Anti-fatigue adaptogen' });
       recs.push({ id: 'l-theanine', reason: 'Calming without sedation' });
@@ -138,7 +146,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       recs.push({ id: 'l-citrulline', reason: 'Improves blood flow' });
       recs.push({ id: 'iron', reason: 'Oxygen transport (test first)' });
     }
-    if (userProfile.ageRange === 'over-60' || userProfile.ageRange === '45-60') {
+    if (age === '60+' || age === '45-59' || age === 'over-60' || age === '45-60') {
       recs.push({ id: 'coq10', reason: 'Declines with age' });
       recs.push({ id: 'vitamin-d3', reason: 'Critical for bone health' });
       recs.push({ id: 'omega-3', reason: 'Brain and heart protection' });

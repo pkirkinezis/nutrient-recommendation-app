@@ -1,10 +1,10 @@
 # 🌿 NutriCompass - Smart Supplement & Nutrition Guide
 
 <p align="center">
-  <img src="https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react" alt="React">
-  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Vite-5.x-646CFF?style=for-the-badge&logo=vite" alt="Vite">
-  <img src="https://img.shields.io/badge/TailwindCSS-3.x-06B6D4?style=for-the-badge&logo=tailwindcss" alt="Tailwind">
+  <img src="https://img.shields.io/badge/React-19.x-61DAFB?style=for-the-badge&logo=react" alt="React">
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite" alt="Vite">
+  <img src="https://img.shields.io/badge/TailwindCSS-4.x-06B6D4?style=for-the-badge&logo=tailwindcss" alt="Tailwind">
 </p>
 
 NutriCompass is a comprehensive, evidence-based nutrition and supplement recommendation application. It helps users understand what nutrients, vitamins, minerals, herbs, and Ayurvedic plants might support their health goals — and how to use them responsibly.
@@ -188,7 +188,8 @@ The development server features:
 ### 5. Run Type Checking (Optional)
 
 ```bash
-npm run lint
+# TypeScript type checking
+npx tsc --noEmit
 ```
 
 ---
@@ -197,23 +198,32 @@ npm run lint
 
 ```
 nutricompass/
-├── public/                  # Static assets
+├── public/                       # Static assets
 ├── src/
 │   ├── components/
-│   │   └── AdvancedBrowse.tsx    # Advanced browse engine
+│   │   ├── AdvancedBrowse.tsx    # Advanced browse engine
+│   │   └── EducationalGuide.tsx  # Educational content
+│   ├── constants/
+│   │   └── taxonomy.ts           # Centralized goal/system taxonomy
 │   ├── data/
 │   │   └── supplements.ts        # Supplement database
+│   ├── types/
+│   │   └── index.ts              # TypeScript interfaces
 │   ├── utils/
-│   │   └── goalAnalyzer.ts       # NLP goal analysis
+│   │   └── analyzer.ts           # NLP goal analysis with negation handling
 │   ├── App.tsx                   # Main application
 │   ├── main.tsx                  # Entry point
-│   ├── index.css                 # Global styles + Tailwind
-│   └── types.ts                  # TypeScript interfaces
+│   └── index.css                 # Global styles + Tailwind
 ├── index.html                    # HTML template
 ├── package.json                  # Dependencies & scripts
 ├── tsconfig.json                 # TypeScript config
-├── tailwind.config.js            # Tailwind config
 ├── vite.config.ts                # Vite config
+├── server.js                     # Express server for production
+├── Dockerfile                    # Docker configuration
+├── docker-compose.yml            # Docker Compose configuration
+├── nginx.conf                    # Nginx configuration
+├── vercel.json                   # Vercel deployment config
+├── netlify.toml                  # Netlify deployment config
 └── README.md                     # This file
 ```
 
