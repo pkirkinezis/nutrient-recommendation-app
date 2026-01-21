@@ -429,7 +429,7 @@ const nootropics: HerbInfo[] = [
     evidence: 'moderate'
   },
   {
-    name: "Lion's Mane (Hericium erinaceus)",
+    name: 'Lion\'s Mane (Hericium erinaceus)',
     tradition: 'Traditional Chinese Medicine',
     category: 'Nootropic Mushroom',
     benefits: ['Nerve growth factor stimulation', 'Cognitive enhancement', 'Neuroprotection', 'Memory support', 'Mood improvement'],
@@ -532,7 +532,7 @@ const wellnessGoals = [
   {
     goal: 'Cognition & Memory',
     keyNutrients: ['Omega-3 DHA', 'B-vitamins', 'Choline', 'Vitamin D'],
-    keyHerbs: ['Bacopa', "Lion's Mane", 'Ginkgo', 'Rhodiola', 'Phosphatidylserine'],
+    keyHerbs: ['Bacopa', 'Lion\'s Mane', 'Ginkgo', 'Rhodiola', 'Phosphatidylserine'],
     lifestyle: ['Regular exercise', 'Quality sleep', 'Mental stimulation', 'Social engagement'],
     evidence: 'moderate'
   },
@@ -1169,7 +1169,7 @@ const EducationalGuide: React.FC = () => {
               <div className="text-sm text-yellow-700 space-y-2">
                 <p>Each traditional remedy is presented with:</p>
                 <ul className="list-disc ml-4 space-y-1">
-                  <li><strong>Traditional role</strong> - How it's used in its original system</li>
+                  <li><strong>Traditional role</strong> - How it&apos;s used in its original system</li>
                   <li><strong>Modern scientific understanding</strong> - What research supports</li>
                   <li><strong>Safety considerations</strong> - Interactions and contraindications</li>
                   <li><strong>Who should avoid it</strong> - Specific warnings</li>

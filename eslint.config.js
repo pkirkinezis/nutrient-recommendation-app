@@ -37,6 +37,7 @@ export default tseslint.config(
       ...react.configs.recommended.rules,
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
+      'react/no-unescaped-entities': 'off', // Allow quotes and apostrophes in JSX for readability
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
