@@ -57,78 +57,92 @@ export const HEALTH_GOALS = {
 export type HealthGoal = typeof HEALTH_GOALS[keyof typeof HEALTH_GOALS];
 
 // Goal categories for UI display
+// IMPORTANT: Keywords should be specific and meaningful (4+ chars)
+// Avoid generic words that could cause false positives
 export const GOAL_CATEGORIES: { id: HealthGoal | string; label: string; icon: string; keywords: string[] }[] = [
   { 
     id: 'energy', 
     label: 'Energy & Vitality', 
     icon: '⚡',
-    keywords: ['energy', 'fatigue', 'tired', 'exhausted', 'vitality', 'stamina', 'endurance', 'alertness', 'awake', 'vigor', 'lethargy', 'sluggish']
+    // Specific energy-related terms only
+    keywords: ['energy', 'fatigue', 'tired', 'exhausted', 'vitality', 'stamina', 'endurance', 'alertness', 'vigor', 'lethargy', 'sluggish', 'low energy', 'more energy', 'boost energy', 'chronic fatigue']
   },
   { 
     id: 'brain', 
     label: 'Brain & Focus', 
     icon: '🧠',
-    keywords: ['focus', 'concentration', 'brain', 'cognitive', 'mental', 'clarity', 'attention', 'sharp', 'fog', 'thinking', 'learning', 'study', 'exam', 'work']
+    // Removed 'work' - too generic. Focus on cognitive-specific terms
+    keywords: ['focus', 'concentration', 'brain', 'cognitive', 'mental clarity', 'attention', 'brain fog', 'thinking', 'learning', 'study', 'memory', 'recall', 'sharp mind', 'mental performance', 'nootropic']
   },
   { 
     id: 'mood', 
     label: 'Mood & Emotions', 
     icon: '😊',
-    keywords: ['mood', 'happy', 'depression', 'depressed', 'sad', 'emotional', 'wellbeing', 'well-being', 'positive', 'joy', 'motivation', 'drive']
+    // Removed 'drive' - ambiguous. Added more specific terms
+    keywords: ['mood', 'happiness', 'depression', 'depressed', 'sadness', 'emotional', 'wellbeing', 'well-being', 'positivity', 'motivation', 'low mood', 'mood swings', 'irritability', 'blues']
   },
   { 
     id: 'stress', 
     label: 'Stress & Anxiety', 
     icon: '🧘',
-    keywords: ['stress', 'anxiety', 'anxious', 'calm', 'relax', 'tension', 'nervous', 'worried', 'panic', 'overwhelmed', 'cortisol', 'pressure', 'burnout']
+    // Removed 'pressure' - too generic. More specific stress terms
+    keywords: ['stress', 'anxiety', 'anxious', 'calm', 'relax', 'tension', 'nervous', 'worried', 'panic', 'overwhelmed', 'cortisol', 'burnout', 'stressed', 'anxiousness', 'stress relief', 'calming']
   },
   { 
     id: 'sleep', 
     label: 'Sleep & Recovery', 
     icon: '😴',
-    keywords: ['sleep', 'insomnia', 'rest', 'recovery', 'tired', 'fatigue', 'night', 'bedtime', 'wake', 'morning', 'circadian', 'melatonin', 'dreams']
+    // Removed 'tired', 'fatigue' (covered by energy), 'morning', 'night', 'wake' - too generic
+    keywords: ['sleep', 'insomnia', 'rest', 'recovery', 'bedtime', 'circadian', 'melatonin', 'sleep quality', 'deep sleep', 'falling asleep', 'stay asleep', 'restful', 'sleepless', 'sleep aid']
   },
   { 
     id: 'hormones', 
     label: 'Hormones & Balance', 
     icon: '⚖️',
-    keywords: ['hormone', 'hormonal', 'testosterone', 'estrogen', 'libido', 'sex', 'drive', 'menopause', 'pms', 'cycle', 'fertility', 'thyroid', 'adrenal', 'cortisol']
+    // Removed 'sex', 'drive', 'cycle' - too ambiguous
+    keywords: ['hormone', 'hormonal', 'testosterone', 'estrogen', 'libido', 'menopause', 'perimenopause', 'fertility', 'thyroid', 'adrenal', 'cortisol', 'hormonal balance', 'hormone support', 'low testosterone', 'estrogen balance']
   },
   { 
     id: 'immunity', 
     label: 'Immune Support', 
     icon: '🛡️',
-    keywords: ['immune', 'immunity', 'cold', 'flu', 'sick', 'infection', 'virus', 'defense', 'protection', 'resistance', 'illness', 'health']
+    // Removed 'health' - too generic
+    keywords: ['immune', 'immunity', 'cold', 'flu', 'sick', 'infection', 'virus', 'defense', 'protection', 'resistance', 'illness', 'immune system', 'immune support', 'getting sick', 'stay healthy']
   },
   { 
     id: 'digestion', 
     label: 'Digestion & Gut', 
     icon: '🦠',
-    keywords: ['digestion', 'digestive', 'gut', 'stomach', 'intestine', 'bloating', 'bloat', 'gas', 'constipation', 'diarrhea', 'microbiome', 'probiotic', 'ibs', 'acid', 'reflux']
+    // Removed 'acid' - ambiguous. Added specific terms
+    keywords: ['digestion', 'digestive', 'gut health', 'stomach', 'intestine', 'bloating', 'bloat', 'constipation', 'diarrhea', 'microbiome', 'probiotic', 'ibs', 'acid reflux', 'indigestion', 'gut flora', 'bowel']
   },
   { 
     id: 'fitness', 
     label: 'Fitness & Muscle', 
     icon: '💪',
-    keywords: ['muscle', 'strength', 'gym', 'workout', 'exercise', 'training', 'fitness', 'athletic', 'performance', 'power', 'gains', 'pump', 'lift', 'bodybuilding', 'crossfit']
+    // Removed 'training', 'power' - could be generic. Added specific fitness terms
+    keywords: ['muscle', 'strength', 'gym', 'workout', 'exercise', 'fitness', 'athletic', 'performance', 'gains', 'bodybuilding', 'crossfit', 'muscle building', 'muscle recovery', 'lifting', 'weightlifting', 'sports']
   },
   { 
     id: 'inflammation', 
     label: 'Inflammation & Pain', 
     icon: '🔥',
-    keywords: ['inflammation', 'inflammatory', 'pain', 'ache', 'sore', 'joint', 'arthritis', 'swelling', 'chronic', 'acute', 'injury']
+    // Removed 'chronic', 'acute', 'injury' - too generic
+    keywords: ['inflammation', 'inflammatory', 'pain', 'ache', 'sore', 'joint pain', 'arthritis', 'swelling', 'anti-inflammatory', 'joint health', 'stiffness', 'muscle pain', 'back pain', 'chronic pain']
   },
   { 
     id: 'heart', 
     label: 'Heart & Cardio', 
     icon: '❤️',
-    keywords: ['heart', 'cardiovascular', 'cardio', 'blood', 'pressure', 'cholesterol', 'circulation', 'artery', 'vein', 'pulse', 'beat']
+    // Removed 'blood', 'beat', 'pulse' - too generic
+    keywords: ['heart', 'cardiovascular', 'cardio health', 'blood pressure', 'cholesterol', 'circulation', 'artery', 'heart health', 'cardiac', 'triglycerides', 'hdl', 'ldl', 'vascular']
   },
   { 
     id: 'beauty', 
     label: 'Skin, Hair & Beauty', 
     icon: '✨',
-    keywords: ['skin', 'hair', 'nails', 'beauty', 'collagen', 'wrinkle', 'aging', 'glow', 'complexion', 'acne', 'dry', 'hydration']
+    // Removed 'dry' - too generic
+    keywords: ['skin', 'hair', 'nails', 'beauty', 'collagen', 'wrinkle', 'anti-aging', 'glow', 'complexion', 'acne', 'skin health', 'hair growth', 'hair loss', 'nail strength', 'youthful']
   },
 ];
 
@@ -152,72 +166,80 @@ export const BODY_SYSTEMS = {
 
 export type BodySystem = typeof BODY_SYSTEMS[keyof typeof BODY_SYSTEMS];
 
+// SYSTEM_DEFINITIONS with refined keywords (avoiding short/generic terms)
 export const SYSTEM_DEFINITIONS: { id: BodySystem; label: string; description: string; keywords: string[] }[] = [
   {
     id: 'nervous',
     label: 'Nervous System',
     description: 'Brain, spinal cord, nerves - controls cognition, mood, stress response',
-    keywords: ['brain', 'nerve', 'mental', 'cognitive', 'mood', 'anxiety', 'stress', 'focus', 'memory', 'sleep', 'neurotransmitter', 'dopamine', 'serotonin', 'gaba']
+    // Specific nervous system terms
+    keywords: ['brain', 'nervous', 'cognitive', 'anxiety', 'stress', 'focus', 'memory', 'neurotransmitter', 'dopamine', 'serotonin', 'gaba', 'neurological', 'neural']
   },
   {
     id: 'endocrine',
     label: 'Endocrine System',
     description: 'Hormones, glands - controls metabolism, growth, mood, reproduction',
-    keywords: ['hormone', 'thyroid', 'adrenal', 'cortisol', 'testosterone', 'estrogen', 'insulin', 'metabolism', 'gland', 'pituitary']
+    // Removed 'metabolism' - too generic
+    keywords: ['hormone', 'thyroid', 'adrenal', 'cortisol', 'testosterone', 'estrogen', 'insulin', 'gland', 'pituitary', 'endocrine', 'hormonal']
   },
   {
     id: 'immune',
     label: 'Immune System',
     description: 'Defense against pathogens, inflammation control',
-    keywords: ['immune', 'inflammation', 'infection', 'virus', 'bacteria', 'white blood', 'antibody', 'cytokine', 'autoimmune']
+    keywords: ['immune', 'inflammation', 'infection', 'virus', 'bacteria', 'antibody', 'cytokine', 'autoimmune', 'immunity', 'pathogen']
   },
   {
     id: 'digestive',
     label: 'Digestive System',
     description: 'Gut, stomach, intestines, liver - nutrient absorption, detox',
-    keywords: ['gut', 'stomach', 'intestine', 'liver', 'digest', 'absorption', 'microbiome', 'probiotic', 'enzyme', 'bile', 'colon']
+    // Removed 'enzyme' - too generic in supplement context
+    keywords: ['gut', 'stomach', 'intestine', 'liver', 'digest', 'digestion', 'microbiome', 'probiotic', 'bile', 'colon', 'bowel', 'gastric']
   },
   {
     id: 'cardiovascular',
     label: 'Cardiovascular System',
     description: 'Heart, blood vessels - circulation, oxygen delivery',
-    keywords: ['heart', 'blood', 'vessel', 'artery', 'vein', 'circulation', 'pressure', 'cholesterol', 'pulse', 'cardiac']
+    // Removed 'blood', 'pressure', 'pulse' - too generic
+    keywords: ['heart', 'cardiovascular', 'artery', 'vein', 'circulation', 'cholesterol', 'cardiac', 'vascular', 'blood pressure', 'triglycerides']
   },
   {
     id: 'musculoskeletal',
     label: 'Musculoskeletal System',
     description: 'Muscles, bones, joints - movement, structure, strength',
-    keywords: ['muscle', 'bone', 'joint', 'tendon', 'ligament', 'skeletal', 'strength', 'flexibility', 'cartilage', 'collagen']
+    // Removed 'strength', 'flexibility' - too generic
+    keywords: ['muscle', 'bone', 'joint', 'tendon', 'ligament', 'skeletal', 'cartilage', 'musculoskeletal', 'osteo', 'muscular']
   },
   {
     id: 'integumentary',
     label: 'Integumentary System',
     description: 'Skin, hair, nails - protection, appearance',
-    keywords: ['skin', 'hair', 'nail', 'collagen', 'keratin', 'dermis', 'epidermis', 'complexion']
+    keywords: ['skin', 'hair', 'nail', 'collagen', 'keratin', 'dermis', 'epidermis', 'complexion', 'dermal', 'cutaneous']
   },
   {
     id: 'respiratory',
     label: 'Respiratory System',
     description: 'Lungs, airways - oxygen intake, CO2 removal',
-    keywords: ['lung', 'breath', 'respiratory', 'oxygen', 'airway', 'bronchi', 'asthma']
+    keywords: ['lung', 'respiratory', 'airway', 'bronchi', 'asthma', 'breathing', 'pulmonary', 'bronchial']
   },
   {
     id: 'reproductive',
     label: 'Reproductive System',
     description: 'Fertility, libido, hormonal cycles',
-    keywords: ['reproductive', 'fertility', 'libido', 'sexual', 'menstrual', 'ovary', 'testis', 'sperm', 'egg']
+    // Removed 'egg' - too generic
+    keywords: ['reproductive', 'fertility', 'libido', 'menstrual', 'ovary', 'testis', 'sperm', 'conception', 'sexual health']
   },
   {
     id: 'urinary',
     label: 'Urinary System',
     description: 'Kidneys, bladder - waste removal, fluid balance',
-    keywords: ['kidney', 'bladder', 'urine', 'urinary', 'renal', 'filtration']
+    keywords: ['kidney', 'bladder', 'urinary', 'renal', 'nephro', 'urological']
   },
   {
     id: 'lymphatic',
     label: 'Lymphatic System',
     description: 'Lymph nodes, drainage - immune support, detox',
-    keywords: ['lymph', 'drainage', 'detox', 'node', 'spleen', 'tonsil']
+    // Removed 'node', 'detox' - could be generic
+    keywords: ['lymph', 'lymphatic', 'drainage', 'spleen', 'lymph nodes', 'lymphoid']
   },
 ];
 

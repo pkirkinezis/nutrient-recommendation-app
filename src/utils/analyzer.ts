@@ -90,15 +90,83 @@ function matchKeyword(tokens: Token[], keyword: string): boolean {
 }
 
 /**
+ * Minimum token length for partial matching to prevent false positives
+ * Short tokens like "at", "or", "an" should not trigger partial matches
+ */
+const MIN_PARTIAL_MATCH_LENGTH = 4;
+
+/**
+ * Common stop words that should never trigger matches even if they appear in keywords
+ */
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+  'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after',
+  'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once',
+  'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more',
+  'most', 'other', 'some', 'such', 'only', 'own', 'same', 'so', 'than', 'too',
+  'very', 'just', 'can', 'will', 'should', 'would', 'could', 'may', 'might',
+  'must', 'shall', 'need', 'want', 'like', 'get', 'got', 'make', 'made', 'take',
+  'took', 'come', 'came', 'go', 'went', 'see', 'saw', 'know', 'knew', 'think',
+  'thought', 'feel', 'felt', 'find', 'found', 'give', 'gave', 'tell', 'told',
+  'work', 'working', 'day', 'time', 'way', 'year', 'good', 'bad', 'new', 'old',
+  'high', 'low', 'long', 'short', 'big', 'small', 'great', 'little', 'right',
+  'left', 'first', 'last', 'next', 'early', 'late', 'hard', 'easy', 'best', 'worst',
+  'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'be', 'been', 'being',
+  'am', 'is', 'are', 'was', 'were', 'i', 'me', 'my', 'we', 'us', 'our', 'you', 'your',
+  'he', 'him', 'his', 'she', 'her', 'it', 'its', 'they', 'them', 'their', 'what',
+  'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'while', 'during'
+]);
+
+/**
  * Check for partial keyword match (for compound words) with negation awareness
+ * 
+ * IMPROVED: No longer uses bidirectional matching (keyword.includes(token))
+ * which caused false positives with short tokens like "at" matching "fatigue"
+ * 
+ * Now only allows:
+ * 1. Token contains the keyword (e.g., "sleeplessness" contains "sleep")
+ * 2. Token length must be >= MIN_PARTIAL_MATCH_LENGTH
+ * 3. Token must not be a stop word
  */
 function matchPartialKeyword(tokens: Token[], keyword: string): boolean {
   const keywordLower = keyword.toLowerCase();
   
+  // Skip very short keywords that could cause false positives
+  if (keywordLower.length < 3) {
+    return false;
+  }
+  
   for (const token of tokens) {
-    // Check if token contains keyword or keyword contains token
-    if (token.word.includes(keywordLower) || keywordLower.includes(token.word)) {
-      if (!token.isNegated) {
+    // Skip stop words entirely
+    if (STOP_WORDS.has(token.word)) {
+      continue;
+    }
+    
+    // Skip short tokens for partial matching
+    if (token.word.length < MIN_PARTIAL_MATCH_LENGTH) {
+      continue;
+    }
+    
+    // Skip negated tokens
+    if (token.isNegated) {
+      continue;
+    }
+    
+    // ONLY check if the token contains the keyword
+    // Do NOT check if keyword contains token (this was the source of false positives)
+    // e.g., "sleeplessness" contains "sleep" ✓
+    // e.g., "fatigue" contains "at" ✗ (we removed this check)
+    if (token.word.includes(keywordLower)) {
+      return true;
+    }
+    
+    // Also allow keyword to contain token ONLY if token is long enough
+    // and represents a meaningful root word (>= 5 chars)
+    if (token.word.length >= 5 && keywordLower.includes(token.word)) {
+      // Additional check: token should be a significant portion of the keyword
+      // to avoid "focus" matching "refocus" when user meant something else
+      const tokenRatio = token.word.length / keywordLower.length;
+      if (tokenRatio >= 0.5) {
         return true;
       }
     }
@@ -125,36 +193,72 @@ interface MatchedSystem {
 }
 
 /**
+ * Weight for exact matches vs partial matches
+ */
+const EXACT_MATCH_WEIGHT = 3;
+const PARTIAL_MATCH_WEIGHT = 1;
+
+/**
+ * Minimum score threshold for a goal to be considered matched
+ * This prevents single weak partial matches from adding goals
+ */
+const MIN_GOAL_SCORE = 2;
+
+/**
  * Analyze input text to identify health goals
+ * 
+ * IMPROVED: 
+ * - Uses weighted scoring (exact matches worth more than partial)
+ * - Requires minimum score threshold to reduce noise
+ * - Limits number of goals returned to prevent over-matching
  */
 function identifyGoals(tokens: Token[]): MatchedGoal[] {
   const goals: MatchedGoal[] = [];
   
   for (const category of GOAL_CATEGORIES) {
     const matchedKeywords: string[] = [];
+    let score = 0;
     
     for (const keyword of category.keywords) {
-      if (matchKeyword(tokens, keyword) || matchPartialKeyword(tokens, keyword)) {
+      const exactMatch = matchKeyword(tokens, keyword);
+      const partialMatch = !exactMatch && matchPartialKeyword(tokens, keyword);
+      
+      if (exactMatch) {
         matchedKeywords.push(keyword);
+        score += EXACT_MATCH_WEIGHT;
+      } else if (partialMatch) {
+        matchedKeywords.push(keyword);
+        score += PARTIAL_MATCH_WEIGHT;
       }
     }
     
-    if (matchedKeywords.length > 0) {
+    // Only include goals that meet the minimum score threshold
+    if (matchedKeywords.length > 0 && score >= MIN_GOAL_SCORE) {
       goals.push({
         id: category.id,
         label: category.label,
-        score: matchedKeywords.length,
+        score,
         matchedKeywords
       });
     }
   }
   
-  // Sort by score (number of matched keywords)
-  return goals.sort((a, b) => b.score - a.score);
+  // Sort by score and limit to top goals (prevent over-matching)
+  return goals.sort((a, b) => b.score - a.score).slice(0, 4);
 }
 
 /**
+ * Minimum score threshold for a system to be considered matched
+ */
+const MIN_SYSTEM_SCORE = 2;
+
+/**
  * Analyze input text to identify body systems
+ * 
+ * IMPROVED:
+ * - Uses weighted scoring (exact matches worth more)
+ * - Requires minimum score threshold to reduce noise
+ * - Limits number of systems returned
  */
 function identifySystems(tokens: Token[]): MatchedSystem[] {
   const systems: MatchedSystem[] = [];
@@ -163,12 +267,18 @@ function identifySystems(tokens: Token[]): MatchedSystem[] {
     let score = 0;
     
     for (const keyword of system.keywords) {
-      if (matchKeyword(tokens, keyword) || matchPartialKeyword(tokens, keyword)) {
-        score++;
+      const exactMatch = matchKeyword(tokens, keyword);
+      const partialMatch = !exactMatch && matchPartialKeyword(tokens, keyword);
+      
+      if (exactMatch) {
+        score += EXACT_MATCH_WEIGHT;
+      } else if (partialMatch) {
+        score += PARTIAL_MATCH_WEIGHT;
       }
     }
     
-    if (score > 0) {
+    // Only include systems that meet the minimum score threshold
+    if (score >= MIN_SYSTEM_SCORE) {
       systems.push({
         id: system.id,
         label: system.label,
@@ -177,7 +287,8 @@ function identifySystems(tokens: Token[]): MatchedSystem[] {
     }
   }
   
-  return systems.sort((a, b) => b.score - a.score);
+  // Sort by score and limit to top systems
+  return systems.sort((a, b) => b.score - a.score).slice(0, 3);
 }
 
 // ============================================
