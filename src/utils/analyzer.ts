@@ -94,16 +94,25 @@ function matchKeyword(tokens: Token[], keyword: string): boolean {
  */
 function matchPartialKeyword(tokens: Token[], keyword: string): boolean {
   const keywordLower = keyword.toLowerCase();
-  
+  const minPartialLength = 4;
+
+  if (keywordLower.length < minPartialLength) {
+    return false;
+  }
+
   for (const token of tokens) {
-    // Check if token contains keyword or keyword contains token
-    if (token.word.includes(keywordLower) || keywordLower.includes(token.word)) {
+    if (token.word.length < minPartialLength) {
+      continue;
+    }
+
+    // Allow partial match only when token contains keyword
+    if (token.word.includes(keywordLower)) {
       if (!token.isNegated) {
         return true;
       }
     }
   }
-  
+
   return false;
 }
 
