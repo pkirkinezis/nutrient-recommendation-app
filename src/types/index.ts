@@ -1,88 +1,49 @@
-// Simplified Type Definitions for NutriCompass
+export type EvidenceLevel = 'Strong' | 'Moderate' | 'Limited' | 'Traditional';
 
-export type EvidenceLevel = 'strong' | 'moderate' | 'limited';
-export type SupplementType = 'vitamin' | 'mineral' | 'amino-acid' | 'herb' | 'ayurvedic' | 'mushroom' | 'probiotic' | 'fatty-acid' | 'other';
-export type Priority = 'essential' | 'beneficial' | 'optional';
+export type SystemTag = 
+  | 'Nervous System' 
+  | 'Immune System' 
+  | 'Endocrine (Hormones)' 
+  | 'Musculoskeletal' 
+  | 'Cardiovascular' 
+  | 'Digestive' 
+  | 'Metabolism' 
+  | 'Energy/Metabolism'
+  | 'Cognitive/Brain' 
+  | 'Reproductive'
+  | 'Detoxification'
+  | 'Skin/Hair/Nails';
 
 export interface Supplement {
   id: string;
   name: string;
-  type: SupplementType;
-  category: 'modern' | 'traditional' | 'both';
+  category: 'Vitamin' | 'Mineral' | 'Herb' | 'Amino Acid' | 'Ayurveda' | 'Protein' | 'Other';
   description: string;
-  traditionalUse?: string;
   benefits: string[];
+  commonUses: string[]; 
   dosage: string;
-  timing: string;
-  timeframe: string;
-  evidence: EvidenceLevel;
-  foodSources?: string[];
-  cautions?: string[];
-  drugInteractions?: string[];
-  avoidIf?: string[];
-  cycleTiming?: string;
-  synergies?: string[];
-  conflicts?: string[];
-  systems: string[];
-  goals: string[];
+  warnings: string;
+  
+  // New Enhanced Fields
+  evidenceLevel: EvidenceLevel;
+  systemTags: SystemTag[];
+  mechanism: string; // "Scientific" explanation of how it works
+  
+  bestTime: string; // Changed from strict union to string to allow "Pre-workout", "With Carbs", etc.
+  withFood: boolean;
+  cyclingRecommended: boolean; // e.g., take for 8 weeks, off for 2
+  
+  timeline: string; // e.g. "Effects seen in 3-5 days"
+  
+  foodSources?: string[]; // "Food First" content
+  foodSourceNote?: string; // e.g. "Hard to get enough from food alone"
+  
+  interactionWarnings?: string[]; // specific drug interactions
 }
 
 export interface UserProfile {
-  ageRange?: 'under-30' | '30-45' | '45-60' | 'over-60';
-  sex?: 'male' | 'female';
-  dietType?: 'omnivore' | 'vegetarian' | 'vegan' | 'keto' | 'other';
-  trainingStyle?: 'none' | 'endurance' | 'strength' | 'mixed' | 'yoga';
-  sleepQuality?: 'good' | 'fair' | 'poor';
-  stressLevel?: 'low' | 'moderate' | 'high';
-  currentSupplements?: string[];
-  healthConditions?: string[];
-  medications?: string[];
-}
-
-export interface Recommendation {
-  supplement: Supplement;
-  relevanceScore: number;
-  reason: string;
-  priority: Priority;
-}
-
-export interface AnalyzedGoal {
-  originalQuery: string;
-  identifiedGoals: string[];
-  identifiedSystems: string[];
-  recommendations: Recommendation[];
-}
-
-// Form guidance types
-export interface FormInfo {
-  name: string;
-  bioavailability: string;
-  bestFor: string;
-  avoid?: string;
-}
-
-export interface FormGuidance {
-  forms: FormInfo[];
-  enhancers: string[];
-  blockers: string[];
-  timing: string;
-  foodFirst: { possible: boolean; note: string };
-}
-
-// Comparison types
-export interface SupplementComparison {
-  id: string;
-  title: string;
-  goal: string;
-  optionA: { name: string; pros: string[]; cons: string[]; evidence: string };
-  optionB: { name: string; pros: string[]; cons: string[]; evidence: string };
-  verdict: string;
-  canCombine: boolean;
-}
-
-// Misinformation alert types
-export interface MisinformationAlert {
-  claim: string;
-  reality: string;
-  recommendation: string;
+  diet: 'Omnivore' | 'Vegan' | 'Vegetarian';
+  isPregnant: boolean;
+  takingMedication: boolean;
+  goals: string[];
 }
