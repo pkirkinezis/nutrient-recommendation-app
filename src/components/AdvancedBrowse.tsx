@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Supplement, UserProfile } from '../types/index';
 import { supplements, formGuidance } from '../data/supplements';
+import { normalizeGoals, normalizeSystems } from '../utils/normalization';
 
 // Types for the advanced browse engine
 type SortOption = 'relevance' | 'evidence' | 'name' | 'popularity';
@@ -25,22 +26,24 @@ interface AdvancedBrowseProps {
 }
 
 // All available systems extracted from supplements
-const allSystems = Array.from(new Set(supplements.flatMap(s => s.systems))).sort();
+const allSystems = Array.from(new Set(supplements.flatMap(s => normalizeSystems(s.systems)))).sort();
 
 // Goal categories for better organization
 const goalCategories = {
-  'Energy & Performance': ['energy', 'endurance', 'athletic-performance', 'stamina', 'fatigue', 'performance', 'power', 'strength'],
-  'Brain & Focus': ['focus', 'memory', 'cognition', 'brain-health', 'concentration', 'learning', 'neuroprotection', 'brain-fog'],
-  'Mood & Mental': ['mood', 'depression', 'anxiety', 'stress', 'calm', 'motivation', 'dopamine'],
-  'Sleep & Recovery': ['sleep', 'insomnia', 'recovery', 'relaxation', 'jet-lag'],
-  'Hormones & Vitality': ['testosterone', 'libido', 'hormonal-balance', 'fertility', 'vitality', 'cortisol'],
-  'Immunity & Health': ['immunity', 'cold', 'flu', 'antiviral', 'immune', 'inflammation', 'antioxidant'],
-  'Body Composition': ['muscle', 'weight', 'fat-burning', 'body-composition'],
-  'Joints & Mobility': ['joint-pain', 'joints', 'arthritis', 'mobility', 'cartilage'],
-  'Skin & Beauty': ['skin', 'hair', 'wrinkles', 'collagen', 'nails', 'beauty'],
-  'Digestion & Gut': ['digestion', 'gut-health', 'bloating', 'leaky-gut', 'ibs'],
-  'Heart & Circulation': ['heart-health', 'blood-pressure', 'circulation', 'cholesterol', 'cardiovascular'],
-  'Longevity': ['longevity', 'anti-aging', 'sirtuins', 'senolytic', 'mitochondria']
+  'Energy & Vitality': ['energy'],
+  'Brain & Focus': ['brain'],
+  'Mood & Emotions': ['mood', 'stress'],
+  'Sleep & Recovery': ['sleep'],
+  'Hormones & Balance': ['hormones'],
+  'Immune Support': ['immunity'],
+  'Digestion & Gut': ['digestion'],
+  'Fitness & Muscle': ['fitness'],
+  'Inflammation & Pain': ['inflammation'],
+  'Heart & Cardio': ['heart'],
+  'Skin & Beauty': ['beauty'],
+  'Longevity & Aging': ['longevity'],
+  'Metabolic & Blood Sugar': ['metabolic'],
+  'Liver & Detox': ['detox']
 };
 
 // Type icons and colors
@@ -74,6 +77,9 @@ const popularityScores: Record<string, number> = {
   'l-theanine': 72, 'brahmi-bacopa': 65, 'nac': 60, 'glycine': 55, 'tongkat-ali': 68,
 };
 
+const getNormalizedGoals = (supplement: Supplement) => normalizeGoals(supplement.goals);
+const getNormalizedSystems = (supplement: Supplement) => normalizeSystems(supplement.systems);
+
 export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupplements }: AdvancedBrowseProps) {
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -100,23 +106,26 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       case 'beginners':
         return ['vitamin-d3', 'magnesium', 'omega-3', 'vitamin-b12', 'zinc'];
       case 'sleep':
-        return supplements.filter(s => s.goals.includes('sleep')).map(s => s.id);
+        return supplements.filter(s => getNormalizedGoals(s).includes('sleep')).map(s => s.id);
       case 'energy':
-        return supplements.filter(s => s.goals.includes('energy') || s.goals.includes('focus')).map(s => s.id);
+        return supplements.filter(s => {
+          const goals = getNormalizedGoals(s);
+          return goals.includes('energy') || goals.includes('brain');
+        }).map(s => s.id);
       case 'stress':
-        return supplements.filter(s => s.goals.includes('stress') || s.goals.includes('anxiety')).map(s => s.id);
+        return supplements.filter(s => getNormalizedGoals(s).includes('stress')).map(s => s.id);
       case 'ayurvedic':
         return supplements.filter(s => s.type === 'ayurvedic').map(s => s.id);
       case 'mushrooms':
         return supplements.filter(s => s.type === 'mushroom').map(s => s.id);
       case 'nootropics':
-        return supplements.filter(s => s.goals.includes('memory') || s.goals.includes('cognition')).map(s => s.id);
+        return supplements.filter(s => getNormalizedGoals(s).includes('brain')).map(s => s.id);
       case 'athletes':
-        return supplements.filter(s => s.goals.includes('athletic-performance') || s.goals.includes('muscle') || s.goals.includes('endurance')).map(s => s.id);
+        return supplements.filter(s => getNormalizedGoals(s).includes('fitness')).map(s => s.id);
       case 'immunity':
-        return supplements.filter(s => s.goals.includes('immunity')).map(s => s.id);
+        return supplements.filter(s => getNormalizedGoals(s).includes('immunity')).map(s => s.id);
       case 'longevity':
-        return supplements.filter(s => s.goals.includes('longevity') || s.goals.includes('anti-aging')).map(s => s.id);
+        return supplements.filter(s => getNormalizedGoals(s).includes('longevity')).map(s => s.id);
       case 'strong-evidence':
         return supplements.filter(s => s.evidence === 'strong').map(s => s.id);
       default:
@@ -215,6 +224,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         s.description.toLowerCase().includes(query) ||
         s.benefits.some(b => b.toLowerCase().includes(query)) ||
         s.goals.some(g => g.toLowerCase().includes(query)) ||
+        getNormalizedGoals(s).some(goal => goal.includes(query)) ||
         (s.traditionalUse && s.traditionalUse.toLowerCase().includes(query))
       );
     }
@@ -232,14 +242,14 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     // Goals filter
     if (filters.goals.length > 0) {
       result = result.filter(s => 
-        filters.goals.some(goal => s.goals.includes(goal))
+        filters.goals.some(goal => getNormalizedGoals(s).includes(goal))
       );
     }
     
     // Systems filter
     if (filters.systems.length > 0) {
-      result = result.filter(s =>
-        filters.systems.some(system => s.systems.includes(system))
+      result = result.filter(s => 
+        filters.systems.some(system => getNormalizedSystems(s).includes(system))
       );
     }
     
@@ -299,8 +309,8 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     return supplements
       .filter(s => s.id !== supplement.id)
       .map(s => {
-        const sharedGoals = s.goals.filter(g => supplement.goals.includes(g)).length;
-        const sharedSystems = s.systems.filter(sys => supplement.systems.includes(sys)).length;
+        const sharedGoals = getNormalizedGoals(s).filter(g => getNormalizedGoals(supplement).includes(g)).length;
+        const sharedSystems = getNormalizedSystems(s).filter(sys => getNormalizedSystems(supplement).includes(sys)).length;
         const sameType = s.type === supplement.type ? 2 : 0;
         return { supplement: s, score: sharedGoals * 2 + sharedSystems + sameType };
       })

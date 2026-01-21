@@ -3,7 +3,7 @@
  * Improved parsing with negation handling, word boundaries, and comprehensive interaction detection
  */
 
-import { Supplement, UserProfile, GoalAnalysis, RecommendedSupplement } from '../types';
+import { Supplement, UserProfile, GoalAnalysis, RecommendedSupplement, TrackingData } from '../types';
 import { 
   GOAL_CATEGORIES, 
   SYSTEM_DEFINITIONS,
@@ -13,6 +13,7 @@ import {
   HIGH_RISK_INTERACTIONS,
   normalizeSupplementName
 } from '../constants/taxonomy';
+import { normalizeGoals, normalizeSystems } from './normalization';
 
 // ============================================
 // TOKENIZATION & PARSING
@@ -22,6 +23,7 @@ interface Token {
   word: string;
   index: number;
   isNegated: boolean;
+  root: string;
 }
 
 /**
@@ -33,6 +35,17 @@ function tokenize(text: string): string[] {
     .replace(/[^\w\s'-]/g, ' ')  // Keep hyphens and apostrophes
     .split(/\s+/)
     .filter(word => word.length > 0);
+}
+
+const STEM_SUFFIXES = ['ing', 'ers', 'er', 'ed', 'es', 's'];
+
+function stemWord(word: string): string {
+  for (const suffix of STEM_SUFFIXES) {
+    if (word.length > suffix.length + 2 && word.endsWith(suffix)) {
+      return word.slice(0, -suffix.length);
+    }
+  }
+  return word;
 }
 
 /**
@@ -56,7 +69,8 @@ function parseInput(text: string): Token[] {
   return tokens.map((word, index) => ({
     word,
     index,
-    isNegated: isTokenNegated(tokens, index)
+    isNegated: isTokenNegated(tokens, index),
+    root: stemWord(word)
   }));
 }
 
@@ -72,11 +86,13 @@ function matchKeyword(tokens: Token[], keyword: string): boolean {
     let anyNegated = false;
     
     for (let j = 0; j < keywordTokens.length; j++) {
-      if (tokens[i + j].word !== keywordTokens[j]) {
+      const token = tokens[i + j];
+      const keywordToken = keywordTokens[j];
+      if (token.word !== keywordToken && token.root !== keywordToken && token.word !== stemWord(keywordToken)) {
         match = false;
         break;
       }
-      if (tokens[i + j].isNegated) {
+      if (token.isNegated) {
         anyNegated = true;
       }
     }
@@ -130,6 +146,7 @@ const STOP_WORDS = new Set([
  */
 function matchPartialKeyword(tokens: Token[], keyword: string): boolean {
   const keywordLower = keyword.toLowerCase();
+  const keywordRoot = stemWord(keywordLower);
   
   // Skip very short keywords that could cause false positives
   if (keywordLower.length < 3) {
@@ -156,13 +173,13 @@ function matchPartialKeyword(tokens: Token[], keyword: string): boolean {
     // Do NOT check if keyword contains token (this was the source of false positives)
     // e.g., "sleeplessness" contains "sleep" ✓
     // e.g., "fatigue" contains "at" ✗ (we removed this check)
-    if (token.word.includes(keywordLower)) {
+    if (token.word.includes(keywordLower) || token.word.includes(keywordRoot)) {
       return true;
     }
     
     // Also allow keyword to contain token ONLY if token is long enough
     // and represents a meaningful root word (>= 5 chars)
-    if (token.word.length >= 5 && keywordLower.includes(token.word)) {
+    if (token.word.length >= 5 && (keywordLower.includes(token.word) || keywordRoot.includes(token.word))) {
       // Additional check: token should be a significant portion of the keyword
       // to avoid "focus" matching "refocus" when user meant something else
       const tokenRatio = token.word.length / keywordLower.length;
@@ -197,6 +214,17 @@ interface MatchedSystem {
  */
 const EXACT_MATCH_WEIGHT = 3;
 const PARTIAL_MATCH_WEIGHT = 1;
+const SEMANTIC_MATCH_WEIGHT = 2;
+
+const EVIDENCE_MULTIPLIERS: Record<string, number> = {
+  strong: 1.3,
+  moderate: 1.1,
+  limited: 0.9
+};
+
+function getGoalEvidenceLevel(supplement: Supplement, goalId: string): string {
+  return supplement.goalEvidence?.[goalId] || supplement.evidence;
+}
 
 /**
  * Minimum score threshold for a goal to be considered matched
@@ -214,6 +242,7 @@ const MIN_GOAL_SCORE = 2;
  */
 function identifyGoals(tokens: Token[]): MatchedGoal[] {
   const goals: MatchedGoal[] = [];
+  const tokenSet = new Set(tokens.map(token => token.root));
   
   for (const category of GOAL_CATEGORIES) {
     const matchedKeywords: string[] = [];
@@ -222,6 +251,8 @@ function identifyGoals(tokens: Token[]): MatchedGoal[] {
     for (const keyword of category.keywords) {
       const exactMatch = matchKeyword(tokens, keyword);
       const partialMatch = !exactMatch && matchPartialKeyword(tokens, keyword);
+      const keywordTokens = tokenize(keyword).map(stemWord);
+      const hasSemanticOverlap = keywordTokens.some(token => tokenSet.has(token));
       
       if (exactMatch) {
         matchedKeywords.push(keyword);
@@ -229,6 +260,8 @@ function identifyGoals(tokens: Token[]): MatchedGoal[] {
       } else if (partialMatch) {
         matchedKeywords.push(keyword);
         score += PARTIAL_MATCH_WEIGHT;
+      } else if (hasSemanticOverlap) {
+        score += SEMANTIC_MATCH_WEIGHT;
       }
     }
     
@@ -262,6 +295,7 @@ const MIN_SYSTEM_SCORE = 2;
  */
 function identifySystems(tokens: Token[]): MatchedSystem[] {
   const systems: MatchedSystem[] = [];
+  const tokenSet = new Set(tokens.map(token => token.root));
   
   for (const system of SYSTEM_DEFINITIONS) {
     let score = 0;
@@ -269,11 +303,15 @@ function identifySystems(tokens: Token[]): MatchedSystem[] {
     for (const keyword of system.keywords) {
       const exactMatch = matchKeyword(tokens, keyword);
       const partialMatch = !exactMatch && matchPartialKeyword(tokens, keyword);
+      const keywordTokens = tokenize(keyword).map(stemWord);
+      const hasSemanticOverlap = keywordTokens.some(token => tokenSet.has(token));
       
       if (exactMatch) {
         score += EXACT_MATCH_WEIGHT;
       } else if (partialMatch) {
         score += PARTIAL_MATCH_WEIGHT;
+      } else if (hasSemanticOverlap) {
+        score += SEMANTIC_MATCH_WEIGHT;
       }
     }
     
@@ -304,11 +342,15 @@ function scoreSupplementForGoals(
   matchedSystems: MatchedSystem[]
 ): number {
   let score = 0;
+  const normalizedGoals = normalizeGoals(supplement.goals);
+  const normalizedSystems = normalizeSystems(supplement.systems);
   
   // Score based on goals
   for (const goal of matchedGoals) {
-    if (supplement.goals?.includes(goal.id)) {
-      score += goal.score * 10;
+    if (normalizedGoals.includes(goal.id)) {
+      const evidenceLevel = getGoalEvidenceLevel(supplement, goal.id);
+      const evidenceMultiplier = EVIDENCE_MULTIPLIERS[evidenceLevel] || 1;
+      score += goal.score * 10 * evidenceMultiplier;
     }
     // Check benefits text for goal keywords
     for (const keyword of goal.matchedKeywords) {
@@ -323,17 +365,14 @@ function scoreSupplementForGoals(
   
   // Score based on systems
   for (const system of matchedSystems) {
-    if (supplement.systems?.includes(system.id)) {
+    if (normalizedSystems.includes(system.id)) {
       score += system.score * 5;
     }
   }
   
   // Boost for evidence level
-  if (supplement.evidence === 'strong') {
-    score *= 1.3;
-  } else if (supplement.evidence === 'moderate') {
-    score *= 1.1;
-  }
+  const overallMultiplier = EVIDENCE_MULTIPLIERS[supplement.evidence] || 1;
+  score *= overallMultiplier;
   
   return score;
 }
@@ -359,10 +398,12 @@ function generateReason(
   matchedSystems: MatchedSystem[]
 ): string {
   const reasons: string[] = [];
+  const normalizedGoals = normalizeGoals(supplement.goals);
+  const normalizedSystems = normalizeSystems(supplement.systems);
   
   // Find which goals this supplement addresses
   const addressedGoals = matchedGoals.filter(g => 
-    supplement.goals?.includes(g.id) ||
+    normalizedGoals.includes(g.id) ||
     supplement.benefits?.some(b => 
       g.matchedKeywords.some(k => b.toLowerCase().includes(k))
     )
@@ -375,7 +416,7 @@ function generateReason(
   
   // Add system-specific reason
   const addressedSystems = matchedSystems.filter(s => 
-    supplement.systems?.includes(s.id)
+    normalizedSystems.includes(s.id)
   );
   
   if (addressedSystems.length > 0) {
@@ -393,6 +434,268 @@ function generateReason(
   }
   
   return reasons.slice(0, 2).join('. ') + '.';
+}
+
+// ============================================
+// CONTEXT & SAFETY
+// ============================================
+
+type SeverityLevel = 'mild' | 'moderate' | 'severe';
+type DurationLevel = 'acute' | 'chronic';
+
+interface QueryContext {
+  severity?: SeverityLevel;
+  duration?: DurationLevel;
+  avoidStimulating: boolean;
+  avoidSedating: boolean;
+  avoidHerbs: boolean;
+  avoidHormonal: boolean;
+}
+
+const SEVERITY_KEYWORDS: Record<SeverityLevel, string[]> = {
+  mild: ['mild', 'light', 'occasional'],
+  moderate: ['moderate', 'medium'],
+  severe: ['severe', 'intense', 'extreme', 'debilitating']
+};
+
+const DURATION_KEYWORDS: Record<DurationLevel, string[]> = {
+  acute: ['recent', 'acute', 'sudden', 'short-term'],
+  chronic: ['chronic', 'long-term', 'months', 'years', 'ongoing', 'persistent']
+};
+
+function extractQueryContext(input: string, profile?: UserProfile): QueryContext {
+  const text = input.toLowerCase();
+  const severity = (Object.keys(SEVERITY_KEYWORDS) as SeverityLevel[]).find(level =>
+    SEVERITY_KEYWORDS[level].some(term => text.includes(term))
+  );
+  const duration = (Object.keys(DURATION_KEYWORDS) as DurationLevel[]).find(level =>
+    DURATION_KEYWORDS[level].some(term => text.includes(term))
+  );
+
+  const avoidStimulating = /no stimulants?|avoid stimulants?|not stimulating|caffeine sensitive|sensitive to caffeine/.test(text)
+    || profile?.caffeineIntake === 'high';
+  const avoidSedating = /no sedat(ing|ive)|avoid sedat(ing|ive)|not sleepy|no drowsy/.test(text);
+  const avoidHerbs = /no herbs?|avoid herbs?|no botanicals?|avoid botanicals?/.test(text);
+  const avoidHormonal = /non[-\s]?hormonal|avoid hormones|no hormonal/.test(text);
+
+  return { severity, duration, avoidStimulating, avoidSedating, avoidHerbs, avoidHormonal };
+}
+
+function isStimulatingSupplement(supplement: Supplement): boolean {
+  const name = supplement.name.toLowerCase();
+  const stimulantTerms = ['caffeine', 'guarana', 'green tea', 'yerba', 'ginseng', 'rhodiola', 'cordyceps'];
+  if (stimulantTerms.some(term => name.includes(term))) return true;
+  return supplement.benefits.some(benefit => benefit.toLowerCase().includes('energy') || benefit.toLowerCase().includes('alert'));
+}
+
+function isSedatingSupplement(supplement: Supplement): boolean {
+  const name = supplement.name.toLowerCase();
+  const sedatingTerms = ['melatonin', 'valerian', 'glycine', 'gaba', 'passionflower'];
+  if (sedatingTerms.some(term => name.includes(term))) return true;
+  return supplement.benefits.some(benefit => benefit.toLowerCase().includes('sleep') || benefit.toLowerCase().includes('calm'));
+}
+
+function applyContextAdjustments(
+  supplements: { supplement: Supplement; score: number }[],
+  context: QueryContext
+): { supplement: Supplement; score: number }[] {
+  return supplements.map(({ supplement, score }) => {
+    let adjustedScore = score;
+
+    if (context.avoidStimulating && isStimulatingSupplement(supplement)) {
+      adjustedScore *= 0.6;
+    }
+    if (context.avoidSedating && isSedatingSupplement(supplement)) {
+      adjustedScore *= 0.6;
+    }
+    if (context.avoidHerbs && ['herb', 'ayurvedic', 'mushroom'].includes(supplement.type)) {
+      adjustedScore *= 0.5;
+    }
+    if (context.avoidHormonal && normalizeGoals(supplement.goals).includes('hormones')) {
+      adjustedScore *= 0.6;
+    }
+
+    if (context.duration === 'chronic') {
+      if (supplement.evidence === 'limited') {
+        adjustedScore *= 0.85;
+      }
+    }
+    if (context.severity === 'severe') {
+      if (supplement.evidence === 'strong') {
+        adjustedScore *= 1.1;
+      } else if (supplement.evidence === 'limited') {
+        adjustedScore *= 0.8;
+      }
+    }
+
+    return { supplement, score: adjustedScore };
+  });
+}
+
+interface SafetyAssessment {
+  flags: string[];
+  cautionLevel?: 'high' | 'moderate' | 'low';
+  scorePenalty: number;
+  exclude: boolean;
+}
+
+const MEDICATION_CLASS_MATCHES: Record<string, string[]> = {
+  'blood thinner': ['warfarin', 'coumadin', 'heparin', 'anticoagulant', 'apixaban', 'rivaroxaban'],
+  'ssri': ['sertraline', 'fluoxetine', 'citalopram', 'escitalopram', 'paroxetine'],
+  'sedative': ['benzodiazepine', 'diazepam', 'lorazepam', 'clonazepam', 'zolpidem'],
+  'thyroid': ['levothyroxine', 'liothyronine'],
+  'diabetes': ['metformin', 'insulin', 'glipizide']
+};
+
+function buildSafetyAssessment(supplement: Supplement, profile?: UserProfile): SafetyAssessment {
+  if (!profile) {
+    return { flags: [], scorePenalty: 0, exclude: false };
+  }
+
+  const flags: string[] = [];
+  let cautionLevel: SafetyAssessment['cautionLevel'];
+  let scorePenalty = 0;
+  let exclude = false;
+
+  const conditions = (profile.healthConditions || []).map(condition => condition.toLowerCase());
+  const meds = (profile.medications || []).map(med => med.toLowerCase());
+
+  for (const avoid of supplement.avoidIf || []) {
+    const avoidLower = avoid.toLowerCase();
+    if (conditions.some(condition => avoidLower.includes(condition) || condition.includes(avoidLower))) {
+      flags.push(`Avoid if ${avoid}`);
+      cautionLevel = 'high';
+      exclude = true;
+    }
+  }
+
+  for (const interaction of supplement.drugInteractions || []) {
+    const interactionLower = interaction.toLowerCase();
+    if (meds.some(med => interactionLower.includes(med) || med.includes(interactionLower))) {
+      flags.push(`Drug interaction: ${interaction}`);
+      cautionLevel = cautionLevel || 'moderate';
+      scorePenalty += 0.3;
+    }
+
+    const matchedClass = Object.keys(MEDICATION_CLASS_MATCHES).find(className =>
+      interactionLower.includes(className) && MEDICATION_CLASS_MATCHES[className].some(med => meds.some(userMed => userMed.includes(med)))
+    );
+    if (matchedClass) {
+      flags.push(`Drug interaction (${matchedClass}): ${interaction}`);
+      cautionLevel = cautionLevel || 'moderate';
+      scorePenalty += 0.3;
+    }
+  }
+
+  for (const caution of supplement.cautions || []) {
+    const cautionLower = caution.toLowerCase();
+    if (conditions.some(condition => cautionLower.includes(condition))) {
+      flags.push(`Caution: ${caution}`);
+      cautionLevel = cautionLevel || 'low';
+      scorePenalty += 0.1;
+    }
+  }
+
+  return { flags, cautionLevel, scorePenalty, exclude };
+}
+
+function applySafetyScreening(
+  supplements: { supplement: Supplement; score: number }[],
+  profile?: UserProfile
+): { supplement: Supplement; score: number; safetyFlags: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[] {
+  return supplements
+    .map(({ supplement, score }) => {
+      const assessment = buildSafetyAssessment(supplement, profile);
+      let adjustedScore = score;
+      if (assessment.scorePenalty > 0) {
+        adjustedScore *= Math.max(0, 1 - assessment.scorePenalty);
+      }
+      if (assessment.exclude) {
+        adjustedScore = 0;
+      }
+      return {
+        supplement,
+        score: adjustedScore,
+        safetyFlags: assessment.flags,
+        cautionLevel: assessment.cautionLevel
+      };
+    });
+}
+
+function applyTrackingAdjustments(
+  supplements: { supplement: Supplement; score: number; safetyFlags?: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[],
+  trackingData?: TrackingData
+): { supplement: Supplement; score: number; safetyFlags?: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[] {
+  if (!trackingData || trackingData.logs.length === 0) {
+    return supplements;
+  }
+
+  const logs = trackingData.logs;
+  const overallAverage = logs.reduce((sum, log) => {
+    return sum + (log.sleepQuality + log.energyLevel + log.mood + log.focus + log.recovery) / 5;
+  }, 0) / logs.length;
+
+  const supplementScores = new Map<string, number[]>();
+  for (const log of logs) {
+    const logScore = (log.sleepQuality + log.energyLevel + log.mood + log.focus + log.recovery) / 5;
+    for (const supplementName of log.supplementsTaken) {
+      const normalized = normalizeSupplementName(supplementName).toLowerCase();
+      if (!supplementScores.has(normalized)) {
+        supplementScores.set(normalized, []);
+      }
+      supplementScores.get(normalized)?.push(logScore);
+    }
+  }
+
+  return supplements.map((item) => {
+    const normalized = normalizeSupplementName(item.supplement.name).toLowerCase();
+    const scores = supplementScores.get(normalized);
+    if (!scores || scores.length < 2) {
+      return item;
+    }
+    const avg = scores.reduce((sum, value) => sum + value, 0) / scores.length;
+    const delta = avg - overallAverage;
+    let adjustedScore = item.score;
+    if (delta >= 0.3) {
+      adjustedScore *= 1.15;
+    } else if (delta <= -0.3) {
+      adjustedScore *= 0.85;
+    }
+    return { ...item, score: adjustedScore };
+  });
+}
+
+function selectDiverseRecommendations(
+  supplements: { supplement: Supplement; score: number; safetyFlags?: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[],
+  matchedGoals: MatchedGoal[],
+  limit = 6
+): { supplement: Supplement; score: number; safetyFlags?: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[] {
+  const selected: typeof supplements = [];
+  const usedIds = new Set<string>();
+
+  for (const goal of matchedGoals) {
+    const candidate = supplements.find(item =>
+      !usedIds.has(item.supplement.id) &&
+      normalizeGoals(item.supplement.goals).includes(goal.id)
+    );
+    if (candidate) {
+      selected.push(candidate);
+      usedIds.add(candidate.supplement.id);
+    }
+    if (selected.length >= limit) {
+      return selected;
+    }
+  }
+
+  for (const item of supplements) {
+    if (selected.length >= limit) break;
+    if (!usedIds.has(item.supplement.id)) {
+      selected.push(item);
+      usedIds.add(item.supplement.id);
+    }
+  }
+
+  return selected;
 }
 
 // ============================================
@@ -469,6 +772,24 @@ function applyProfileAdjustments(
         supplement.name.includes(n)
       )) {
         adjustedScore *= 1.4;
+      }
+    }
+
+    // Caffeine sensitivity adjustments
+    if (profile.caffeineIntake === 'high' && isStimulatingSupplement(supplement)) {
+      adjustedScore *= 0.8;
+    }
+
+    // Budget/form preference adjustments
+    if (profile.budgetLevel === 'budget' && supplement.formGuidance?.forms?.some(form => form.cost === 'high')) {
+      adjustedScore *= 0.85;
+    }
+    if (profile.formPreference && profile.formPreference !== 'any') {
+      const hasPreferredForm = supplement.formGuidance?.forms?.some(form =>
+        form.name.toLowerCase().includes(profile.formPreference || '')
+      );
+      if (hasPreferredForm) {
+        adjustedScore *= 1.1;
       }
     }
     
@@ -722,10 +1043,12 @@ export function checkRedundancy(selectedSupplements: Supplement[]): string[] {
 export function analyzeGoal(
   input: string,
   supplements: Supplement[],
-  profile?: UserProfile
+  profile?: UserProfile,
+  trackingData?: TrackingData
 ): GoalAnalysis {
   // Parse input with negation awareness
   const tokens = parseInput(input);
+  const context = extractQueryContext(input, profile);
   
   // Identify goals and systems
   const matchedGoals = identifyGoals(tokens);
@@ -742,22 +1065,36 @@ export function analyzeGoal(
   
   // Apply profile adjustments
   scoredSupplements = applyProfileAdjustments(scoredSupplements, profile);
+
+  // Apply context adjustments
+  scoredSupplements = applyContextAdjustments(scoredSupplements, context);
   
   // Filter out current supplements
   scoredSupplements = filterCurrentSupplements(scoredSupplements, profile?.currentSupplements);
+
+  // Apply safety screening
+  let screenedSupplements = applySafetyScreening(scoredSupplements, profile);
+
+  // Apply tracking adjustments
+  screenedSupplements = applyTrackingAdjustments(screenedSupplements, trackingData);
+
+  // Filter out zero scores after adjustments
+  screenedSupplements = screenedSupplements.filter(({ score }) => score > 0);
   
   // Sort by score
-  scoredSupplements.sort((a, b) => b.score - a.score);
+  screenedSupplements.sort((a, b) => b.score - a.score);
   
   // Take top recommendations (limit to 6-8)
-  const topSupplements = scoredSupplements.slice(0, 8);
+  const topSupplements = selectDiverseRecommendations(screenedSupplements, matchedGoals, 8);
   
   // Generate recommendations with reasons
-  const recommendations: RecommendedSupplement[] = topSupplements.map(({ supplement, score }) => ({
+  const recommendations: RecommendedSupplement[] = topSupplements.map(({ supplement, score, safetyFlags, cautionLevel }) => ({
     supplement,
     priority: determinePriority(score, supplement.evidence),
     reason: generateReason(supplement, matchedGoals, matchedSystems),
-    relevanceScore: Math.min(100, Math.round(score))
+    relevanceScore: Math.min(100, Math.round(score)),
+    safetyFlags,
+    cautionLevel
   }));
   
   // Ensure we have a good mix of priorities
@@ -805,6 +1142,15 @@ function generateTips(matchedGoals: MatchedGoal[], profile?: UserProfile): strin
         break;
       case 'fitness':
         tips.push('For fitness: Time protein/creatine around workouts, stay hydrated, and allow adequate recovery between sessions.');
+        break;
+      case 'metabolic':
+        tips.push('For blood sugar: Balance meals with protein/fiber, reduce late-night sugar, and prioritize daily movement.');
+        break;
+      case 'detox':
+        tips.push('For liver support: Limit alcohol, stay hydrated, and emphasize cruciferous vegetables.');
+        break;
+      case 'longevity':
+        tips.push('For longevity: Focus on sleep, resistance training, and a nutrient-dense diet alongside supplements.');
         break;
     }
   }
