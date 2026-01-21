@@ -555,13 +555,13 @@ const wellnessGoals = [
 const emergingCompounds = [
   {
     name: 'Vitamin K2 (MK-7)',
-    why: 'Unlike K1, K2 activates proteins that direct calcium to bones (not arteries). Most diets lack K2.',
+    why: 'Unlike K1, K2 activates proteins that direct calcium to bones (not arteries). Most diets lack adequate K2.',
     sources: 'Natto, aged cheese, egg yolks, grass-fed dairy',
     evidence: 'moderate'
   },
   {
     name: 'Choline',
-    why: 'Essential for acetylcholine (memory), liver health, and cell membranes. 90% of Americans are deficient.',
+    why: 'Essential for acetylcholine (memory), liver health, and cell membranes. Most Americans are deficient.',
     sources: 'Eggs, liver, fish, soybeans',
     evidence: 'strong'
   },
@@ -1193,7 +1193,7 @@ const EducationalGuide: React.FC = () => {
                 {
                   name: 'Guduchi (Tinospora cordifolia)',
                   tradition: 'Ayurveda',
-                  description: 'Known as "Amrita" (nectar of immortality) in Sanskrit',
+                  description: 'Known as Amrita (nectar of immortality) in Sanskrit',
                   traditional: 'Immune modulator, fever, liver support, longevity tonic',
                   modern: 'Immunomodulatory effects shown in studies, antioxidant, adaptogenic',
                   dosage: '300-500mg extract daily',
@@ -1202,7 +1202,7 @@ const EducationalGuide: React.FC = () => {
                 {
                   name: 'Shatavari (Asparagus racemosus)',
                   tradition: 'Ayurveda',
-                  description: 'The "Queen of Herbs" - primary female tonic',
+                  description: 'The Queen of Herbs - primary female tonic',
                   traditional: 'Female reproductive health, lactation, hormonal balance, digestive soothing',
                   modern: 'Contains steroidal saponins, may support hormonal health, adaptogenic',
                   dosage: '500-1000mg extract daily',

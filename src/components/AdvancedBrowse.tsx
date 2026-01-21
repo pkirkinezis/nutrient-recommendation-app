@@ -94,19 +94,48 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     modernOnly: false,
   });
 
-  // Quick filter presets
+  // Quick filter presets - defined outside useMemo to avoid recreation
+  const getQuickFilterIds = (filterId: string): string[] => {
+    switch (filterId) {
+      case 'beginners':
+        return ['vitamin-d3', 'magnesium', 'omega-3', 'vitamin-b12', 'zinc'];
+      case 'sleep':
+        return supplements.filter(s => s.goals.includes('sleep')).map(s => s.id);
+      case 'energy':
+        return supplements.filter(s => s.goals.includes('energy') || s.goals.includes('focus')).map(s => s.id);
+      case 'stress':
+        return supplements.filter(s => s.goals.includes('stress') || s.goals.includes('anxiety')).map(s => s.id);
+      case 'ayurvedic':
+        return supplements.filter(s => s.type === 'ayurvedic').map(s => s.id);
+      case 'mushrooms':
+        return supplements.filter(s => s.type === 'mushroom').map(s => s.id);
+      case 'nootropics':
+        return supplements.filter(s => s.goals.includes('memory') || s.goals.includes('cognition')).map(s => s.id);
+      case 'athletes':
+        return supplements.filter(s => s.goals.includes('athletic-performance') || s.goals.includes('muscle') || s.goals.includes('endurance')).map(s => s.id);
+      case 'immunity':
+        return supplements.filter(s => s.goals.includes('immunity')).map(s => s.id);
+      case 'longevity':
+        return supplements.filter(s => s.goals.includes('longevity') || s.goals.includes('anti-aging')).map(s => s.id);
+      case 'strong-evidence':
+        return supplements.filter(s => s.evidence === 'strong').map(s => s.id);
+      default:
+        return [];
+    }
+  };
+
   const quickFilters = [
-    { id: 'beginners', label: '🌱 Beginner Essentials', filter: () => ['vitamin-d3', 'magnesium', 'omega-3', 'vitamin-b12', 'zinc'] },
-    { id: 'sleep', label: '😴 Sleep Stack', filter: () => supplements.filter(s => s.goals.includes('sleep')).map(s => s.id) },
-    { id: 'energy', label: '⚡ Energy & Focus', filter: () => supplements.filter(s => s.goals.includes('energy') || s.goals.includes('focus')).map(s => s.id) },
-    { id: 'stress', label: '🧘 Stress & Calm', filter: () => supplements.filter(s => s.goals.includes('stress') || s.goals.includes('anxiety')).map(s => s.id) },
-    { id: 'ayurvedic', label: '🕉️ Ayurvedic Herbs', filter: () => supplements.filter(s => s.type === 'ayurvedic').map(s => s.id) },
-    { id: 'mushrooms', label: '🍄 Medicinal Mushrooms', filter: () => supplements.filter(s => s.type === 'mushroom').map(s => s.id) },
-    { id: 'nootropics', label: '🧠 Nootropics', filter: () => supplements.filter(s => s.goals.includes('memory') || s.goals.includes('cognition')).map(s => s.id) },
-    { id: 'athletes', label: '🏋️ Athletic Performance', filter: () => supplements.filter(s => s.goals.includes('athletic-performance') || s.goals.includes('muscle') || s.goals.includes('endurance')).map(s => s.id) },
-    { id: 'immunity', label: '🛡️ Immune Support', filter: () => supplements.filter(s => s.goals.includes('immunity')).map(s => s.id) },
-    { id: 'longevity', label: '⏳ Longevity', filter: () => supplements.filter(s => s.goals.includes('longevity') || s.goals.includes('anti-aging')).map(s => s.id) },
-    { id: 'strong-evidence', label: '✅ Strong Evidence Only', filter: () => supplements.filter(s => s.evidence === 'strong').map(s => s.id) },
+    { id: 'beginners', label: '🌱 Beginner Essentials' },
+    { id: 'sleep', label: '😴 Sleep Stack' },
+    { id: 'energy', label: '⚡ Energy & Focus' },
+    { id: 'stress', label: '🧘 Stress & Calm' },
+    { id: 'ayurvedic', label: '🕉️ Ayurvedic Herbs' },
+    { id: 'mushrooms', label: '🍄 Medicinal Mushrooms' },
+    { id: 'nootropics', label: '🧠 Nootropics' },
+    { id: 'athletes', label: '🏋️ Athletic Performance' },
+    { id: 'immunity', label: '🛡️ Immune Support' },
+    { id: 'longevity', label: '⏳ Longevity' },
+    { id: 'strong-evidence', label: '✅ Strong Evidence Only' },
   ];
 
   // Personalized recommendations based on profile
@@ -172,9 +201,8 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     
     // Quick filter
     if (activeQuickFilter) {
-      const preset = quickFilters.find(f => f.id === activeQuickFilter);
-      if (preset) {
-        const allowedIds = preset.filter();
+      const allowedIds = getQuickFilterIds(activeQuickFilter);
+      if (allowedIds.length > 0) {
         result = result.filter(s => allowedIds.includes(s.id));
       }
     }

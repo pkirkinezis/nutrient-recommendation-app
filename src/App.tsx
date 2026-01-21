@@ -419,7 +419,7 @@ export function App() {
             {/* Misinformation Alerts */}
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">⚠️ Misinformation Alerts</h2>
-              <p className="text-gray-600 mb-6">Common supplement myths debunked. Don't fall for marketing hype.</p>
+              <p className="text-gray-600 mb-6">Common supplement myths debunked. Don&apos;t fall for marketing hype.</p>
               
               <div className="space-y-4">
                 {Object.entries(misinformationAlerts).map(([key, alert]) => (
@@ -427,7 +427,7 @@ export function App() {
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">🚨</span>
                       <div>
-                        <h3 className="font-semibold text-red-800 mb-1">The Claim: "{alert.claim}"</h3>
+                        <h3 className="font-semibold text-red-800 mb-1">The Claim: &ldquo;{alert.claim}&rdquo;</h3>
                         <div className="mb-3">
                           <p className="text-sm font-medium text-gray-700">The Reality:</p>
                           <p className="text-sm text-gray-600">{alert.reality}</p>
@@ -446,7 +446,7 @@ export function App() {
             {/* Form Intelligence Preview */}
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">💊 Form Intelligence</h2>
-              <p className="text-gray-600 mb-6">Not all supplement forms are equal. Here's what to look for.</p>
+              <p className="text-gray-600 mb-6">Not all supplement forms are equal. Here&apos;s what to look for.</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Object.entries(formGuidance).slice(0, 4).map(([key, guide]) => (
@@ -478,7 +478,7 @@ export function App() {
                 What would you like to improve?
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Describe your health goal in plain language. We'll recommend evidence-based supplements 
+                Describe your health goal in plain language. We&apos;ll recommend evidence-based supplements 
                 including vitamins, minerals, herbs, and Ayurvedic remedies.
               </p>
             </div>
@@ -524,7 +524,7 @@ export function App() {
               <div className="bg-white rounded-xl p-4 border border-gray-100">
                 <div className="text-2xl mb-2">🔬</div>
                 <h3 className="font-semibold text-gray-900 mb-1">Evidence-Based</h3>
-                <p className="text-sm text-gray-600">Clear ratings showing what's backed by research vs traditional use</p>
+                <p className="text-sm text-gray-600">Clear ratings showing what&apos;s backed by research vs traditional use</p>
               </div>
               <div className="bg-white rounded-xl p-4 border border-gray-100">
                 <div className="text-2xl mb-2">🕉️</div>
@@ -571,7 +571,7 @@ export function App() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Your goal:</p>
-                  <p className="text-lg font-medium text-gray-900">"{query}"</p>
+                  <p className="text-lg font-medium text-gray-900">&ldquo;{query}&rdquo;</p>
                   {identifiedGoals.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-3">
                       {identifiedGoals.map(goal => (
@@ -623,7 +623,7 @@ export function App() {
               {recommendations.length === 0 ? (
                 <div className="bg-white rounded-2xl p-8 text-center border border-gray-100">
                   <div className="text-4xl mb-3">🤔</div>
-                  <p className="text-gray-600">We couldn't identify specific supplement needs from your query.</p>
+                  <p className="text-gray-600">We couldn&apos;t identify specific supplement needs from your query.</p>
                   <p className="text-sm text-gray-500 mt-2">Try being more specific about your health goals.</p>
                 </div>
               ) : (
