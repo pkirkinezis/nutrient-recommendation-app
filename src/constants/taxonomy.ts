@@ -99,8 +99,8 @@ export const GOAL_CATEGORIES: { id: HealthGoal | string; label: string; icon: st
     id: 'hormones', 
     label: 'Hormones & Balance', 
     icon: '⚖️',
-    // Removed 'sex', 'drive', 'cycle' - too ambiguous
-    keywords: ['hormone', 'hormonal', 'testosterone', 'estrogen', 'libido', 'menopause', 'perimenopause', 'fertility', 'thyroid', 'adrenal', 'cortisol', 'hormonal balance', 'hormone support', 'low testosterone', 'estrogen balance']
+    // 'sex' is included to support user phrasing like "better sex" while keeping other ambiguous terms removed.
+    keywords: ['hormone', 'hormonal', 'testosterone', 'estrogen', 'libido', 'sex', 'menopause', 'perimenopause', 'fertility', 'thyroid', 'adrenal', 'cortisol', 'hormonal balance', 'hormone support', 'low testosterone', 'estrogen balance']
   },
   { 
     id: 'immunity', 
