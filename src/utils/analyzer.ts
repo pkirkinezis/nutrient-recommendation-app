@@ -1116,7 +1116,18 @@ export function analyzeGoal(
   const beneficial = recommendations.filter(r => r.priority === 'beneficial').slice(0, 3);
   const optional = recommendations.filter(r => r.priority === 'optional').slice(0, 2);
   
-  const finalRecommendations = [...essential, ...beneficial, ...optional].slice(0, 6);
+  const desiredCount = 6;
+  const finalRecommendations: RecommendedSupplement[] = [...essential, ...beneficial, ...optional].slice(0, desiredCount);
+  if (finalRecommendations.length < desiredCount) {
+    const selectedIds = new Set(finalRecommendations.map(r => r.supplement.id));
+    for (const rec of recommendations) {
+      if (finalRecommendations.length >= desiredCount) break;
+      if (!selectedIds.has(rec.supplement.id)) {
+        finalRecommendations.push(rec);
+        selectedIds.add(rec.supplement.id);
+      }
+    }
+  }
   
   return {
     query: input,
