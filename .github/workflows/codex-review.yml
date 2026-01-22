@@ -22,7 +22,12 @@ jobs:
       - name: Sanitize Codex API key
         id: sanitize_codex_key
         run: |
-          echo "key=$(printf '%s' "${{ secrets.CODEX }}" | tr -d '\r\n')" >> "$GITHUB_OUTPUT"
+          sanitized_key="$(printf '%s' "${{ secrets.CODEX }}" | tr -cd 'A-Za-z0-9_-')"
+          if [ -z "$sanitized_key" ]; then
+            echo "Sanitized CODEX key is empty. Check the CODEX secret for invalid characters." >&2
+            exit 1
+          fi
+          echo "key=$sanitized_key" >> "$GITHUB_OUTPUT"
 
       - name: Pre-fetch base and head refs
         run: |
