@@ -19,6 +19,11 @@ jobs:
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
 
+      - name: Sanitize Codex API key
+        id: sanitize_codex_key
+        run: |
+          echo "key=$(printf '%s' "${{ secrets.CODEX }}" | tr -d '\r\n')" >> "$GITHUB_OUTPUT"
+
       - name: Pre-fetch base and head refs
         run: |
           git fetch --no-tags origin \
@@ -29,7 +34,7 @@ jobs:
         id: run_codex
         uses: openai/codex-action@v1
         with:
-          openai-api-key: ${{ secrets.CODEX }}
+          openai-api-key: ${{ steps.sanitize_codex_key.outputs.key }}
           prompt-file: .github/codex/prompts/review.md
           output-file: codex-output.md
           safety-strategy: drop-sudo
