@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/nutrient-recommendation-app/",
+  base: process.env.GITHUB_PAGES === "true" ? "/nutrient-recommendation-app/" : "/",
   plugins: [react(), tailwindcss(), viteSingleFile()],
   resolve: {
     alias: {
