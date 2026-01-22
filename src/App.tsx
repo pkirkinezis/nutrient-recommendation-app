@@ -182,13 +182,41 @@ export function App() {
     };
   }, [trackingData.logs]);
 
+  const normalizeLabUnit = (unit: string) => unit.trim().toLowerCase().replace(/\s+/g, '');
+
   const labInsights = useMemo(() => {
     return labResults.flatMap(result => {
       const name = result.name.toLowerCase();
+      const normalizedUnit = normalizeLabUnit(result.unit);
       const insights: { id: string; title: string; message: string }[] = [];
 
+      const normalizeVitaminD = () => {
+        if (normalizedUnit === 'ng/ml') return result.value;
+        if (normalizedUnit === 'nmol/l') return result.value / 2.5;
+        return null;
+      };
+
+      const normalizeB12 = () => {
+        if (normalizedUnit === 'pg/ml') return result.value;
+        if (normalizedUnit === 'pmol/l') return result.value / 0.738;
+        return null;
+      };
+
+      const normalizeFerritin = () => {
+        if (normalizedUnit === 'ng/ml') return result.value;
+        if (normalizedUnit === 'ug/l' || normalizedUnit === 'µg/l') return result.value;
+        return null;
+      };
+
+      const normalizeMagnesium = () => {
+        if (normalizedUnit === 'mg/dl') return result.value;
+        if (normalizedUnit === 'mmol/l') return result.value * 2.43;
+        return null;
+      };
+
       if (name.includes('vitamin d') || name.includes('25-hydroxy')) {
-        if (result.value < 30) {
+        const value = normalizeVitaminD();
+        if (value !== null && value < 30) {
           insights.push({
             id: result.id,
             title: 'Low Vitamin D',
@@ -197,7 +225,8 @@ export function App() {
         }
       }
       if (name.includes('b12') || name.includes('cobalamin')) {
-        if (result.value < 300) {
+        const value = normalizeB12();
+        if (value !== null && value < 300) {
           insights.push({
             id: result.id,
             title: 'Low B12',
@@ -206,7 +235,8 @@ export function App() {
         }
       }
       if (name.includes('ferritin')) {
-        if (result.value < 30) {
+        const value = normalizeFerritin();
+        if (value !== null && value < 30) {
           insights.push({
             id: result.id,
             title: 'Low Ferritin',
@@ -215,7 +245,8 @@ export function App() {
         }
       }
       if (name.includes('magnesium')) {
-        if (result.value < 1.7) {
+        const value = normalizeMagnesium();
+        if (value !== null && value < 1.7) {
           insights.push({
             id: result.id,
             title: 'Low Magnesium',
@@ -349,7 +380,7 @@ export function App() {
 
   const handleLabSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!labDraft.name.trim() || !labDraft.unit.trim()) return;
+    if (!labDraft.name.trim() || !labDraft.unit.trim() || !Number.isFinite(labDraft.value) || labDraft.value <= 0) return;
     const newResult: LabResult = {
       ...labDraft,
       id: `lab-${Date.now()}`
@@ -725,8 +756,11 @@ export function App() {
                     <label className="block text-xs font-medium text-gray-600 mb-1">Value</label>
                     <input
                       type="number"
-                      value={labDraft.value || ''}
-                      onChange={(e) => setLabDraft(prev => ({ ...prev, value: Number(e.target.value) }))}
+                      value={Number.isFinite(labDraft.value) ? labDraft.value : ''}
+                      onChange={(e) => setLabDraft(prev => ({
+                        ...prev,
+                        value: e.target.value === '' ? Number.NaN : Number(e.target.value)
+                      }))}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       placeholder="30"
                     />
@@ -738,7 +772,7 @@ export function App() {
                       value={labDraft.unit}
                       onChange={(e) => setLabDraft(prev => ({ ...prev, unit: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                      placeholder="ng/mL"
+                      placeholder="ng/mL or nmol/L"
                     />
                   </div>
                 </div>
