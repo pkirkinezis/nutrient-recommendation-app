@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Supplement, UserProfile, Recommendation, InteractionWarning } from './types/index';
+import { Supplement, UserProfile, Recommendation, InteractionWarning, TrackingData, DailyLog } from './types/index';
 import { supplements, formGuidance, supplementComparisons, misinformationAlerts } from './data/supplements';
 import { analyzeGoal, checkInteractions, generateTimingSchedule } from './utils/analyzer';
 import { AdvancedBrowse } from './components/AdvancedBrowse';
@@ -10,6 +10,7 @@ const STORAGE_KEYS = {
   profile: 'nutricompass_profile',
   selectedSupplements: 'nutricompass_selected',
   lastQuery: 'nutricompass_query',
+  tracking: 'nutricompass_tracking'
 };
 
 // Helper functions for display
@@ -122,8 +123,48 @@ export function App() {
       return saved ? JSON.parse(saved) : {};
     } catch { return {}; }
   });
-  const [activeTab, setActiveTab] = useState<'recommend' | 'browse' | 'learn' | 'guide'>('recommend');
+  const [activeTab, setActiveTab] = useState<'recommend' | 'browse' | 'learn' | 'guide' | 'track'>('recommend');
   const [tips, setTips] = useState<string[]>([]);
+  const [trackingData, setTrackingData] = useState<TrackingData>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.tracking);
+      return saved ? JSON.parse(saved) : { logs: [], startDate: new Date().toISOString().split('T')[0], supplements: [] };
+    } catch { return { logs: [], startDate: new Date().toISOString().split('T')[0], supplements: [] }; }
+  });
+  const [trackingLog, setTrackingLog] = useState<DailyLog>({
+    date: new Date().toISOString().split('T')[0],
+    sleepQuality: 3,
+    energyLevel: 3,
+    mood: 3,
+    focus: 3,
+    recovery: 3,
+    supplementsTaken: [],
+    notes: ''
+  });
+  const trackingSummary = useMemo(() => {
+    if (trackingData.logs.length === 0) {
+      return { averageScore: null, mostUsed: null, latestDate: null };
+    }
+
+    const averageScore =
+      trackingData.logs.reduce((sum, log) =>
+        sum + (log.sleepQuality + log.energyLevel + log.mood + log.focus + log.recovery) / 5, 0
+      ) / trackingData.logs.length;
+
+    const supplementCounts = new Map<string, number>();
+    for (const log of trackingData.logs) {
+      for (const supplement of log.supplementsTaken) {
+        supplementCounts.set(supplement, (supplementCounts.get(supplement) || 0) + 1);
+      }
+    }
+    const mostUsed = Array.from(supplementCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
+    return {
+      averageScore,
+      mostUsed,
+      latestDate: trackingData.logs[0]?.date || null
+    };
+  }, [trackingData.logs]);
 
   // Persist user profile
   useEffect(() => {
@@ -146,17 +187,26 @@ export function App() {
     } catch { /* ignore */ }
   }, [query]);
 
+  // Persist tracking data
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.tracking, JSON.stringify(trackingData));
+    } catch { /* ignore */ }
+  }, [trackingData]);
+
   // Analyze the user's goal
   const handleAnalyze = () => {
     if (!query.trim()) return;
     
-    const result = analyzeGoal(query, supplements, userProfile);
+    const result = analyzeGoal(query, supplements, userProfile, trackingData);
     // Convert to Recommendation type
     const recs: Recommendation[] = result.recommendations.map(r => ({
       supplement: r.supplement,
       relevanceScore: r.relevanceScore,
       reason: r.reason,
-      priority: r.priority
+      priority: r.priority,
+      safetyFlags: r.safetyFlags,
+      cautionLevel: r.cautionLevel
     }));
     setRecommendations(recs);
     setIdentifiedGoals(result.identifiedGoals);
@@ -199,6 +249,40 @@ export function App() {
     setTips([]);
   };
 
+  const handleTrackingSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setTrackingData(prev => {
+      const existingIndex = prev.logs.findIndex(log => log.date === trackingLog.date);
+      const updatedLogs = [...prev.logs];
+      if (existingIndex >= 0) {
+        updatedLogs[existingIndex] = trackingLog;
+      } else {
+        updatedLogs.unshift(trackingLog);
+      }
+
+      const mergedSupplements = Array.from(new Set([
+        ...prev.supplements,
+        ...trackingLog.supplementsTaken
+      ]));
+
+      return {
+        ...prev,
+        logs: updatedLogs.slice(0, 90),
+        supplements: mergedSupplements
+      };
+    });
+    setTrackingLog(prev => ({
+      ...prev,
+      notes: '',
+      supplementsTaken: []
+    }));
+  };
+
+  const parseListInput = (value: string): string[] => value
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50">
       {/* Header */}
@@ -230,6 +314,12 @@ export function App() {
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'guide' ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
               >
                 📚 Guide
+              </button>
+              <button
+                onClick={() => { setActiveTab('track'); setHasAnalyzed(false); }}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'track' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                📈 Track
               </button>
               <button
                 onClick={() => setShowProfile(!showProfile)}
@@ -340,6 +430,79 @@ export function App() {
                   <option value="other">Other</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Caffeine Intake</label>
+                <select
+                  value={userProfile.caffeineIntake || ''}
+                  onChange={(e) => setUserProfile(p => ({ ...p, caffeineIntake: e.target.value as UserProfile['caffeineIntake'] }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  <option value="">Select...</option>
+                  <option value="none">None</option>
+                  <option value="low">Low</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Budget</label>
+                <select
+                  value={userProfile.budgetLevel || ''}
+                  onChange={(e) => setUserProfile(p => ({ ...p, budgetLevel: e.target.value as UserProfile['budgetLevel'] }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  <option value="">Select...</option>
+                  <option value="budget">Budget</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="premium">Premium</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Form Preference</label>
+                <select
+                  value={userProfile.formPreference || ''}
+                  onChange={(e) => setUserProfile(p => ({ ...p, formPreference: e.target.value as UserProfile['formPreference'] }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  <option value="">Select...</option>
+                  <option value="capsules">Capsules</option>
+                  <option value="tablets">Tablets</option>
+                  <option value="powders">Powders</option>
+                  <option value="liquids">Liquids</option>
+                  <option value="gummies">Gummies</option>
+                  <option value="any">Any</option>
+                </select>
+              </div>
+              <div className="col-span-2 sm:col-span-3">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Current Supplements (comma separated)</label>
+                <input
+                  type="text"
+                  value={(userProfile.currentSupplements || []).join(', ')}
+                  onChange={(e) => setUserProfile(p => ({ ...p, currentSupplements: parseListInput(e.target.value) }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="e.g., magnesium, omega-3"
+                />
+              </div>
+              <div className="col-span-2 sm:col-span-3">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Health Conditions (comma separated)</label>
+                <input
+                  type="text"
+                  value={(userProfile.healthConditions || []).join(', ')}
+                  onChange={(e) => setUserProfile(p => ({ ...p, healthConditions: parseListInput(e.target.value) }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="e.g., hypertension, thyroid issues"
+                />
+              </div>
+              <div className="col-span-2 sm:col-span-3">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Medications (comma separated)</label>
+                <input
+                  type="text"
+                  value={(userProfile.medications || []).join(', ')}
+                  onChange={(e) => setUserProfile(p => ({ ...p, medications: parseListInput(e.target.value) }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="e.g., sertraline, metformin"
+                />
+              </div>
             </div>
             <p className="text-xs text-gray-500 mt-3">This information is saved locally on your device and helps personalize recommendations.</p>
           </div>
@@ -354,6 +517,122 @@ export function App() {
           />
         ) : activeTab === 'guide' && !hasAnalyzed ? (
           <EducationalGuide />
+        ) : activeTab === 'track' && !hasAnalyzed ? (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Daily Check-In</h2>
+              <p className="text-sm text-gray-500 mb-4">Track outcomes to refine recommendations over time.</p>
+              <form className="space-y-4" onSubmit={handleTrackingSubmit}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                    <input
+                      type="date"
+                      value={trackingLog.date}
+                      onChange={(e) => setTrackingLog(prev => ({ ...prev, date: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    />
+                  </div>
+                  {[
+                    { key: 'sleepQuality', label: 'Sleep' },
+                    { key: 'energyLevel', label: 'Energy' },
+                    { key: 'mood', label: 'Mood' },
+                    { key: 'focus', label: 'Focus' },
+                    { key: 'recovery', label: 'Recovery' }
+                  ].map((item) => (
+                    <div key={item.key}>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">{item.label}</label>
+                      <select
+                        value={trackingLog[item.key as keyof DailyLog]}
+                        onChange={(e) => setTrackingLog(prev => ({ ...prev, [item.key]: Number(e.target.value) as 1 | 2 | 3 | 4 | 5 }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      >
+                        {[1, 2, 3, 4, 5].map(value => (
+                          <option key={value} value={value}>{value}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Supplements Taken (comma separated)</label>
+                  <input
+                    type="text"
+                    value={trackingLog.supplementsTaken.join(', ')}
+                    onChange={(e) => setTrackingLog(prev => ({ ...prev, supplementsTaken: parseListInput(e.target.value) }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="e.g., magnesium, omega-3"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Notes (optional)</label>
+                  <textarea
+                    value={trackingLog.notes || ''}
+                    onChange={(e) => setTrackingLog(prev => ({ ...prev, notes: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    rows={3}
+                    placeholder="How did you feel today?"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition"
+                >
+                  Save Daily Log
+                </button>
+              </form>
+            </div>
+
+            <div className="bg-gradient-to-r from-amber-50 to-emerald-50 rounded-2xl p-5 border border-amber-100">
+              <h3 className="font-bold text-gray-900 mb-2">Tracking Summary</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm text-gray-600">
+                <div>
+                  <p className="text-xs uppercase text-gray-400">Logs</p>
+                  <p className="text-lg font-semibold text-gray-900">{trackingData.logs.length}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-400">Latest</p>
+                  <p className="text-lg font-semibold text-gray-900">{trackingSummary.latestDate || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-400">Avg Score</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {trackingSummary.averageScore !== null
+                      ? trackingSummary.averageScore.toFixed(1)
+                      : '—'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-400">Most Used</p>
+                  <p className="text-sm text-gray-700">
+                    {trackingSummary.mostUsed || '—'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {trackingData.logs.length > 0 && (
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <h3 className="font-bold text-gray-900 mb-3">Recent Logs</h3>
+                <div className="space-y-3">
+                  {trackingData.logs.slice(0, 5).map((log) => (
+                    <div key={log.date} className="border border-gray-100 rounded-xl p-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold text-gray-800">{log.date}</p>
+                        <span className="text-xs text-gray-500">
+                          Score {(log.sleepQuality + log.energyLevel + log.mood + log.focus + log.recovery) / 5}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {log.supplementsTaken.length > 0 ? `Supplements: ${log.supplementsTaken.join(', ')}` : 'No supplements logged.'}
+                      </p>
+                      {log.notes && <p className="text-xs text-gray-500 mt-1">Notes: {log.notes}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         ) : activeTab === 'learn' && !hasAnalyzed ? (
           <div className="space-y-8">
             {/* Comparisons Section */}
@@ -844,10 +1123,28 @@ function SupplementCard({
                   {recommendation.priority}
                 </span>
               )}
+              {recommendation?.cautionLevel && (
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  recommendation.cautionLevel === 'high' ? 'bg-red-100 text-red-700' :
+                  recommendation.cautionLevel === 'moderate' ? 'bg-amber-100 text-amber-700' :
+                  'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {recommendation.cautionLevel} caution
+                </span>
+              )}
             </div>
             <p className="text-sm text-gray-600 line-clamp-2">{supplement.description}</p>
             {recommendation && (
-              <p className="text-xs text-emerald-600 mt-1 font-medium">{recommendation.reason}</p>
+              <div className="mt-1 space-y-1">
+                <p className="text-xs text-emerald-600 font-medium">{recommendation.reason}</p>
+                {recommendation.safetyFlags && recommendation.safetyFlags.length > 0 && (
+                  <ul className="text-xs text-amber-700 space-y-0.5">
+                    {recommendation.safetyFlags.slice(0, 2).map((flag, index) => (
+                      <li key={index}>⚠️ {flag}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
           </div>
           <button className={`flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center transition-transform ${isExpanded ? 'rotate-180' : ''}`}>

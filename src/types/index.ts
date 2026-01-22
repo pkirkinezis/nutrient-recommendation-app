@@ -20,6 +20,7 @@ export interface Supplement {
   timing: string;
   timeframe: string;
   evidence: EvidenceLevel;
+  goalEvidence?: Partial<Record<string, EvidenceLevel>>;
   foodSources?: string[];
   cautions?: string[];
   drugInteractions?: string[];
@@ -72,6 +73,8 @@ export interface RecommendedSupplement {
   priority: Priority;
   reason: string;
   relevanceScore: number;
+  safetyFlags?: string[];
+  cautionLevel?: 'high' | 'moderate' | 'low';
 }
 
 export interface GoalAnalysis {
@@ -88,6 +91,8 @@ export interface Recommendation {
   relevanceScore: number;
   reason: string;
   priority: Priority;
+  safetyFlags?: string[];
+  cautionLevel?: 'high' | 'moderate' | 'low';
 }
 
 export interface AnalyzedGoal {

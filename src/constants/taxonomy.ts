@@ -46,6 +46,7 @@ export const HEALTH_GOALS = {
   LONGEVITY: 'longevity',
   DETOX: 'detox',
   LIVER: 'liver',
+  METABOLIC: 'metabolic',
   BONE_HEALTH: 'bone-health',
   VISION: 'vision',
   RESPIRATORY: 'respiratory',
@@ -143,6 +144,24 @@ export const GOAL_CATEGORIES: { id: HealthGoal | string; label: string; icon: st
     icon: '✨',
     // Removed 'dry' - too generic
     keywords: ['skin', 'hair', 'nails', 'beauty', 'collagen', 'wrinkle', 'anti-aging', 'glow', 'complexion', 'acne', 'skin health', 'hair growth', 'hair loss', 'nail strength', 'youthful']
+  },
+  {
+    id: 'longevity',
+    label: 'Longevity & Aging',
+    icon: '⏳',
+    keywords: ['longevity', 'aging', 'anti-aging', 'healthy aging', 'lifespan', 'sirtuins', 'senolytic', 'cellular aging']
+  },
+  {
+    id: 'metabolic',
+    label: 'Metabolic & Blood Sugar',
+    icon: '🩸',
+    keywords: ['blood sugar', 'glucose', 'insulin', 'metabolism', 'metabolic', 'a1c', 'insulin resistance', 'prediabetes']
+  },
+  {
+    id: 'detox',
+    label: 'Liver & Detox',
+    icon: '🧪',
+    keywords: ['detox', 'liver', 'hepatic', 'fatty liver', 'toxins', 'cleanse', 'glutathione']
   },
 ];
 
@@ -325,6 +344,85 @@ export const NEGATION_WORDS = [
   'can\'t', 'cant', 'couldn\'t', 'couldnt', 'shouldn\'t', 'shouldnt',
   'wouldn\'t', 'wouldnt', 'lack', 'lacking', 'free', 'avoid', 'stop'
 ];
+
+// ============================================
+// GOAL & SYSTEM ALIASES
+// ============================================
+
+export const GOAL_ALIASES: Record<string, string> = {
+  'brain-health': 'brain',
+  'cognition': 'brain',
+  'memory': 'brain',
+  'focus': 'brain',
+  'concentration': 'brain',
+  'learning': 'brain',
+  'brain-fog': 'brain',
+  'mental-clarity': 'brain',
+  'neuroprotection': 'brain',
+  'calm': 'stress',
+  'anxiety': 'stress',
+  'relaxation': 'stress',
+  'sleep': 'sleep',
+  'insomnia': 'sleep',
+  'recovery': 'sleep',
+  'energy': 'energy',
+  'vitality': 'energy',
+  'fatigue': 'energy',
+  'stamina': 'energy',
+  'endurance': 'fitness',
+  'athletic-performance': 'fitness',
+  'performance': 'fitness',
+  'strength': 'fitness',
+  'muscle': 'fitness',
+  'muscle-recovery': 'fitness',
+  'joint-pain': 'inflammation',
+  'joint-health': 'inflammation',
+  'arthritis': 'inflammation',
+  'pain': 'inflammation',
+  'heart-health': 'heart',
+  'blood-pressure': 'heart',
+  'cholesterol': 'heart',
+  'circulation': 'heart',
+  'blood-sugar': 'metabolic',
+  'weight': 'metabolic',
+  'metabolism': 'metabolic',
+  'skin': 'beauty',
+  'hair': 'beauty',
+  'nails': 'beauty',
+  'beauty': 'beauty',
+  'anti-aging': 'longevity',
+  'longevity': 'longevity',
+  'detox': 'detox',
+  'liver': 'detox',
+  'hormonal-balance': 'hormones',
+  'testosterone': 'hormones',
+  'libido': 'hormones',
+  'fertility': 'hormones',
+  'menopause': 'hormones',
+  'pms': 'hormones',
+  'immunity': 'immunity',
+  'immune': 'immunity',
+  'respiratory': 'immunity',
+  'digestion': 'digestion',
+  'gut-health': 'digestion',
+  'bloating': 'digestion'
+};
+
+export const SYSTEM_ALIASES: Record<string, string> = {
+  'cognitive': 'nervous',
+  'brain': 'nervous',
+  'neuro': 'nervous',
+  'metabolic': 'endocrine',
+  'energy': 'endocrine',
+  'hepatic': 'digestive',
+  'liver': 'digestive',
+  'detox': 'digestive',
+  'muscular': 'musculoskeletal',
+  'joint': 'musculoskeletal',
+  'skin': 'integumentary',
+  'hair': 'integumentary',
+  'nail': 'integumentary'
+};
 
 // Window size for negation detection (words before the keyword)
 export const NEGATION_WINDOW = 3;
