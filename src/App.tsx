@@ -103,6 +103,11 @@ export function App() {
       return localStorage.getItem(STORAGE_KEYS.lastQuery) || '';
     } catch { return ''; }
   });
+  const [analyzedQuery, setAnalyzedQuery] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.lastQuery) || '';
+    } catch { return ''; }
+  });
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [identifiedGoals, setIdentifiedGoals] = useState<string[]>([]);
@@ -321,6 +326,7 @@ export function App() {
     setIdentifiedGoals(result.identifiedGoals);
     setIdentifiedSystems(result.identifiedSystems);
     setTips(result.tips || []);
+    setAnalyzedQuery(query);
     setHasAnalyzed(true);
     setSelectedSupplements([]);
   };
@@ -348,6 +354,7 @@ export function App() {
   // Reset to start
   const handleReset = () => {
     setQuery('');
+    setAnalyzedQuery('');
     setHasAnalyzed(false);
     setRecommendations([]);
     setIdentifiedGoals([]);
@@ -1185,7 +1192,7 @@ export function App() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Your goal:</p>
-                  <p className="text-lg font-medium text-gray-900">&ldquo;{query}&rdquo;</p>
+                  <p className="text-lg font-medium text-gray-900">&ldquo;{analyzedQuery}&rdquo;</p>
                   {identifiedGoals.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-3">
                       {identifiedGoals.map(goal => (
