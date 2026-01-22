@@ -19,15 +19,19 @@ jobs:
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
 
-      - name: Sanitize Codex API key
-        id: sanitize_codex_key
+      - name: Validate Codex API key
+        id: codex_key
         run: |
-          sanitized_key="$(printf '%s' "${{ secrets.CODEX }}" | tr -cd 'A-Za-z0-9_-')"
-          if [ -z "$sanitized_key" ]; then
-            echo "Sanitized CODEX key is empty. Check the CODEX secret for invalid characters." >&2
+          codex_key="$(printf '%s' "${{ secrets.CODEX }}" | tr -d '\r\n')"
+          if [ -z "$codex_key" ]; then
+            echo "CODEX secret is empty. Provide a valid API key." >&2
             exit 1
           fi
-          echo "key=$sanitized_key" >> "$GITHUB_OUTPUT"
+          if printf '%s' "$codex_key" | grep -q '[^A-Za-z0-9_-]'; then
+            echo "CODEX secret contains invalid characters. Update it to use only letters, numbers, '-' or '_'." >&2
+            exit 1
+          fi
+          echo "key=$codex_key" >> "$GITHUB_OUTPUT"
 
       - name: Pre-fetch base and head refs
         run: |
@@ -39,10 +43,10 @@ jobs:
         id: run_codex
         uses: openai/codex-action@v1
         env:
-          PROXY_API_KEY: ${{ steps.sanitize_codex_key.outputs.key }}
-          OPENAI_API_KEY: ${{ steps.sanitize_codex_key.outputs.key }}
+          PROXY_API_KEY: ${{ steps.codex_key.outputs.key }}
+          OPENAI_API_KEY: ${{ steps.codex_key.outputs.key }}
         with:
-          openai-api-key: ${{ steps.sanitize_codex_key.outputs.key }}
+          openai-api-key: ${{ steps.codex_key.outputs.key }}
           prompt-file: .github/codex/prompts/review.md
           output-file: codex-output.md
           safety-strategy: drop-sudo
