@@ -20,16 +20,6 @@ jobs:
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
 
-      - name: Validate Codex API key
-        id: codex_key
-        run: |
-          codex_key="$(printf '%s' "${{ secrets.CODEX }}" | tr -d '\r\n')"
-          if [ -z "$codex_key" ]; then
-            echo "CODEX secret is empty. Provide a valid API key." >&2
-            exit 1
-          fi
-          echo "key=$codex_key" >> "$GITHUB_OUTPUT"
-
       - name: Pre-fetch base and head refs
         run: |
           git fetch --no-tags origin \
@@ -40,7 +30,7 @@ jobs:
         id: run_codex
         uses: openai/codex-action@v1
         with:
-          openai-api-key: ${{ steps.codex_key.outputs.key }}
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           allow-bots: true
           prompt-file: .github/codex/prompts/review.md
           output-file: codex-output.md
