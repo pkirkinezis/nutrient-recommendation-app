@@ -141,6 +141,30 @@ export function App() {
     supplementsTaken: [],
     notes: ''
   });
+  const trackingSummary = useMemo(() => {
+    if (trackingData.logs.length === 0) {
+      return { averageScore: null, mostUsed: null, latestDate: null };
+    }
+
+    const averageScore =
+      trackingData.logs.reduce((sum, log) =>
+        sum + (log.sleepQuality + log.energyLevel + log.mood + log.focus + log.recovery) / 5, 0
+      ) / trackingData.logs.length;
+
+    const supplementCounts = new Map<string, number>();
+    for (const log of trackingData.logs) {
+      for (const supplement of log.supplementsTaken) {
+        supplementCounts.set(supplement, (supplementCounts.get(supplement) || 0) + 1);
+      }
+    }
+    const mostUsed = Array.from(supplementCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
+    return {
+      averageScore,
+      mostUsed,
+      latestDate: trackingData.logs[0]?.date || null
+    };
+  }, [trackingData.logs]);
 
   // Persist user profile
   useEffect(() => {
@@ -227,10 +251,26 @@ export function App() {
 
   const handleTrackingSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setTrackingData(prev => ({
-      ...prev,
-      logs: [trackingLog, ...prev.logs].slice(0, 90)
-    }));
+    setTrackingData(prev => {
+      const existingIndex = prev.logs.findIndex(log => log.date === trackingLog.date);
+      const updatedLogs = [...prev.logs];
+      if (existingIndex >= 0) {
+        updatedLogs[existingIndex] = trackingLog;
+      } else {
+        updatedLogs.unshift(trackingLog);
+      }
+
+      const mergedSupplements = Array.from(new Set([
+        ...prev.supplements,
+        ...trackingLog.supplementsTaken
+      ]));
+
+      return {
+        ...prev,
+        logs: updatedLogs.slice(0, 90),
+        supplements: mergedSupplements
+      };
+    });
     setTrackingLog(prev => ({
       ...prev,
       notes: '',
@@ -552,28 +592,20 @@ export function App() {
                 </div>
                 <div>
                   <p className="text-xs uppercase text-gray-400">Latest</p>
-                  <p className="text-lg font-semibold text-gray-900">{trackingData.logs[0]?.date || '—'}</p>
+                  <p className="text-lg font-semibold text-gray-900">{trackingSummary.latestDate || '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs uppercase text-gray-400">Avg Score</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {trackingData.logs.length > 0
-                      ? (
-                        trackingData.logs.reduce((sum, log) =>
-                          sum + (log.sleepQuality + log.energyLevel + log.mood + log.focus + log.recovery) / 5, 0
-                        ) / trackingData.logs.length
-                      ).toFixed(1)
+                    {trackingSummary.averageScore !== null
+                      ? trackingSummary.averageScore.toFixed(1)
                       : '—'}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs uppercase text-gray-400">Most Used</p>
                   <p className="text-sm text-gray-700">
-                    {trackingData.logs.length > 0
-                      ? Array.from(new Map(
-                        trackingData.logs.flatMap(log => log.supplementsTaken).map(name => [name, (trackingData.logs.flatMap(l => l.supplementsTaken).filter(n => n === name).length)])
-                      ).entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || '—'
-                      : '—'}
+                    {trackingSummary.mostUsed || '—'}
                   </p>
                 </div>
               </div>
