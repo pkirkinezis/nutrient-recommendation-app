@@ -38,6 +38,9 @@ jobs:
       - name: Run Codex
         id: run_codex
         uses: openai/codex-action@v1
+        env:
+          PROXY_API_KEY: ${{ steps.sanitize_codex_key.outputs.key }}
+          OPENAI_API_KEY: ${{ steps.sanitize_codex_key.outputs.key }}
         with:
           openai-api-key: ${{ steps.sanitize_codex_key.outputs.key }}
           prompt-file: .github/codex/prompts/review.md
