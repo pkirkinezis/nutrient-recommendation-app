@@ -14,6 +14,7 @@ import {
   normalizeSupplementName
 } from '../constants/taxonomy';
 import { normalizeGoals, normalizeSystems } from './normalization';
+import { buildNutrientTargets } from '../data/nutrientRequirements';
 
 // ============================================
 // TOKENIZATION & PARSING
@@ -710,6 +711,14 @@ function applyProfileAdjustments(
   profile?: UserProfile
 ): { supplement: Supplement; score: number }[] {
   if (!profile) return supplements;
+
+  const nutrientPriorityMap = new Map<string, number>();
+  for (const target of buildNutrientTargets(profile)) {
+    const multiplier = target.priority === 'high' ? 1.35 : target.priority === 'medium' ? 1.2 : 1;
+    for (const supplementId of target.supplementIds) {
+      nutrientPriorityMap.set(supplementId, Math.max(nutrientPriorityMap.get(supplementId) || 1, multiplier));
+    }
+  }
   
   return supplements.map(({ supplement, score }) => {
     let adjustedScore = score;
@@ -778,6 +787,11 @@ function applyProfileAdjustments(
     // Caffeine sensitivity adjustments
     if (profile.caffeineIntake === 'high' && isStimulatingSupplement(supplement)) {
       adjustedScore *= 0.8;
+    }
+
+    const nutrientBoost = nutrientPriorityMap.get(supplement.id);
+    if (nutrientBoost) {
+      adjustedScore *= nutrientBoost;
     }
 
     // Budget/form preference adjustments
