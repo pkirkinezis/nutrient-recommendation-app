@@ -61,8 +61,25 @@ type SexKey = 'male' | 'female';
 
 const normalizeSex = (sex?: UserProfile['sex']): SexKey => (sex === 'female' ? 'female' : 'male');
 
-const normalizeAge = (age?: UserProfile['age']): AgeGroup => {
+const mapAgeRange = (ageRange?: UserProfile['ageRange']): AgeGroup | null => {
+  switch (ageRange) {
+    case 'under-30':
+      return '18-29';
+    case '30-45':
+      return '30-44';
+    case '45-60':
+      return '45-59';
+    case 'over-60':
+      return '60+';
+    default:
+      return null;
+  }
+};
+
+const normalizeAge = (age?: UserProfile['age'], ageRange?: UserProfile['ageRange']): AgeGroup => {
   if (age && AGE_GROUPS.includes(age)) return age as AgeGroup;
+  const mappedRange = mapAgeRange(ageRange);
+  if (mappedRange) return mappedRange;
   return '30-44';
 };
 
@@ -70,8 +87,8 @@ const isOlderAdult = (age: AgeGroup): boolean => age === '60+';
 
 export function buildNutrientTargets(profile: UserProfile): NutrientTarget[] {
   const sex = normalizeSex(profile.sex);
-  const age = normalizeAge(profile.age);
-  const diet = profile.diet;
+  const age = normalizeAge(profile.age, profile.ageRange);
+  const diet = profile.diet || profile.dietType;
 
   const targets: NutrientTarget[] = [];
 
