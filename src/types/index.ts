@@ -27,6 +27,7 @@ export interface Supplement {
   type: SupplementType;
   category: 'modern' | 'traditional' | 'both';
   description: string;
+  topLevelSafetyAlert?: string;
   traditionalUse?: string;
   mechanism?: string;
   benefits: string[];

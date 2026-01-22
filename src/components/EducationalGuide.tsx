@@ -128,8 +128,8 @@ const micronutrients: NutrientInfo[] = [
     category: 'Fat-Soluble Vitamin',
     role: 'Calcium absorption, bone health, immune regulation, mood, muscle function',
     sources: ['Sunlight', 'Fatty fish', 'Egg yolks', 'Fortified foods', 'Cod liver oil'],
-    rda: '600-800 IU (many need 1000-4000 IU)',
-    deficiencyRisk: 'Rickets, osteoporosis, depression, weakened immunity (very common deficiency)',
+    rda: '600-800 IU (higher doses only when deficient or high-risk)',
+    deficiencyRisk: 'Rickets, osteoporosis, low bone density, weakened immunity (deficiency risk varies by sun exposure)',
     evidence: 'strong'
   },
   {
@@ -579,8 +579,8 @@ const emergingCompounds = [
   },
   {
     name: 'Curcumin',
-    why: 'Potent anti-inflammatory, but requires piperine/fat for absorption. Raw turmeric is insufficient.',
-    sources: 'Turmeric extracts with piperine, or liposomal forms',
+    why: 'Potent anti-inflammatory, but absorption is poor without delivery-enhanced forms. Raw turmeric is insufficient.',
+    sources: 'Phytosome, liposomal, or nanoparticle curcumin products',
     evidence: 'moderate'
   },
   {
@@ -1075,8 +1075,8 @@ const EducationalGuide: React.FC = () => {
                   name: 'Turmeric (Curcumin)',
                   category: 'Anti-inflammatory',
                   benefits: 'Potent anti-inflammatory, antioxidant, joint health, brain health, digestive support',
-                  dosage: '500-2000mg curcumin with piperine or liposomal form',
-                  note: 'Raw turmeric has poor bioavailability (~3%). Must be taken with black pepper (piperine) or fat to absorb.',
+                  dosage: '500-1000mg curcumin in phytosome, liposomal, or nanoparticle form',
+                  note: 'Raw turmeric has poor bioavailability. Delivery-enhanced forms (phytosome/liposomal/nano) outperform piperine alone.',
                   evidence: 'moderate'
                 },
                 {
