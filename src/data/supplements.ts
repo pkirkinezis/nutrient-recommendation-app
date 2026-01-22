@@ -9,11 +9,19 @@ export const supplements: Supplement[] = [
     category: 'both',
     description: 'Premier Ayurvedic adaptogen used for over 3000 years. KSM-66 and Sensoril are clinically studied extracts. Name means "smell of horse" implying it gives strength.',
     traditionalUse: 'In Ayurveda, classified as a Rasayana (rejuvenative) and Balya (strength-giving). Used to promote longevity, vitality, and as a general tonic for weakness.',
+    mechanism: 'Acts as an adaptogen by modulating HPA-axis stress response and reducing cortisol while supporting GABAergic calm.',
     benefits: ['Reduces cortisol 14-28%', 'Decreases anxiety', 'Improves sleep quality', 'Supports testosterone', 'Enhances strength gains', 'Reduces stress'],
     dosage: '300-600mg standardized extract (KSM-66 or Sensoril)',
     timing: 'Morning or evening, with food. Evening if using for sleep.',
     timeframe: 'Stress relief within 2-4 weeks. Strength/hormonal effects 6-8 weeks.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NCCIH: Ashwagandha',
+        url: 'https://www.nccih.nih.gov/health/ashwagandha',
+        note: 'Overview of clinical evidence and safety considerations.'
+      }
+    ],
     foodSources: ['Not available in food - supplement only'],
     cautions: ['May cause mild GI upset initially', 'Can be overly sedating for some'],
     drugInteractions: ['Thyroid medications', 'Immunosuppressants', 'Sedatives', 'Blood pressure medications'],
@@ -207,11 +215,19 @@ export const supplements: Supplement[] = [
     category: 'both',
     description: 'Golden spice of India with powerful anti-inflammatory effects. Curcumin is the active compound. Requires enhancement for absorption.',
     traditionalUse: 'Used in Ayurveda for digestive issues, wounds, inflammation, and as a blood purifier. Central to Indian cooking and medicine.',
+    mechanism: 'Curcuminoids modulate NF-κB and COX-2 pathways to reduce inflammatory signaling.',
     benefits: ['Powerful anti-inflammatory', 'Joint pain relief', 'Antioxidant', 'Brain health', 'Mood support', 'Digestive aid'],
     dosage: '500-1000mg curcumin with piperine or phytosome form',
     timing: 'With meals containing fat for absorption',
     timeframe: 'Inflammation reduction 2-4 weeks. Joint effects 4-8 weeks.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NCCIH: Turmeric',
+        url: 'https://www.nccih.nih.gov/health/turmeric',
+        note: 'Evidence summary and safety considerations.'
+      }
+    ],
     foodSources: ['Turmeric spice (add black pepper)', 'Golden milk', 'Curry dishes'],
     cautions: ['May cause GI upset at high doses', 'Can thin blood'],
     drugInteractions: ['Blood thinners', 'Diabetes medications', 'Acid-reducing drugs'],
@@ -805,11 +821,19 @@ export const supplements: Supplement[] = [
     category: 'modern',
     description: 'The "sunshine vitamin" - actually a hormone. Deficiency is pandemic and linked to numerous health issues. Essential for immunity, mood, and bones.',
     traditionalUse: 'N/A - modern understanding. Traditionally obtained through sun exposure and fatty fish.',
+    mechanism: 'Acts as a hormone that regulates calcium balance, immune signaling, and gene expression via vitamin D receptors.',
     benefits: ['Immune regulation', 'Bone health', 'Mood support', 'Muscle function', 'Reduces infection risk', 'Hormone support'],
     dosage: '2000-5000 IU daily (adjust based on blood levels - aim for 40-60 ng/mL)',
     timing: 'Morning with fatty food. Always pair with K2.',
     timeframe: 'Blood levels rise over 2-3 months. Some feel better in 2-4 weeks.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NIH ODS: Vitamin D Fact Sheet',
+        url: 'https://ods.od.nih.gov/factsheets/VitaminD-Consumer/',
+        note: 'Covers dosing, deficiency, and safety ranges.'
+      }
+    ],
     foodSources: ['Fatty fish (salmon, mackerel)', 'Egg yolks', 'Fortified foods', 'Cod liver oil'],
     cautions: ['Get blood levels tested before high-dose supplementation', 'Can cause toxicity if overdone'],
     drugInteractions: ['Thiazide diuretics', 'Steroids', 'Weight loss drugs', 'Seizure medications'],
@@ -827,11 +851,19 @@ export const supplements: Supplement[] = [
     category: 'modern',
     description: 'Essential for energy, brain function, and blood cell formation. Methylcobalamin is active form. Common deficiency, especially in vegetarians/vegans.',
     traditionalUse: 'N/A - modern understanding. Traditionally obtained from animal foods.',
+    mechanism: 'Supports methylation cycles and red blood cell formation while protecting nerve myelin.',
     benefits: ['Increases energy', 'Supports brain function', 'Red blood cell formation', 'Nerve health', 'Methylation support', 'Mood'],
     dosage: '1000-5000mcg methylcobalamin daily (higher if deficient)',
     timing: 'Morning (can be energizing). Sublingual for best absorption.',
     timeframe: 'Energy effects 1-2 weeks if deficient. Nerve repair longer.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NIH ODS: Vitamin B12 Fact Sheet',
+        url: 'https://ods.od.nih.gov/factsheets/VitaminB12-Consumer/',
+        note: 'Deficiency, dosing, and safety guidance.'
+      }
+    ],
     foodSources: ['Meat', 'Fish', 'Eggs', 'Dairy', 'Nutritional yeast (fortified)'],
     cautions: ['Very safe even at high doses', 'Cyanocobalamin less effective than methylcobalamin'],
     drugInteractions: ['Metformin (depletes B12)', 'Acid-reducing drugs'],
@@ -939,11 +971,19 @@ export const supplements: Supplement[] = [
     category: 'modern',
     description: 'Involved in 300+ enzymatic reactions. Widespread deficiency due to depleted soils. Different forms for different purposes.',
     traditionalUse: 'N/A - modern understanding. Historically obtained from mineral-rich foods and water.',
+    mechanism: 'Supports ATP production and neuromuscular relaxation by regulating calcium channels and NMDA activity.',
     benefits: ['Muscle relaxation', 'Sleep quality', 'Stress reduction', 'Blood pressure', 'Blood sugar', 'Migraine prevention', 'Energy production'],
     dosage: '300-400mg elemental magnesium daily. Glycinate for calm/sleep, Citrate for bowels, Threonate for brain, Malate for energy.',
     timing: 'Evening for sleep benefits. Can split doses.',
     timeframe: 'Sleep/relaxation effects within days. Full repletion takes 4-12 weeks.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NIH ODS: Magnesium Fact Sheet',
+        url: 'https://ods.od.nih.gov/factsheets/Magnesium-Consumer/',
+        note: 'Dietary sources, dosing, and safety.'
+      }
+    ],
     foodSources: ['Dark chocolate', 'Avocados', 'Nuts', 'Seeds', 'Leafy greens', 'Legumes'],
     cautions: ['Too much can cause loose stools (esp. citrate, oxide)'],
     drugInteractions: ['Antibiotics (take separately)', 'Bisphosphonates', 'Diuretics', 'Heart medications'],
@@ -961,11 +1001,19 @@ export const supplements: Supplement[] = [
     category: 'modern',
     description: 'Essential for immune function, testosterone, wound healing, and hundreds of enzymes. Common deficiency worldwide.',
     traditionalUse: 'N/A - modern understanding. Found in oysters, meat, and seeds.',
+    mechanism: 'Cofactor for immune signaling, antioxidant enzymes, and hormone metabolism.',
     benefits: ['Immune function', 'Testosterone support', 'Wound healing', 'Reduces cold duration', 'Skin health', 'Taste/smell'],
     dosage: '15-30mg zinc picolinate or glycinate daily',
     timing: 'With food to prevent nausea. Evening can help with testosterone and sleep.',
     timeframe: 'Immune effects ongoing. Cold reduction if taken early.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NIH ODS: Zinc Fact Sheet',
+        url: 'https://ods.od.nih.gov/factsheets/Zinc-Consumer/',
+        note: 'Evidence, dosing limits, and interactions.'
+      }
+    ],
     foodSources: ['Oysters (highest)', 'Beef', 'Pumpkin seeds', 'Chickpeas', 'Cashews', 'Eggs'],
     cautions: ['Do not exceed 40mg daily long-term', 'Can deplete copper if taken long-term'],
     drugInteractions: ['Antibiotics (take separately)', 'Diuretics', 'Penicillamine'],
@@ -1005,11 +1053,19 @@ export const supplements: Supplement[] = [
     category: 'modern',
     description: 'Essential for oxygen transport and energy. Common deficiency, especially in women. Bisglycinate form is gentle on stomach.',
     traditionalUse: 'N/A - modern understanding. Found in red meat and leafy greens.',
+    mechanism: 'Core component of hemoglobin and myoglobin, enabling oxygen transport and mitochondrial energy production.',
     benefits: ['Combats fatigue', 'Oxygen transport', 'Energy production', 'Cognitive function', 'Restless leg support'],
     dosage: '18-45mg daily only if deficient (test ferritin first)',
     timing: 'Morning on empty stomach with vitamin C. Take separately from calcium and coffee/tea.',
     timeframe: 'Energy improvement 2-4 weeks if deficient. Full repletion 3-6 months.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NIH ODS: Iron Fact Sheet',
+        url: 'https://ods.od.nih.gov/factsheets/Iron-Consumer/',
+        note: 'Deficiency signs, dosing guidance, and safety.'
+      }
+    ],
     foodSources: ['Red meat', 'Organ meats', 'Spinach', 'Legumes', 'Fortified cereals'],
     cautions: ['Test ferritin levels before supplementing', 'Excess iron is harmful and pro-oxidant'],
     drugInteractions: ['Many medications - take separately', 'Thyroid medications', 'Bisphosphonates'],
@@ -1161,11 +1217,20 @@ export const supplements: Supplement[] = [
     category: 'modern',
     description: 'Most studied sports supplement. Increases ATP for strength and power. Also benefits brain function. Safe and effective.',
     traditionalUse: 'N/A - found naturally in meat.',
+    mechanism: 'Replenishes phosphocreatine stores to regenerate ATP during high-intensity effort.',
     benefits: ['Increases strength 5-10%', 'Enhances power output', 'Supports muscle growth', 'Brain energy', 'Improves recovery', 'Cognitive benefits'],
     dosage: '3-5g daily (no loading needed)',
+    dosagePerKg: { min: 0.03, max: 0.05, unit: 'g', note: 'Maintenance dosing based on body weight.' },
     timing: 'Any time, consistency matters most. Post-workout may be slightly better.',
     timeframe: 'Strength effects 2-4 weeks. Brain effects ongoing.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'ISSN Position Stand: Creatine Supplementation',
+        url: 'https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0173-z',
+        note: 'Comprehensive review of dosing, safety, and performance outcomes.'
+      }
+    ],
     foodSources: ['Red meat', 'Fish'],
     cautions: ['May cause water retention initially', 'Stay hydrated'],
     drugInteractions: ['Nephrotoxic drugs (kidney concern)'],
@@ -1273,11 +1338,19 @@ export const supplements: Supplement[] = [
     category: 'modern',
     description: 'Essential fats for brain, heart, and inflammation. EPA for mood, DHA for brain structure. Most people are deficient.',
     traditionalUse: 'Obtained through fatty fish consumption. Traditional in coastal cultures.',
+    mechanism: 'Incorporates into cell membranes to modulate inflammation and support neurocardiovascular signaling.',
     benefits: ['Brain health', 'Reduces inflammation', 'Heart health', 'Mood support', 'Eye health', 'Skin health', 'Joint support'],
     dosage: '2-3g combined EPA/DHA daily. For mood: emphasize EPA. For brain: emphasize DHA.',
     timing: 'With fatty meals for absorption',
     timeframe: 'Cell membrane changes 3-6 months. Some mood effects 4-8 weeks.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NIH ODS: Omega-3 Fatty Acids Fact Sheet',
+        url: 'https://ods.od.nih.gov/factsheets/Omega3FattyAcids-Consumer/',
+        note: 'Evidence on dosing, cardiovascular support, and safety.'
+      }
+    ],
     foodSources: ['Fatty fish (salmon, mackerel, sardines)', 'Fish roe', 'Algae (vegan DHA)'],
     cautions: ['Choose quality brands tested for heavy metals', 'High doses may thin blood'],
     drugInteractions: ['Blood thinners (enhanced effect)', 'Blood pressure medications'],
@@ -1361,11 +1434,19 @@ export const supplements: Supplement[] = [
     category: 'modern',
     description: 'The sleep hormone that regulates circadian rhythm. Powerful antioxidant. Lower doses often more effective than higher.',
     traditionalUse: 'N/A - naturally produced by pineal gland.',
+    mechanism: 'Signals circadian rhythm timing via MT1/MT2 receptors to shift sleep onset.',
     benefits: ['Regulates sleep cycle', 'Reduces time to fall asleep', 'Jet lag relief', 'Powerful antioxidant', 'Immune support', 'Gut health'],
     dosage: '0.3-3mg (start low - more is not better)',
     timing: '30-60 minutes before bed. Dim lights after taking.',
     timeframe: 'Sleep effects same night. Circadian adjustment 2-3 days.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NCCIH: Melatonin',
+        url: 'https://www.nccih.nih.gov/health/melatonin',
+        note: 'Evidence overview, dosing, and safety.'
+      }
+    ],
     foodSources: ['Tart cherries', 'Eggs', 'Milk', 'Fish', 'Nuts'],
     cautions: ['Higher doses can cause next-day grogginess', 'May cause vivid dreams'],
     drugInteractions: ['Blood thinners', 'Immunosuppressants', 'Diabetes medications', 'Sedatives', 'Birth control'],
