@@ -502,7 +502,7 @@ export const supplements: Supplement[] = [
     synergies: ['Pumpkin Seed Oil', 'Pygeum', 'Stinging Nettle'],
     conflicts: [],
     systems: ['reproductive', 'urinary', 'endocrine'],
-    goals: ['hair-loss', 'prostate', 'balding', 'dht']
+    goals: ['beauty', 'hormones']
   },
   {
     id: 'tongkat-ali',
