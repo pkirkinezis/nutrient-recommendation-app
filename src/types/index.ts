@@ -8,6 +8,19 @@ export type Priority = 'essential' | 'beneficial' | 'optional';
 // SUPPLEMENT TYPES
 // ============================================
 
+export interface EvidenceSource {
+  title: string;
+  url: string;
+  note?: string;
+}
+
+export interface DosagePerKgGuidance {
+  min: number;
+  max: number;
+  unit: 'mg' | 'g';
+  note?: string;
+}
+
 export interface Supplement {
   id: string;
   name: string;
@@ -15,11 +28,14 @@ export interface Supplement {
   category: 'modern' | 'traditional' | 'both';
   description: string;
   traditionalUse?: string;
+  mechanism?: string;
   benefits: string[];
   dosage: string;
+  dosagePerKg?: DosagePerKgGuidance;
   timing: string;
   timeframe: string;
   evidence: EvidenceLevel;
+  evidenceSources?: EvidenceSource[];
   goalEvidence?: Partial<Record<string, EvidenceLevel>>;
   foodSources?: string[];
   cautions?: string[];
@@ -42,6 +58,7 @@ export interface UserProfile {
   age?: '18-29' | '30-44' | '45-59' | '60+';
   ageRange?: 'under-30' | '30-45' | '45-60' | 'over-60';  // Deprecated, use 'age'
   sex?: 'male' | 'female' | 'other';
+  weightKg?: number;
   
   // Lifestyle
   diet?: 'omnivore' | 'vegetarian' | 'vegan' | 'pescatarian' | 'keto' | 'paleo';
@@ -195,6 +212,16 @@ export interface TrackingData {
   logs: DailyLog[];
   startDate: string;
   supplements: string[];
+}
+
+export interface LabResult {
+  id: string;
+  name: string;
+  value: number;
+  unit: string;
+  range?: string;
+  note?: string;
+  date?: string;
 }
 
 // ============================================

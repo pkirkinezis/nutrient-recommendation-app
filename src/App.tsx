@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Supplement, UserProfile, Recommendation, InteractionWarning, TrackingData, DailyLog } from './types/index';
+import { Supplement, UserProfile, Recommendation, InteractionWarning, TrackingData, DailyLog, LabResult } from './types/index';
 import { supplements, formGuidance, supplementComparisons, misinformationAlerts } from './data/supplements';
 import { analyzeGoal, checkInteractions, generateTimingSchedule } from './utils/analyzer';
 import { AdvancedBrowse } from './components/AdvancedBrowse';
@@ -10,7 +10,8 @@ const STORAGE_KEYS = {
   profile: 'nutricompass_profile',
   selectedSupplements: 'nutricompass_selected',
   lastQuery: 'nutricompass_query',
-  tracking: 'nutricompass_tracking'
+  tracking: 'nutricompass_tracking',
+  labs: 'nutricompass_labs'
 };
 
 // Helper functions for display
@@ -131,6 +132,21 @@ export function App() {
       return saved ? JSON.parse(saved) : { logs: [], startDate: new Date().toISOString().split('T')[0], supplements: [] };
     } catch { return { logs: [], startDate: new Date().toISOString().split('T')[0], supplements: [] }; }
   });
+  const [labResults, setLabResults] = useState<LabResult[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.labs);
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [labDraft, setLabDraft] = useState<LabResult>({
+    id: '',
+    name: '',
+    value: 0,
+    unit: '',
+    range: '',
+    note: '',
+    date: new Date().toISOString().split('T')[0]
+  });
   const [trackingLog, setTrackingLog] = useState<DailyLog>({
     date: new Date().toISOString().split('T')[0],
     sleepQuality: 3,
@@ -166,6 +182,52 @@ export function App() {
     };
   }, [trackingData.logs]);
 
+  const labInsights = useMemo(() => {
+    return labResults.flatMap(result => {
+      const name = result.name.toLowerCase();
+      const insights: { id: string; title: string; message: string }[] = [];
+
+      if (name.includes('vitamin d') || name.includes('25-hydroxy')) {
+        if (result.value < 30) {
+          insights.push({
+            id: result.id,
+            title: 'Low Vitamin D',
+            message: 'Consider vitamin D3 + K2 support and recheck in 8-12 weeks.'
+          });
+        }
+      }
+      if (name.includes('b12') || name.includes('cobalamin')) {
+        if (result.value < 300) {
+          insights.push({
+            id: result.id,
+            title: 'Low B12',
+            message: 'Consider methylcobalamin support, especially if plant-based.'
+          });
+        }
+      }
+      if (name.includes('ferritin')) {
+        if (result.value < 30) {
+          insights.push({
+            id: result.id,
+            title: 'Low Ferritin',
+            message: 'Discuss iron status with a clinician before supplementing.'
+          });
+        }
+      }
+      if (name.includes('magnesium')) {
+        if (result.value < 1.7) {
+          insights.push({
+            id: result.id,
+            title: 'Low Magnesium',
+            message: 'Consider magnesium glycinate or malate for repletion.'
+          });
+        }
+      }
+
+      return insights;
+    });
+  }, [labResults]);
+
   // Persist user profile
   useEffect(() => {
     try {
@@ -193,6 +255,13 @@ export function App() {
       localStorage.setItem(STORAGE_KEYS.tracking, JSON.stringify(trackingData));
     } catch { /* ignore */ }
   }, [trackingData]);
+
+  // Persist lab results
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.labs, JSON.stringify(labResults));
+    } catch { /* ignore */ }
+  }, [labResults]);
 
   // Analyze the user's goal
   const handleAnalyze = () => {
@@ -278,10 +347,52 @@ export function App() {
     }));
   };
 
+  const handleLabSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!labDraft.name.trim() || !labDraft.unit.trim()) return;
+    const newResult: LabResult = {
+      ...labDraft,
+      id: `lab-${Date.now()}`
+    };
+    setLabResults(prev => [newResult, ...prev].slice(0, 50));
+    setLabDraft({
+      id: '',
+      name: '',
+      value: 0,
+      unit: '',
+      range: '',
+      note: '',
+      date: new Date().toISOString().split('T')[0]
+    });
+  };
+
   const parseListInput = (value: string): string[] => value
     .split(',')
     .map(item => item.trim())
     .filter(Boolean);
+
+  const buildStackSummary = () => {
+    if (selectedSupplements.length === 0) return 'No supplements selected.';
+    const names = selectedSupplements.map(s => s.name).join(', ');
+    return `My NutriCompass stack: ${names}.`;
+  };
+
+  const buildScheduleSummary = () => {
+    const formatNames = (items: Supplement[]) => items.map(s => s.name.split(' ')[0]).join(', ') || '—';
+    return [
+      `Morning: ${formatNames(timingSuggestions.morning)}`,
+      `Afternoon: ${formatNames(timingSuggestions.midday)}`,
+      `Evening: ${formatNames([...timingSuggestions.evening, ...timingSuggestions.bedtime])}`
+    ].join('\n');
+  };
+
+  const handleCopyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // ignore clipboard failures in restricted environments
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50">
@@ -355,6 +466,18 @@ export function App() {
                   <option value="45-59">45-59</option>
                   <option value="60+">60+</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Weight (kg)</label>
+                <input
+                  type="number"
+                  min="30"
+                  max="200"
+                  value={userProfile.weightKg ?? ''}
+                  onChange={(e) => setUserProfile(p => ({ ...p, weightKg: e.target.value ? Number(e.target.value) : undefined }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="e.g., 70"
+                />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Diet Type</label>
@@ -581,6 +704,105 @@ export function App() {
                   Save Daily Log
                 </button>
               </form>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Lab Results (Optional)</h2>
+              <p className="text-sm text-gray-500 mb-4">Add biomarkers to personalize recommendations and dosing guidance.</p>
+              <form className="space-y-4" onSubmit={handleLabSubmit}>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Marker</label>
+                    <input
+                      type="text"
+                      value={labDraft.name}
+                      onChange={(e) => setLabDraft(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="e.g., Vitamin D (25-OH)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Value</label>
+                    <input
+                      type="number"
+                      value={labDraft.value || ''}
+                      onChange={(e) => setLabDraft(prev => ({ ...prev, value: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="30"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Unit</label>
+                    <input
+                      type="text"
+                      value={labDraft.unit}
+                      onChange={(e) => setLabDraft(prev => ({ ...prev, unit: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="ng/mL"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Reference Range (optional)</label>
+                    <input
+                      type="text"
+                      value={labDraft.range || ''}
+                      onChange={(e) => setLabDraft(prev => ({ ...prev, range: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="30-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                    <input
+                      type="date"
+                      value={labDraft.date || ''}
+                      onChange={(e) => setLabDraft(prev => ({ ...prev, date: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Note (optional)</label>
+                    <input
+                      type="text"
+                      value={labDraft.note || ''}
+                      onChange={(e) => setLabDraft(prev => ({ ...prev, note: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="Fasting"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition"
+                >
+                  Save Lab Result
+                </button>
+              </form>
+
+              {labResults.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {labResults.slice(0, 6).map((result) => (
+                    <div key={result.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3 text-sm">
+                      <div>
+                        <p className="font-semibold text-gray-800">{result.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {result.value} {result.unit}{result.range ? ` (ref: ${result.range})` : ''} {result.date ? `• ${result.date}` : ''}
+                        </p>
+                        {result.note && <p className="text-xs text-gray-400 mt-1">{result.note}</p>}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setLabResults(prev => prev.filter(item => item.id !== result.id))}
+                        className="text-xs text-gray-400 hover:text-red-500 transition"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="bg-gradient-to-r from-amber-50 to-emerald-50 rounded-2xl p-5 border border-amber-100">
@@ -892,6 +1114,23 @@ export function App() {
               </div>
             )}
 
+            {labInsights.length > 0 && (
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-5 border border-emerald-100">
+                <h3 className="font-bold text-emerald-800 mb-3 flex items-center gap-2">
+                  <span>🧪</span> Lab Insights
+                </h3>
+                <ul className="space-y-2">
+                  {labInsights.map((insight) => (
+                    <li key={insight.id} className="text-sm text-emerald-700 flex items-start gap-2">
+                      <span className="text-emerald-400">•</span>
+                      <span className="font-semibold">{insight.title}:</span>
+                      <span>{insight.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Recommendations */}
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -916,6 +1155,7 @@ export function App() {
                         isSelected={selectedSupplements.some(s => s.id === rec.supplement.id)}
                         onSelect={() => toggleSupplementSelection(rec.supplement)}
                         showSelection={true}
+                        weightKg={userProfile.weightKg}
                         recommendation={rec}
                       />
                     </div>
@@ -927,9 +1167,27 @@ export function App() {
             {/* Stack Builder */}
             {selectedSupplements.length > 0 && (
               <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span>📦</span> Your Stack ({selectedSupplements.length} selected)
-                </h3>
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                    <span>📦</span> Your Stack ({selectedSupplements.length} selected)
+                  </h3>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText(buildStackSummary())}
+                      className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition"
+                    >
+                      Copy Stack
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText(buildScheduleSummary())}
+                      className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition"
+                    >
+                      Copy Schedule
+                    </button>
+                  </div>
+                </div>
                 
                 {/* Interaction Warnings */}
                 {interactionWarnings.length > 0 && (
@@ -1071,6 +1329,7 @@ function SupplementCard({
   isSelected, 
   onSelect, 
   showSelection,
+  weightKg,
   recommendation 
 }: { 
   supplement: Supplement; 
@@ -1079,9 +1338,18 @@ function SupplementCard({
   isSelected: boolean; 
   onSelect: () => void;
   showSelection: boolean;
+  weightKg?: number;
   recommendation?: Recommendation;
 }) {
   const evidenceInfo = getEvidenceInfo(supplement.evidence);
+  const weightBasedDose = supplement.dosagePerKg && weightKg
+    ? {
+        min: supplement.dosagePerKg.min * weightKg,
+        max: supplement.dosagePerKg.max * weightKg,
+        unit: supplement.dosagePerKg.unit,
+        note: supplement.dosagePerKg.note
+      }
+    : null;
 
   return (
     <div className="bg-white rounded-xl overflow-hidden">
@@ -1184,12 +1452,28 @@ function SupplementCard({
             <div className="bg-gray-50 rounded-xl p-3">
               <h4 className="text-xs font-semibold text-gray-700 mb-1">💊 Dosage</h4>
               <p className="text-sm text-gray-600">{supplement.dosage}</p>
+              {weightBasedDose && (
+                <p className="text-xs text-emerald-600 mt-1">
+                  Est. {weightBasedDose.min.toFixed(1)}-{weightBasedDose.max.toFixed(1)}{weightBasedDose.unit} for {weightKg}kg.
+                </p>
+              )}
+              {weightBasedDose?.note && (
+                <p className="text-xs text-emerald-500">{weightBasedDose.note}</p>
+              )}
             </div>
             <div className="bg-gray-50 rounded-xl p-3">
               <h4 className="text-xs font-semibold text-gray-700 mb-1">⏰ Timing</h4>
               <p className="text-sm text-gray-600">{supplement.timing}</p>
             </div>
           </div>
+
+          {/* Mechanism */}
+          {supplement.mechanism && (
+            <div className="bg-slate-50 rounded-xl p-3">
+              <h4 className="text-xs font-semibold text-slate-700 mb-1">🧬 Mechanism</h4>
+              <p className="text-sm text-slate-600">{supplement.mechanism}</p>
+            </div>
+          )}
 
           {/* Timeframe */}
           <div className="bg-blue-50 rounded-xl p-3">
@@ -1287,6 +1571,23 @@ function SupplementCard({
             <h4 className="text-xs font-semibold text-slate-700 mb-1">📊 Evidence Level: {evidenceInfo.label}</h4>
             <p className="text-sm text-slate-600">{evidenceInfo.description}</p>
           </div>
+
+          {/* Evidence sources */}
+          {supplement.evidenceSources && supplement.evidenceSources.length > 0 && (
+            <div className="bg-white border border-slate-100 rounded-xl p-3">
+              <h4 className="text-xs font-semibold text-slate-700 mb-2">🔗 Evidence Sources</h4>
+              <ul className="space-y-1 text-xs text-slate-600">
+                {supplement.evidenceSources.map((source, index) => (
+                  <li key={`${source.title}-${index}`}>
+                    <a className="text-emerald-700 hover:underline" href={source.url} target="_blank" rel="noreferrer">
+                      {source.title}
+                    </a>
+                    {source.note && <span className="text-slate-400"> — {source.note}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>
