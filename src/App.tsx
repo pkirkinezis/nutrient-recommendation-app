@@ -103,6 +103,11 @@ export function App() {
       return localStorage.getItem(STORAGE_KEYS.lastQuery) || '';
     } catch { return ''; }
   });
+  const [analyzedQuery, setAnalyzedQuery] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.lastQuery) || '';
+    } catch { return ''; }
+  });
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [identifiedGoals, setIdentifiedGoals] = useState<string[]>([]);
@@ -321,6 +326,7 @@ export function App() {
     setIdentifiedGoals(result.identifiedGoals);
     setIdentifiedSystems(result.identifiedSystems);
     setTips(result.tips || []);
+    setAnalyzedQuery(query);
     setHasAnalyzed(true);
     setSelectedSupplements([]);
   };
@@ -348,6 +354,7 @@ export function App() {
   // Reset to start
   const handleReset = () => {
     setQuery('');
+    setAnalyzedQuery('');
     setHasAnalyzed(false);
     setRecommendations([]);
     setIdentifiedGoals([]);
@@ -1028,15 +1035,30 @@ export function App() {
             </div>
 
             {/* Input */}
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-3xl mx-auto space-y-3">
               <div className="relative">
+                <svg className="absolute left-5 top-5 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
                 <textarea
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAnalyze(); }}}
-                  placeholder="Example: I want better sleep and more energy in the morning..."
-                  className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none h-28"
+                  placeholder="Describe your goal, symptoms, or health priority..."
+                  className="w-full pl-12 pr-44 py-4 bg-white border-2 border-gray-200 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none h-28"
                 />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery('')}
+                    className="absolute right-36 top-5 text-gray-400 hover:text-gray-600"
+                    aria-label="Clear search"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
                 <button
                   onClick={handleAnalyze}
                   disabled={!query.trim()}
@@ -1044,6 +1066,18 @@ export function App() {
                 >
                   Get Recommendations
                 </button>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
+                <span>Press Enter to search. Use Shift + Enter for a new line.</span>
+                {query && (
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="text-emerald-600 hover:text-emerald-700"
+                  >
+                    Reset
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1110,12 +1144,55 @@ export function App() {
         ) : (
           /* Results View */
           <div className="space-y-6">
+            {/* Refine Search */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900">Refine your goal</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Adjust your search to update recommendations without starting over.
+              </p>
+              <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAnalyze(); }}}
+                    placeholder="Update your goal..."
+                    className="w-full pl-12 pr-10 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => setQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label="Clear search"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAnalyze}
+                  disabled={!query.trim()}
+                  className="px-5 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Update Recommendations
+                </button>
+              </div>
+            </div>
+
             {/* Query Summary */}
             <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Your goal:</p>
-                  <p className="text-lg font-medium text-gray-900">&ldquo;{query}&rdquo;</p>
+                  <p className="text-lg font-medium text-gray-900">&ldquo;{analyzedQuery}&rdquo;</p>
                   {identifiedGoals.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-3">
                       {identifiedGoals.map(goal => (
