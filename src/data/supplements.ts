@@ -1250,28 +1250,6 @@ export const supplements: Supplement[] = [
     goals: ['energy', 'stress', 'mood', 'nervous-system', 'brain-health', 'metabolism']
   },
   {
-    id: 'vitamin-b-complex',
-    name: 'Vitamin B Complex',
-    type: 'vitamin',
-    category: 'modern',
-    description: 'Comprehensive blend of all eight essential B vitamins for energy, metabolism, and nervous system support.',
-    traditionalUse: 'Traditionally obtained from whole grains, meats, and leafy greens.',
-    benefits: ['Energy production', 'Nervous system support', 'Mood regulation', 'Metabolism support', 'Red blood cell formation'],
-    dosage: 'B-50 or B-100 complex daily',
-    timing: 'Morning with food (can be energizing)',
-    timeframe: 'Energy support within 1-2 weeks.',
-    evidence: 'strong',
-    foodSources: ['Whole grains', 'Meat', 'Eggs', 'Legumes', 'Leafy greens'],
-    cautions: ['May cause bright yellow urine', 'High B6 long-term can cause nerve issues'],
-    drugInteractions: ['Some antibiotics', 'Seizure medications', 'Methotrexate'],
-    avoidIf: ['Generally safe for most'],
-    cycleTiming: 'Used continuously.',
-    synergies: ['Vitamin C', 'Iron', 'Magnesium'],
-    conflicts: [],
-    systems: ['nervous', 'energy', 'metabolic'],
-    goals: ['energy', 'stress', 'mood', 'focus', 'metabolism']
-  },
-  {
     id: 'folate',
     name: 'Folate (L-Methylfolate / 5-MTHF)',
     type: 'vitamin',

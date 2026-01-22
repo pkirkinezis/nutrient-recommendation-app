@@ -729,7 +729,12 @@ function applyProfileAdjustments(
         adjustedScore *= 1.5;
       }
       // Exclude fish-based supplements
-      if (supplement.name.includes('Fish') || supplement.description?.includes('fish-derived')) {
+      if (
+        supplement.name.includes('Fish') ||
+        supplement.name.includes('Krill') ||
+        supplement.description?.includes('fish-derived') ||
+        supplement.id === 'krill-oil'
+      ) {
         adjustedScore = 0;
       }
     }
