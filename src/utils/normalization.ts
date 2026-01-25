@@ -1,7 +1,7 @@
 import { GOAL_ALIASES, GOAL_CATEGORIES, SYSTEM_ALIASES, SYSTEM_DEFINITIONS } from '../constants/taxonomy';
 
-const GOAL_ID_SET = new Set(GOAL_CATEGORIES.map(goal => goal.id));
-const SYSTEM_ID_SET = new Set(SYSTEM_DEFINITIONS.map(system => system.id));
+const GOAL_ID_SET = new Set<string>(GOAL_CATEGORIES.map(goal => goal.id));
+const SYSTEM_ID_SET = new Set<string>(SYSTEM_DEFINITIONS.map(system => system.id));
 
 export function normalizeGoalId(goal: string): string | null {
   const normalized = goal.toLowerCase();

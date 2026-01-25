@@ -639,9 +639,9 @@ function applySafetyScreening(
 }
 
 function applyTrackingAdjustments(
-  supplements: { supplement: Supplement; score: number; safetyFlags?: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[],
+  supplements: { supplement: Supplement; score: number; safetyFlags: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[],
   trackingData?: TrackingData
-): { supplement: Supplement; score: number; safetyFlags?: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[] {
+): { supplement: Supplement; score: number; safetyFlags: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[] {
   if (!trackingData || trackingData.logs.length === 0) {
     return supplements;
   }
@@ -682,10 +682,10 @@ function applyTrackingAdjustments(
 }
 
 function selectDiverseRecommendations(
-  supplements: { supplement: Supplement; score: number; safetyFlags?: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[],
+  supplements: { supplement: Supplement; score: number; safetyFlags: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[],
   matchedGoals: MatchedGoal[],
   limit = 6
-): { supplement: Supplement; score: number; safetyFlags?: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[] {
+): { supplement: Supplement; score: number; safetyFlags: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[] {
   const selected: typeof supplements = [];
   const usedIds = new Set<string>();
 
@@ -1127,7 +1127,7 @@ export function analyzeGoal(
     priority: determinePriority(score, supplement.evidence),
     reason: generateReason(supplement, matchedGoals, matchedSystems),
     relevanceScore: Math.min(100, Math.round(score)),
-    safetyFlags,
+    safetyFlags: safetyFlags ?? [],
     cautionLevel
   }));
   
