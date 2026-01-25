@@ -51,6 +51,7 @@ const typeConfig: Record<Supplement['type'], { icon: string; label: string; colo
   'vitamin': { icon: '💊', label: 'Vitamin', color: 'text-amber-700', bg: 'bg-amber-100' },
   'mineral': { icon: '⚗️', label: 'Mineral', color: 'text-blue-700', bg: 'bg-blue-100' },
   'herb': { icon: '🌿', label: 'Herb', color: 'text-green-700', bg: 'bg-green-100' },
+  'tea': { icon: '🫖', label: 'Tea Herb', color: 'text-teal-700', bg: 'bg-teal-100' },
   'amino-acid': { icon: '🧬', label: 'Amino Acid', color: 'text-purple-700', bg: 'bg-purple-100' },
   'ayurvedic': { icon: '🕉️', label: 'Ayurvedic', color: 'text-orange-700', bg: 'bg-orange-100' },
   'mushroom': { icon: '🍄', label: 'Mushroom', color: 'text-rose-700', bg: 'bg-rose-100' },
@@ -75,6 +76,11 @@ const popularityScores: Record<string, number> = {
   'ashwagandha': 95, 'creatine': 94, 'probiotics': 88, 'zinc': 87, 'collagen': 86,
   'turmeric-curcumin': 85, 'lions-mane': 80, 'melatonin': 82, 'coq10': 75, 'rhodiola': 70,
   'l-theanine': 72, 'brahmi-bacopa': 65, 'nac': 60, 'glycine': 55, 'tongkat-ali': 68,
+  'green-tea-matcha': 92, 'peppermint-tea': 78, 'chamomile-tea': 76, 'ginger-tea': 80, 'cinnamon-tea': 74, 'hibiscus-tea': 72,
+  'greek-mountain-tea': 64, 'dittany-of-crete': 58, 'lemon-verbena': 66, 'olive-leaf': 70,
+  'white-tea-silver-needle': 62, 'white-tea-white-peony': 61, 'green-tea-sencha': 84, 'yellow-tea-huang-ya': 54,
+  'oolong-tea-tieguanyin': 68, 'black-tea-assam': 82, 'dark-tea-pu-erh-sheng': 66, 'smoked-tea-lapsang-souchong': 52,
+  'english-breakfast-tea': 78, 'earl-grey-tea': 70, 'jasmine-green-tea': 60, 'decaf-tea': 65,
 };
 
 const getNormalizedGoals = (supplement: Supplement) => normalizeGoals(supplement.goals);
