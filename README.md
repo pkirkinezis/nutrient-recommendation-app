@@ -73,11 +73,23 @@ NutriCompass is a comprehensive, evidence-based nutrition and supplement recomme
 - Three view modes (List, Grid, Compact)
 - Personalized recommendations based on profile
 
+### 🧭 Nutrient Targets & Priority Flags
+- Personalized nutrient targets built from NIH Dietary Reference Intakes
+- Priority indicators based on diet, age, and lifestyle
+- Food-first guidance with supplement tie-ins
+
 ### 🧪 Stack Builder
 - Build custom supplement stacks
 - Automatic interaction/conflict detection
 - Timing optimization
 - Morning/Afternoon/Evening organization
+- Curated stacks for common goals with synergy notes
+
+### 📈 Progress & Lab Tracking
+- Daily check-ins for sleep, energy, mood, focus, and recovery
+- Log supplements taken with notes and side-effect tracking
+- Lab result tracking with smart insights for common markers
+- Rolling summaries for adherence and average scores
 
 ### 👤 Personalization
 - Optional user profile (age, diet, training style, health conditions)
@@ -212,11 +224,15 @@ nutricompass/
 │   ├── constants/
 │   │   └── taxonomy.ts           # Centralized goal/system taxonomy
 │   ├── data/
+│   │   ├── curatedStacks.ts       # Curated goal-based stacks
+│   │   ├── nutrientRequirements.ts # Nutrient target guidance
 │   │   └── supplements.ts        # Supplement database
 │   ├── types/
 │   │   └── index.ts              # TypeScript interfaces
 │   ├── utils/
-│   │   └── analyzer.ts           # NLP goal analysis with negation handling
+│   │   ├── analyzer.ts           # NLP goal analysis with negation handling
+│   │   ├── normalization.ts      # Text normalization helpers
+│   │   └── cn.ts                 # Class name helper
 │   ├── App.tsx                   # Main application
 │   ├── main.tsx                  # Entry point
 │   └── index.css                 # Global styles + Tailwind
