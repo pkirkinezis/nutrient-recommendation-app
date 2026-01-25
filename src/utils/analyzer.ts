@@ -1364,7 +1364,7 @@ export function analyzeGoal(
   const optional = recommendations.filter(r => r.priority === 'optional').slice(0, 2);
   
   const desiredCount = 6;
-  const finalRecommendations: RecommendedSupplement[] = [...essential, ...beneficial, ...optional].slice(0, desiredCount);
+  let finalRecommendations: RecommendedSupplement[] = [...essential, ...beneficial, ...optional].slice(0, desiredCount);
   if (finalRecommendations.length < desiredCount) {
     const selectedIds = new Set(finalRecommendations.map(r => r.supplement.id));
     for (const rec of recommendations) {
@@ -1373,6 +1373,48 @@ export function analyzeGoal(
         finalRecommendations.push(rec);
         selectedIds.add(rec.supplement.id);
       }
+    }
+  }
+
+  if (matchedGoals.some(goal => goal.id === 'sleep')) {
+    const sleepTargetIds = new Set<string>();
+    if (profile) {
+      for (const target of buildNutrientTargets(profile)) {
+        if (target.rationale.some(item => item.toLowerCase().includes('sleep'))) {
+          for (const supplementId of target.supplementIds) {
+            sleepTargetIds.add(supplementId);
+          }
+        }
+      }
+    }
+
+    const sleepCandidates = screenedSupplements
+      .filter(({ supplement }) => normalizeGoals(supplement.goals).includes('sleep') || sleepTargetIds.has(supplement.id))
+      .sort((a, b) => b.score - a.score);
+
+    const sleepRecommendations = new Map<string, RecommendedSupplement>();
+    for (const { supplement, score, safetyFlags, cautionLevel } of sleepCandidates) {
+      if (!sleepRecommendations.has(supplement.id)) {
+        sleepRecommendations.set(supplement.id, {
+          supplement,
+          priority: determinePriority(score, supplement.evidence),
+          reason: generateReason(supplement, matchedGoals, matchedSystems),
+          relevanceScore: Math.min(100, Math.round(score)),
+          safetyFlags: safetyFlags ?? [],
+          cautionLevel
+        });
+      }
+    }
+
+    if (sleepRecommendations.size > 0) {
+      const mergedRecommendations = new Map<string, RecommendedSupplement>();
+      for (const rec of finalRecommendations) {
+        mergedRecommendations.set(rec.supplement.id, rec);
+      }
+      for (const rec of sleepRecommendations.values()) {
+        mergedRecommendations.set(rec.supplement.id, rec);
+      }
+      finalRecommendations = Array.from(mergedRecommendations.values());
     }
   }
   
