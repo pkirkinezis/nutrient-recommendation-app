@@ -669,8 +669,27 @@ function extractQueryContext(input: string, profile?: UserProfile): QueryContext
 
 function isStimulatingSupplement(supplement: Supplement): boolean {
   const name = supplement.name.toLowerCase();
-  const stimulantTerms = ['caffeine', 'guarana', 'green tea', 'yerba', 'ginseng', 'rhodiola', 'cordyceps'];
+  const stimulantTerms = [
+    'caffeine',
+    'guarana',
+    'green tea',
+    'white tea',
+    'black tea',
+    'oolong',
+    'yellow tea',
+    'pu-erh',
+    'matcha',
+    'sencha',
+    'earl grey',
+    'english breakfast',
+    'yerba',
+    'ginseng',
+    'rhodiola',
+    'cordyceps',
+  ];
   if (stimulantTerms.some(term => name.includes(term))) return true;
+  const cautionText = [...(supplement.cautions || []), ...(supplement.drugInteractions || [])].join(' ').toLowerCase();
+  if (cautionText.includes('caffeine')) return true;
   return supplement.benefits.some(benefit => benefit.toLowerCase().includes('energy') || benefit.toLowerCase().includes('alert'));
 }
 
