@@ -1,7 +1,7 @@
 // Comprehensive Type Definitions for NutriCompass
 
 export type EvidenceLevel = 'strong' | 'moderate' | 'limited';
-export type SupplementType = 'vitamin' | 'mineral' | 'amino-acid' | 'herb' | 'ayurvedic' | 'mushroom' | 'probiotic' | 'fatty-acid' | 'protein' | 'performance' | 'enzyme' | 'antioxidant' | 'other';
+export type SupplementType = 'vitamin' | 'mineral' | 'amino-acid' | 'herb' | 'tea' | 'ayurvedic' | 'mushroom' | 'probiotic' | 'fatty-acid' | 'protein' | 'performance' | 'enzyme' | 'antioxidant' | 'other';
 export type Priority = 'essential' | 'beneficial' | 'optional';
 
 // ============================================
