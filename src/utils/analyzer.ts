@@ -119,6 +119,8 @@ function matchKeyword(tokens: Token[], keyword: string): boolean {
       const token = tokens[i + j];
       const keywordToken = keywordTokens[j];
       const keywordRoot = keywordRoots[j];
+      const tokenLength = token.word.length;
+      const baseLength = Math.max(keywordToken.length, keywordRoot.length);
       const isExactMatch =
         token.word === keywordToken ||
         token.root === keywordToken ||
@@ -127,7 +129,8 @@ function matchKeyword(tokens: Token[], keyword: string): boolean {
       const isInflectedMatch =
         keywordToken.length >= MIN_PARTIAL_MATCH_LENGTH &&
         (token.word.startsWith(keywordToken) || token.word.startsWith(keywordRoot)) &&
-        token.word.length - keywordToken.length <= 2;
+        tokenLength >= baseLength &&
+        tokenLength - baseLength <= 2;
 
       if (!isExactMatch && !isInflectedMatch) {
         match = false;
