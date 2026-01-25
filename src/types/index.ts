@@ -51,6 +51,21 @@ export interface Supplement {
 }
 
 // ============================================
+// CURATED STACK TYPES
+// ============================================
+
+export interface CuratedStack {
+  id: string;
+  name: string;
+  description: string;
+  synergyDescription: string;
+  supplementIds: string[];
+  goals: string[];
+  bestFor?: string[];
+  icon?: string;
+}
+
+// ============================================
 // USER PROFILE TYPES
 // ============================================
 

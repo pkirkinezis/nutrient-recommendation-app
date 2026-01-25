@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Supplement, UserProfile } from '../types/index';
+import { CuratedStack, Supplement, UserProfile } from '../types/index';
+import { curatedStacks } from '../data/curatedStacks';
 import { supplements, formGuidance } from '../data/supplements';
 import { normalizeGoals, normalizeSystems } from '../utils/normalization';
 
@@ -23,6 +24,7 @@ interface AdvancedBrowseProps {
   userProfile: UserProfile;
   onSelectSupplement: (supplement: Supplement) => void;
   selectedSupplements: Supplement[];
+  onSelectStack: (stack: CuratedStack) => void;
 }
 
 // All available systems extracted from supplements
@@ -86,12 +88,13 @@ const popularityScores: Record<string, number> = {
 const getNormalizedGoals = (supplement: Supplement) => normalizeGoals(supplement.goals);
 const getNormalizedSystems = (supplement: Supplement) => normalizeSystems(supplement.systems);
 
-export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupplements }: AdvancedBrowseProps) {
+export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupplements, onSelectStack }: AdvancedBrowseProps) {
   // State
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [expandedStack, setExpandedStack] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [activeQuickFilter, setActiveQuickFilter] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
@@ -365,6 +368,8 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     (filters.traditionalOnly ? 1 : 0) +
     (filters.modernOnly ? 1 : 0);
 
+  const supplementMap = useMemo(() => new Map(supplements.map(supplement => [supplement.id, supplement])), []);
+
   return (
     <div className="space-y-6">
       {/* Personalized Recommendations Banner */}
@@ -391,6 +396,92 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           </div>
         </div>
       )}
+
+      {/* Featured Stacks */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+              <span>✨</span> Featured Stacks
+            </h3>
+            <p className="text-sm text-gray-500">Curated combinations with synergy benefits highlighted.</p>
+          </div>
+          {selectedSupplements.length > 0 && (
+            <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+              {selectedSupplements.length} in your stack
+            </span>
+          )}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {curatedStacks.map(stack => {
+            const isExpanded = expandedStack === stack.id;
+            const stackSupplements = stack.supplementIds
+              .map(id => supplementMap.get(id))
+              .filter((supplement): supplement is Supplement => Boolean(supplement));
+
+            return (
+              <div key={stack.id} className="border border-gray-100 rounded-2xl bg-gray-50/40 overflow-hidden">
+                <div className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{stack.icon ?? '📦'}</span>
+                        <h4 className="font-semibold text-gray-900">{stack.name}</h4>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">{stack.description}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedStack(isExpanded ? null : stack.id)}
+                      className="text-xs font-medium text-emerald-600 bg-white border border-emerald-200 px-2 py-1 rounded-full hover:bg-emerald-50"
+                    >
+                      {isExpanded ? 'Hide' : 'Details'}
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1">
+                    {stackSupplements.map(supplement => (
+                      <span key={supplement.id} className="text-xs bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                        {supplement.name}
+                      </span>
+                    ))}
+                  </div>
+
+                  {isExpanded && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
+                      <p className="text-xs uppercase tracking-wide text-emerald-600 font-semibold">Synergy Benefit</p>
+                      <p className="text-sm text-emerald-900">{stack.synergyDescription}</p>
+                      {stack.bestFor && (
+                        <p className="text-xs text-emerald-700">
+                          Best for: {stack.bestFor.join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {stack.goals.map(goal => (
+                      <span key={goal} className="text-xs text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full capitalize">
+                        {goal}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="border-t border-gray-100 p-3 flex items-center justify-between bg-white">
+                  <span className="text-xs text-gray-500">Adds all supplements to your stack builder.</span>
+                  <button
+                    type="button"
+                    onClick={() => onSelectStack(stack)}
+                    className="text-xs font-semibold text-white bg-emerald-500 px-3 py-1.5 rounded-lg hover:bg-emerald-600 transition"
+                  >
+                    Add Stack
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Search Bar */}
       <div className="relative">

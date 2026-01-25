@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Supplement, UserProfile, Recommendation, InteractionWarning, TrackingData, DailyLog, LabResult } from './types/index';
+import { CuratedStack, Supplement, UserProfile, Recommendation, InteractionWarning, TrackingData, DailyLog, LabResult } from './types/index';
 import { supplements, formGuidance, supplementComparisons, misinformationAlerts } from './data/supplements';
 import { buildNutrientTargets, NutrientPriority } from './data/nutrientRequirements';
 import { analyzeGoal, checkInteractions, generateTimingSchedule } from './utils/analyzer';
@@ -351,6 +351,13 @@ export function App() {
     });
   };
 
+  const handleAddStack = (stack: CuratedStack) => {
+    const stackSupplements = stack.supplementIds
+      .map(id => supplements.find(supplement => supplement.id === id))
+      .filter((supplement): supplement is Supplement => Boolean(supplement));
+    setSelectedSupplements(stackSupplements);
+  };
+
   // Get interaction warnings
   const interactionWarnings = useMemo(() => {
     return checkInteractions(selectedSupplements);
@@ -372,6 +379,7 @@ export function App() {
   const timingSuggestions = useMemo(() => {
     return generateTimingSchedule(selectedSupplements);
   }, [selectedSupplements]);
+
 
   // Reset to start
   const handleReset = () => {
@@ -466,6 +474,94 @@ export function App() {
       // ignore clipboard failures in restricted environments
     }
   };
+
+  const stackBuilderSection = selectedSupplements.length > 0 && (
+    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h3 className="font-bold text-gray-900 flex items-center gap-2">
+          <span>📦</span> Your Stack ({selectedSupplements.length} selected)
+        </h3>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => handleCopyText(buildStackSummary())}
+            className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition"
+          >
+            Copy Stack
+          </button>
+          <button
+            type="button"
+            onClick={() => handleCopyText(buildScheduleSummary())}
+            className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition"
+          >
+            Copy Schedule
+          </button>
+        </div>
+      </div>
+
+      {/* Interaction Warnings */}
+      {interactionWarnings.length > 0 && (
+        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            Stack Warnings
+          </h4>
+          <ul className="space-y-2">
+            {interactionWarnings.map((warning: InteractionWarning, i: number) => (
+              <li key={i} className={`text-sm p-2 rounded-lg ${
+                warning.severity === 'high' ? 'bg-red-100 text-red-800' :
+                warning.severity === 'moderate' ? 'bg-amber-100 text-amber-800' :
+                'bg-yellow-50 text-yellow-800'
+              }`}>
+                <span className="font-medium">{warning.supplements.join(' + ')}: </span>
+                {warning.reason}
+                <p className="text-xs mt-1 opacity-80">{warning.recommendation}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Timing Suggestions */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-amber-50 rounded-xl p-3">
+          <h4 className="text-xs font-semibold text-amber-700 mb-2 flex items-center gap-1">
+            <span>🌅</span> Morning
+          </h4>
+          <div className="space-y-1">
+            {timingSuggestions.morning.map((s: Supplement) => (
+              <p key={s.id} className="text-xs text-amber-800">{s.name.split(' ')[0]}</p>
+            ))}
+            {timingSuggestions.morning.length === 0 && <p className="text-xs text-amber-600">-</p>}
+          </div>
+        </div>
+        <div className="bg-blue-50 rounded-xl p-3">
+          <h4 className="text-xs font-semibold text-blue-700 mb-2 flex items-center gap-1">
+            <span>☀️</span> Afternoon
+          </h4>
+          <div className="space-y-1">
+            {timingSuggestions.midday.map((s: Supplement) => (
+              <p key={s.id} className="text-xs text-blue-800">{s.name.split(' ')[0]}</p>
+            ))}
+            {timingSuggestions.midday.length === 0 && <p className="text-xs text-blue-600">-</p>}
+          </div>
+        </div>
+        <div className="bg-indigo-50 rounded-xl p-3">
+          <h4 className="text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
+            <span>🌙</span> Evening
+          </h4>
+          <div className="space-y-1">
+            {[...timingSuggestions.evening, ...timingSuggestions.bedtime].map((s: Supplement) => (
+              <p key={s.id} className="text-xs text-indigo-800">{s.name.split(' ')[0]}</p>
+            ))}
+            {timingSuggestions.evening.length === 0 && timingSuggestions.bedtime.length === 0 && <p className="text-xs text-indigo-600">-</p>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50">
@@ -706,11 +802,15 @@ export function App() {
 
         {/* Advanced Browse Mode */}
         {activeTab === 'browse' && !hasAnalyzed ? (
-          <AdvancedBrowse
-            userProfile={userProfile}
-            onSelectSupplement={toggleSupplementSelection}
-            selectedSupplements={selectedSupplements}
-          />
+          <div className="space-y-6">
+            <AdvancedBrowse
+              userProfile={userProfile}
+              onSelectSupplement={toggleSupplementSelection}
+              selectedSupplements={selectedSupplements}
+              onSelectStack={handleAddStack}
+            />
+            {stackBuilderSection}
+          </div>
         ) : activeTab === 'guide' && !hasAnalyzed ? (
           <EducationalGuide />
         ) : activeTab === 'track' && !hasAnalyzed ? (
@@ -1388,93 +1488,7 @@ export function App() {
             </div>
 
             {/* Stack Builder */}
-            {selectedSupplements.length > 0 && (
-              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <span>📦</span> Your Stack ({selectedSupplements.length} selected)
-                  </h3>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleCopyText(buildStackSummary())}
-                      className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition"
-                    >
-                      Copy Stack
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleCopyText(buildScheduleSummary())}
-                      className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition"
-                    >
-                      Copy Schedule
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Interaction Warnings */}
-                {interactionWarnings.length > 0 && (
-                  <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4">
-                    <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      Stack Warnings
-                    </h4>
-                    <ul className="space-y-2">
-                      {interactionWarnings.map((warning: InteractionWarning, i: number) => (
-                        <li key={i} className={`text-sm p-2 rounded-lg ${
-                          warning.severity === 'high' ? 'bg-red-100 text-red-800' :
-                          warning.severity === 'moderate' ? 'bg-amber-100 text-amber-800' :
-                          'bg-yellow-50 text-yellow-800'
-                        }`}>
-                          <span className="font-medium">{warning.supplements.join(' + ')}: </span>
-                          {warning.reason}
-                          <p className="text-xs mt-1 opacity-80">{warning.recommendation}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Timing Suggestions */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-amber-50 rounded-xl p-3">
-                    <h4 className="text-xs font-semibold text-amber-700 mb-2 flex items-center gap-1">
-                      <span>🌅</span> Morning
-                    </h4>
-                    <div className="space-y-1">
-                      {timingSuggestions.morning.map((s: Supplement) => (
-                        <p key={s.id} className="text-xs text-amber-800">{s.name.split(' ')[0]}</p>
-                      ))}
-                      {timingSuggestions.morning.length === 0 && <p className="text-xs text-amber-600">-</p>}
-                    </div>
-                  </div>
-                  <div className="bg-blue-50 rounded-xl p-3">
-                    <h4 className="text-xs font-semibold text-blue-700 mb-2 flex items-center gap-1">
-                      <span>☀️</span> Afternoon
-                    </h4>
-                    <div className="space-y-1">
-                      {timingSuggestions.midday.map((s: Supplement) => (
-                        <p key={s.id} className="text-xs text-blue-800">{s.name.split(' ')[0]}</p>
-                      ))}
-                      {timingSuggestions.midday.length === 0 && <p className="text-xs text-blue-600">-</p>}
-                    </div>
-                  </div>
-                  <div className="bg-indigo-50 rounded-xl p-3">
-                    <h4 className="text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
-                      <span>🌙</span> Evening
-                    </h4>
-                    <div className="space-y-1">
-                      {[...timingSuggestions.evening, ...timingSuggestions.bedtime].map((s: Supplement) => (
-                        <p key={s.id} className="text-xs text-indigo-800">{s.name.split(' ')[0]}</p>
-                      ))}
-                      {timingSuggestions.evening.length === 0 && timingSuggestions.bedtime.length === 0 && <p className="text-xs text-indigo-600">-</p>}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {stackBuilderSection}
 
             {/* Expectations & Timeframes */}
             <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 border border-slate-200">
