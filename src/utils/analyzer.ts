@@ -89,7 +89,12 @@ function matchKeyword(tokens: Token[], keyword: string): boolean {
     for (let j = 0; j < keywordTokens.length; j++) {
       const token = tokens[i + j];
       const keywordToken = keywordTokens[j];
-      if (token.word !== keywordToken && token.root !== keywordToken && token.word !== stemWord(keywordToken)) {
+      if (
+        token.word !== keywordToken &&
+        token.root !== keywordToken &&
+        token.word !== stemWord(keywordToken) &&
+        token.root !== stemWord(keywordToken)
+      ) {
         match = false;
         break;
       }
