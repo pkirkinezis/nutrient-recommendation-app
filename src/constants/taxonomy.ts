@@ -132,6 +132,12 @@ export const GOAL_CATEGORIES: { id: HealthGoal | string; label: string; icon: st
     keywords: ['inflammation', 'inflammatory', 'pain', 'ache', 'sore', 'joint pain', 'arthritis', 'swelling', 'anti-inflammatory', 'joint health', 'stiffness', 'muscle pain', 'back pain', 'chronic pain']
   },
   { 
+    id: 'bone-health', 
+    label: 'Bone Health', 
+    icon: '🦴',
+    keywords: ['bone health', 'bone density', 'osteoporosis', 'fracture risk', 'brittle bones', 'bone strength']
+  },
+  { 
     id: 'heart', 
     label: 'Heart & Cardio', 
     icon: '❤️',
@@ -164,6 +170,132 @@ export const GOAL_CATEGORIES: { id: HealthGoal | string; label: string; icon: st
     keywords: ['detox', 'liver', 'hepatic', 'fatty liver', 'toxins', 'cleanse', 'glutathione']
   },
 ];
+
+// ============================================
+// SEMANTIC ASSOCIATIONS (CONCEPT-BASED MATCHING)
+// ============================================
+
+export const SEMANTIC_ASSOCIATIONS: Record<string, {
+  synonyms: string[];
+  supplements: string[];
+  goals: string[];
+  systems: string[];
+}> = {
+  'bone-health': {
+    synonyms: ['bone health', 'bone density', 'osteoporosis', 'brittle bones', 'fracture risk', 'bone strength'],
+    supplements: ['Calcium', 'Vitamin D3', 'Vitamin K2', 'Magnesium'],
+    goals: ['bone-health', 'osteoporosis'],
+    systems: ['musculoskeletal']
+  },
+  'brain-fog': {
+    synonyms: ['brain fog', 'mental fog', 'foggy', 'memory issues', 'memory loss', 'forgetful'],
+    supplements: ['Lion\'s Mane', 'Vitamin B12', 'Omega-3', 'Ginkgo Biloba'],
+    goals: ['brain', 'focus'],
+    systems: ['nervous']
+  },
+  'stress-anxiety': {
+    synonyms: ['stress', 'anxiety', 'anxious', 'panic', 'overwhelmed', 'calm', 'relax'],
+    supplements: ['Ashwagandha', 'L-Theanine', 'Rhodiola Rosea', 'Magnesium'],
+    goals: ['stress', 'mood'],
+    systems: ['nervous', 'endocrine']
+  },
+  'sleep-quality': {
+    synonyms: ['sleep', 'insomnia', 'sleep quality', 'stay asleep', 'falling asleep', 'restful'],
+    supplements: ['Magnesium', 'Melatonin', 'Valerian Root', 'Glycine'],
+    goals: ['sleep'],
+    systems: ['nervous']
+  },
+  'energy-fatigue': {
+    synonyms: ['energy', 'fatigue', 'tired', 'exhausted', 'low energy', 'stamina'],
+    supplements: ['B-Complex', 'Iron', 'CoQ10', 'Cordyceps'],
+    goals: ['energy'],
+    systems: ['endocrine', 'cardiovascular']
+  },
+  'immune-support': {
+    synonyms: ['immunity', 'immune support', 'getting sick', 'cold', 'flu', 'infection'],
+    supplements: ['Vitamin C', 'Vitamin D3', 'Zinc', 'Elderberry'],
+    goals: ['immunity'],
+    systems: ['immune']
+  },
+  'digestion-gut': {
+    synonyms: ['digestion', 'gut health', 'bloating', 'ibs', 'constipation', 'diarrhea'],
+    supplements: ['Probiotics', 'Ginger', 'Triphala'],
+    goals: ['digestion'],
+    systems: ['digestive']
+  },
+  'longevity-aging': {
+    synonyms: ['anti-aging', 'longevity', 'healthy aging', 'lifespan', 'cellular aging'],
+    supplements: ['Resveratrol', 'CoQ10', 'NAC', 'Collagen'],
+    goals: ['longevity'],
+    systems: ['cardiovascular', 'endocrine']
+  },
+  'muscle-performance': {
+    synonyms: ['muscle', 'strength', 'athletic', 'performance', 'workout recovery'],
+    supplements: ['Creatine', 'Beta-Alanine', 'Magnesium'],
+    goals: ['fitness', 'muscle'],
+    systems: ['musculoskeletal']
+  },
+  'heart-health': {
+    synonyms: ['heart health', 'cardio', 'blood pressure', 'cholesterol', 'circulation'],
+    supplements: ['CoQ10', 'Omega-3', 'Magnesium'],
+    goals: ['heart-health'],
+    systems: ['cardiovascular']
+  },
+  'focus-clarity': {
+    synonyms: ['focus', 'concentration', 'mental clarity', 'attention', 'study'],
+    supplements: ['Lion\'s Mane', 'L-Theanine', 'Caffeine'],
+    goals: ['brain'],
+    systems: ['nervous']
+  },
+  'detox-liver': {
+    synonyms: ['detox', 'liver support', 'fatty liver', 'toxins'],
+    supplements: ['Milk Thistle', 'NAC', 'Chlorella'],
+    goals: ['detox'],
+    systems: ['digestive']
+  },
+  'inflammation-pain': {
+    synonyms: ['inflammation', 'joint pain', 'arthritis', 'pain relief', 'sore'],
+    supplements: ['Turmeric / Curcumin', 'Omega-3', 'Boswellia'],
+    goals: ['inflammation'],
+    systems: ['musculoskeletal']
+  },
+  'hormonal-balance': {
+    synonyms: ['hormones', 'hormonal balance', 'pms', 'menopause', 'testosterone'],
+    supplements: ['Ashwagandha', 'Maca Root', 'Vitamin D3'],
+    goals: ['hormones'],
+    systems: ['endocrine']
+  },
+  'skin-health': {
+    synonyms: ['skin', 'skin health', 'acne', 'glow', 'wrinkles'],
+    supplements: ['Collagen', 'Vitamin C', 'Vitamin E', 'Zinc'],
+    goals: ['beauty'],
+    systems: ['integumentary']
+  },
+  'hair-health': {
+    synonyms: ['hair', 'hair loss', 'hair growth', 'brittle hair'],
+    supplements: ['Biotin', 'Collagen', 'Zinc', 'Iron'],
+    goals: ['beauty'],
+    systems: ['integumentary']
+  },
+  'weight-management': {
+    synonyms: ['weight loss', 'fat loss', 'lose weight', 'metabolism'],
+    supplements: ['Chromium', 'Acetyl-L-Carnitine', 'Caffeine'],
+    goals: ['metabolic'],
+    systems: ['endocrine']
+  },
+  'pregnancy-support': {
+    synonyms: ['pregnancy', 'prenatal', 'trying to conceive'],
+    supplements: ['Folate', 'Iron', 'Omega-3', 'Choline'],
+    goals: ['fertility'],
+    systems: ['reproductive']
+  },
+  'mood-support': {
+    synonyms: ['mood', 'depressed', 'sadness', 'irritability', 'low mood'],
+    supplements: ['Omega-3', 'Vitamin D3', 'B-Complex'],
+    goals: ['mood'],
+    systems: ['nervous']
+  }
+};
 
 // ============================================
 // BODY SYSTEMS TAXONOMY
@@ -379,6 +511,11 @@ export const GOAL_ALIASES: Record<string, string> = {
   'joint-health': 'inflammation',
   'arthritis': 'inflammation',
   'pain': 'inflammation',
+  'bone-health': 'bone-health',
+  'bone density': 'bone-health',
+  'osteoporosis': 'bone-health',
+  'fracture risk': 'bone-health',
+  'brittle bones': 'bone-health',
   'heart-health': 'heart',
   'blood-pressure': 'heart',
   'cholesterol': 'heart',
