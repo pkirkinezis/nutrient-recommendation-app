@@ -1406,7 +1406,16 @@ export function analyzeGoal(
       }
     }
 
-    finalRecommendations = Array.from(sleepRecommendations.values());
+    if (sleepRecommendations.size > 0) {
+      const mergedRecommendations = new Map<string, RecommendedSupplement>();
+      for (const rec of finalRecommendations) {
+        mergedRecommendations.set(rec.supplement.id, rec);
+      }
+      for (const rec of sleepRecommendations.values()) {
+        mergedRecommendations.set(rec.supplement.id, rec);
+      }
+      finalRecommendations = Array.from(mergedRecommendations.values());
+    }
   }
   
   const confidenceMap: Record<NonNullable<GoalAnalysis['matchType']>, number> = {
