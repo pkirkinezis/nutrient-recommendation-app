@@ -112,6 +112,10 @@ export function App() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [identifiedGoals, setIdentifiedGoals] = useState<string[]>([]);
   const [identifiedSystems, setIdentifiedSystems] = useState<string[]>([]);
+  const [matchType, setMatchType] = useState<'keyword' | 'direct' | 'semantic' | 'none'>('none');
+  const [matchConfidence, setMatchConfidence] = useState(0);
+  const [directSupplementIds, setDirectSupplementIds] = useState<string[]>([]);
+  const [relatedSupplementIds, setRelatedSupplementIds] = useState<string[]>([]);
   const [selectedSupplements, setSelectedSupplements] = useState<Supplement[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.selectedSupplements);
@@ -326,6 +330,10 @@ export function App() {
     setIdentifiedGoals(result.identifiedGoals);
     setIdentifiedSystems(result.identifiedSystems);
     setTips(result.tips || []);
+    setMatchType(result.matchType ?? (result.identifiedGoals.length || result.identifiedSystems.length ? 'keyword' : 'none'));
+    setMatchConfidence(result.confidence ?? 0);
+    setDirectSupplementIds(result.directSupplements ?? []);
+    setRelatedSupplementIds(result.relatedSupplements ?? []);
     setAnalyzedQuery(query);
     setHasAnalyzed(true);
     setSelectedSupplements([]);
@@ -346,6 +354,18 @@ export function App() {
     return checkInteractions(selectedSupplements);
   }, [selectedSupplements]);
 
+  const directSupplements = useMemo(() => {
+    return directSupplementIds
+      .map(id => supplements.find(s => s.id === id))
+      .filter((supplement): supplement is Supplement => Boolean(supplement));
+  }, [directSupplementIds]);
+
+  const relatedSupplements = useMemo(() => {
+    return relatedSupplementIds
+      .map(id => supplements.find(s => s.id === id))
+      .filter((supplement): supplement is Supplement => Boolean(supplement));
+  }, [relatedSupplementIds]);
+
   // Get timing suggestions
   const timingSuggestions = useMemo(() => {
     return generateTimingSchedule(selectedSupplements);
@@ -359,6 +379,10 @@ export function App() {
     setRecommendations([]);
     setIdentifiedGoals([]);
     setIdentifiedSystems([]);
+    setMatchType('none');
+    setMatchConfidence(0);
+    setDirectSupplementIds([]);
+    setRelatedSupplementIds([]);
     setSelectedSupplements([]);
     setExpandedCard(null);
     setActiveTab('recommend');
@@ -1203,6 +1227,36 @@ export function App() {
                       {identifiedSystems.map(system => (
                         <span key={system} className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium capitalize">
                           {system} system
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {(matchType && matchType !== 'none') && (
+                    <div className="flex flex-wrap gap-2 mt-3 text-xs text-gray-600">
+                      <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full font-medium capitalize">
+                        Matched via: {matchType.replace('-', ' ')}
+                      </span>
+                      {matchConfidence > 0 && (
+                        <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full font-medium">
+                          {Math.round(matchConfidence * 100)}% confidence
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {directSupplements.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {directSupplements.map(supplement => (
+                        <span key={supplement.id} className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
+                          {supplement.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {relatedSupplements.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {relatedSupplements.slice(0, 4).map(supplement => (
+                        <span key={supplement.id} className="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
+                          Related: {supplement.name.split(' ')[0]}
                         </span>
                       ))}
                     </div>

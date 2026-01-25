@@ -101,6 +101,12 @@ export interface GoalAnalysis {
   identifiedSystems: string[];
   recommendations: RecommendedSupplement[];
   tips: string[];
+  matchType?: 'keyword' | 'direct' | 'semantic' | 'none';
+  confidence?: number;
+  directSupplements?: string[];
+  relatedSupplements?: string[];
+  inferredGoals?: string[];
+  inferredSystems?: string[];
 }
 
 // Legacy alias for backward compatibility
@@ -213,6 +219,13 @@ export interface TrackingData {
   logs: DailyLog[];
   startDate: string;
   supplements: string[];
+}
+
+export interface SemanticAssociation {
+  synonyms: string[];
+  supplements: string[];
+  goals: string[];
+  systems: string[];
 }
 
 export interface LabResult {

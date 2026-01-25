@@ -6,6 +6,7 @@
 import { Supplement, UserProfile, GoalAnalysis, RecommendedSupplement, TrackingData } from '../types';
 import { 
   GOAL_CATEGORIES, 
+  SEMANTIC_ASSOCIATIONS,
   SYSTEM_DEFINITIONS,
   NEGATION_WORDS,
   NEGATION_WINDOW,
@@ -25,6 +26,18 @@ interface Token {
   index: number;
   isNegated: boolean;
   root: string;
+}
+
+interface DirectMatchResult {
+  supplements: Supplement[];
+  inferredGoals: string[];
+  inferredSystems: string[];
+}
+
+interface SemanticMatchResult {
+  supplements: Supplement[];
+  inferredGoals: string[];
+  inferredSystems: string[];
 }
 
 /**
@@ -102,6 +115,38 @@ const STOP_WORDS = new Set([
   'he', 'him', 'his', 'she', 'her', 'it', 'its', 'they', 'them', 'their', 'what',
   'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'while', 'during'
 ]);
+
+function levenshteinDistance(a: string, b: string): number {
+  const matrix: number[][] = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+
+  for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+  for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  return matrix[a.length][b.length];
+}
+
+function fuzzyMatch(input: string, target: string, threshold = 0.7): boolean {
+  if (!input || !target) return false;
+  const normalizedInput = input.toLowerCase();
+  const normalizedTarget = target.toLowerCase();
+  if (normalizedInput === normalizedTarget) return true;
+  if (normalizedTarget.includes(normalizedInput) || normalizedInput.includes(normalizedTarget)) return true;
+
+  const distance = levenshteinDistance(normalizedInput, normalizedTarget);
+  const similarity = 1 - distance / Math.max(normalizedTarget.length, 1);
+  return similarity >= threshold;
+}
 
 /**
  * Check if a keyword matches in the token list (with word boundaries)
@@ -206,6 +251,92 @@ function matchPartialKeyword(tokens: Token[], keyword: string): boolean {
   }
   
   return false;
+}
+
+function findSupplementByNameOrAlias(
+  supplements: Supplement[],
+  name: string
+): Supplement | undefined {
+  const normalizedName = name.toLowerCase();
+  const alias = normalizeSupplementName(normalizedName).toLowerCase();
+  return supplements.find(s => {
+    const lowerName = s.name.toLowerCase();
+    return lowerName === normalizedName ||
+      lowerName === alias ||
+      lowerName.includes(normalizedName) ||
+      lowerName.includes(alias) ||
+      s.id.toLowerCase() === normalizedName;
+  });
+}
+
+function isNegatedSupplementMatch(inputTokens: Token[], supplementName: string, alias: string): boolean {
+  const targetTokens = new Set([
+    ...tokenize(supplementName),
+    ...tokenize(alias)
+  ]);
+  for (const token of inputTokens) {
+    if (!token.isNegated) continue;
+    if (targetTokens.has(token.word) || targetTokens.has(token.root)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function findDirectSupplementMatches(input: string, supplements: Supplement[]): DirectMatchResult {
+  const normalizedInput = input.toLowerCase().trim();
+  if (!normalizedInput || normalizedInput.length < 3) {
+    return { supplements: [], inferredGoals: [], inferredSystems: [] };
+  }
+
+  const inputTokens = parseInput(input);
+  const alias = normalizeSupplementName(normalizedInput).toLowerCase();
+  const matches = supplements.filter(supplement => {
+    const normalizedName = supplement.name.toLowerCase();
+    if (isNegatedSupplementMatch(inputTokens, normalizedName, alias)) {
+      return false;
+    }
+    return fuzzyMatch(normalizedInput, normalizedName) || fuzzyMatch(alias, normalizedName);
+  });
+
+  const inferredGoals = new Set<string>();
+  const inferredSystems = new Set<string>();
+  for (const match of matches) {
+    normalizeGoals(match.goals).forEach(goal => inferredGoals.add(goal));
+    normalizeSystems(match.systems).forEach(system => inferredSystems.add(system));
+  }
+
+  return {
+    supplements: matches,
+    inferredGoals: Array.from(inferredGoals),
+    inferredSystems: Array.from(inferredSystems)
+  };
+}
+
+function findSemanticMatches(supplements: Supplement[], tokens: Token[]): SemanticMatchResult {
+  const matchedGoals = new Set<string>();
+  const matchedSystems = new Set<string>();
+  const matchedSupplements: Supplement[] = [];
+
+  for (const association of Object.values(SEMANTIC_ASSOCIATIONS)) {
+    const hasMatch = association.synonyms.some(synonym => matchKeyword(tokens, synonym));
+    if (!hasMatch) continue;
+
+    association.goals.forEach(goal => matchedGoals.add(goal));
+    association.systems.forEach(system => matchedSystems.add(system));
+    for (const supplementName of association.supplements) {
+      const match = findSupplementByNameOrAlias(supplements, supplementName);
+      if (match && !matchedSupplements.find(s => s.id === match.id)) {
+        matchedSupplements.push(match);
+      }
+    }
+  }
+
+  return {
+    supplements: matchedSupplements,
+    inferredGoals: normalizeGoals(Array.from(matchedGoals)),
+    inferredSystems: normalizeSystems(Array.from(matchedSystems))
+  };
 }
 
 // ============================================
@@ -343,6 +474,45 @@ function identifySystems(tokens: Token[]): MatchedSystem[] {
   
   // Sort by score and limit to top systems
   return systems.sort((a, b) => b.score - a.score).slice(0, 3);
+}
+
+function buildMatchedGoals(goalIds: string[]): MatchedGoal[] {
+  return goalIds.map(goalId => {
+    const category = GOAL_CATEGORIES.find(g => g.id === goalId);
+    return {
+      id: goalId,
+      label: category?.label ?? goalId,
+      score: 2,
+      matchedKeywords: category?.keywords ?? [goalId]
+    };
+  });
+}
+
+function buildMatchedSystems(systemIds: string[]): MatchedSystem[] {
+  return systemIds.map(systemId => ({
+    id: systemId as MatchedSystem['id'],
+    label: SYSTEM_DEFINITIONS.find(s => s.id === systemId)?.label ?? systemId,
+    score: 2
+  }));
+}
+
+function findRelatedSupplements(
+  seeds: Supplement[],
+  supplements: Supplement[]
+): Supplement[] {
+  const seedGoals = new Set(seeds.flatMap(s => normalizeGoals(s.goals)));
+  if (seedGoals.size === 0) return [];
+
+  return supplements
+    .filter(s => !seeds.some(seed => seed.id === s.id))
+    .map(s => {
+      const sharedGoals = normalizeGoals(s.goals).filter(goal => seedGoals.has(goal)).length;
+      return { supplement: s, sharedGoals };
+    })
+    .filter(item => item.sharedGoals > 0)
+    .sort((a, b) => b.sharedGoals - a.sharedGoals)
+    .slice(0, 6)
+    .map(item => item.supplement);
 }
 
 // ============================================
@@ -1085,14 +1255,52 @@ export function analyzeGoal(
   const context = extractQueryContext(input, profile);
   
   // Identify goals and systems
-  const matchedGoals = identifyGoals(tokens);
-  const matchedSystems = identifySystems(tokens);
+  let matchedGoals = identifyGoals(tokens);
+  let matchedSystems = identifySystems(tokens);
+
+  let matchType: GoalAnalysis['matchType'] = (matchedGoals.length || matchedSystems.length) ? 'keyword' : 'none';
+  let directMatchIds: string[] = [];
+  let relatedMatchIds: string[] = [];
+  let inferredGoals: string[] = [];
+  let inferredSystems: string[] = [];
+
+  if (matchType === 'none') {
+    const directMatches = findDirectSupplementMatches(input, supplements);
+    if (directMatches.supplements.length > 0) {
+      matchType = 'direct';
+      directMatchIds = directMatches.supplements.map(s => s.id);
+      inferredGoals = directMatches.inferredGoals;
+      inferredSystems = directMatches.inferredSystems;
+      matchedGoals = buildMatchedGoals(inferredGoals);
+      matchedSystems = buildMatchedSystems(inferredSystems);
+      relatedMatchIds = findRelatedSupplements(directMatches.supplements, supplements).map(s => s.id);
+    }
+  }
+
+  if (matchType === 'none') {
+    const semanticMatches = findSemanticMatches(supplements, tokens);
+    if (semanticMatches.supplements.length > 0 || semanticMatches.inferredGoals.length > 0) {
+      matchType = 'semantic';
+      directMatchIds = semanticMatches.supplements.map(s => s.id);
+      inferredGoals = semanticMatches.inferredGoals;
+      inferredSystems = semanticMatches.inferredSystems;
+      matchedGoals = buildMatchedGoals(inferredGoals);
+      matchedSystems = buildMatchedSystems(inferredSystems);
+      relatedMatchIds = findRelatedSupplements(semanticMatches.supplements, supplements).map(s => s.id);
+    }
+  }
   
   // Score all supplements
-  let scoredSupplements = supplements.map(supplement => ({
-    supplement,
-    score: scoreSupplementForGoals(supplement, matchedGoals, matchedSystems)
-  }));
+  let scoredSupplements = supplements.map(supplement => {
+    let score = scoreSupplementForGoals(supplement, matchedGoals, matchedSystems);
+    if (matchType === 'direct' && directMatchIds.includes(supplement.id)) {
+      score += 25;
+    }
+    if (matchType === 'semantic' && directMatchIds.includes(supplement.id)) {
+      score += 18;
+    }
+    return { supplement, score };
+  });
   
   // Filter out zero scores
   scoredSupplements = scoredSupplements.filter(({ score }) => score > 0);
@@ -1149,12 +1357,25 @@ export function analyzeGoal(
     }
   }
   
+  const confidenceMap: Record<NonNullable<GoalAnalysis['matchType']>, number> = {
+    keyword: 0.9,
+    direct: 0.8,
+    semantic: 0.7,
+    none: 0.2
+  };
+
   return {
     query: input,
     identifiedGoals: matchedGoals.map(g => g.id),
     identifiedSystems: matchedSystems.map(s => s.id),
     recommendations: finalRecommendations,
-    tips: generateTips(matchedGoals, profile)
+    tips: generateTips(matchedGoals, profile),
+    matchType,
+    confidence: confidenceMap[matchType ?? 'none'],
+    directSupplements: directMatchIds,
+    relatedSupplements: relatedMatchIds,
+    inferredGoals,
+    inferredSystems
   };
 }
 
