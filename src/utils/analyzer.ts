@@ -1526,30 +1526,53 @@ export function generateTimingSchedule(supplements: Supplement[]): TimingSchedul
     withMeals: [],
     awayFromMeals: []
   };
-  
+
+  const pushUnique = (list: Supplement[], supplement: Supplement) => {
+    if (!list.some(item => item.id === supplement.id)) {
+      list.push(supplement);
+    }
+  };
+
+  const timingKeywords = {
+    morning: ['morning', 'breakfast'],
+    midday: ['midday', 'lunch', 'afternoon'],
+    evening: ['evening', 'dinner'],
+    bedtime: ['bedtime', 'before bed', 'before sleep']
+  };
+
   for (const supplement of supplements) {
     const timing = supplement.timing?.toLowerCase() || '';
     const name = supplement.name.toLowerCase();
-    
-    // Determine time of day
-    if (timing.includes('morning') || timing.includes('breakfast')) {
-      schedule.morning.push(supplement);
-    } else if (timing.includes('evening') || timing.includes('dinner')) {
-      schedule.evening.push(supplement);
-    } else if (timing.includes('bedtime') || timing.includes('before bed') || timing.includes('before sleep')) {
-      schedule.bedtime.push(supplement);
-    } else if (timing.includes('midday') || timing.includes('lunch') || timing.includes('afternoon')) {
-      schedule.midday.push(supplement);
-    } else {
+
+    const hasMorning = timingKeywords.morning.some(keyword => timing.includes(keyword));
+    const hasMidday = timingKeywords.midday.some(keyword => timing.includes(keyword));
+    const hasEvening = timingKeywords.evening.some(keyword => timing.includes(keyword));
+    const hasBedtime = timingKeywords.bedtime.some(keyword => timing.includes(keyword));
+
+    // Determine time of day (allow multiple matches)
+    if (hasMorning) {
+      pushUnique(schedule.morning, supplement);
+    }
+    if (hasMidday) {
+      pushUnique(schedule.midday, supplement);
+    }
+    if (hasEvening) {
+      pushUnique(schedule.evening, supplement);
+    }
+    if (hasBedtime) {
+      pushUnique(schedule.bedtime, supplement);
+    }
+
+    if (!hasMorning && !hasMidday && !hasEvening && !hasBedtime) {
       // Default based on supplement type/name
       if (['melatonin', 'valerian', 'glycine', 'gaba', 'magnesium'].some(s => name.includes(s))) {
-        schedule.bedtime.push(supplement);
+        pushUnique(schedule.bedtime, supplement);
       } else if (['caffeine', 'vitamin d', 'b-complex', 'iron', 'cordyceps', 'ginseng', 'rhodiola'].some(s => name.includes(s))) {
-        schedule.morning.push(supplement);
+        pushUnique(schedule.morning, supplement);
       } else if (['creatine', 'protein', 'bcaa', 'eaa', 'citrulline'].some(s => name.includes(s))) {
-        schedule.midday.push(supplement); // Around workout
+        pushUnique(schedule.midday, supplement); // Around workout
       } else {
-        schedule.morning.push(supplement); // Default to morning
+        pushUnique(schedule.morning, supplement); // Default to morning
       }
     }
     
