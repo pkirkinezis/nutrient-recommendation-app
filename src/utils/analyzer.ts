@@ -76,42 +76,6 @@ function parseInput(text: string): Token[] {
 }
 
 /**
- * Check if a keyword matches in the token list (with word boundaries)
- * Returns true only if found and NOT negated
- */
-function matchKeyword(tokens: Token[], keyword: string): boolean {
-  const keywordTokens = tokenize(keyword);
-  
-  for (let i = 0; i <= tokens.length - keywordTokens.length; i++) {
-    let match = true;
-    let anyNegated = false;
-    
-    for (let j = 0; j < keywordTokens.length; j++) {
-      const token = tokens[i + j];
-      const keywordToken = keywordTokens[j];
-      if (
-        token.word !== keywordToken &&
-        token.root !== keywordToken &&
-        token.word !== stemWord(keywordToken) &&
-        token.root !== stemWord(keywordToken)
-      ) {
-        match = false;
-        break;
-      }
-      if (token.isNegated) {
-        anyNegated = true;
-      }
-    }
-    
-    if (match && !anyNegated) {
-      return true;
-    }
-  }
-  
-  return false;
-}
-
-/**
  * Minimum token length for partial matching to prevent false positives
  * Short tokens like "at", "or", "an" should not trigger partial matches
  */
@@ -138,6 +102,49 @@ const STOP_WORDS = new Set([
   'he', 'him', 'his', 'she', 'her', 'it', 'its', 'they', 'them', 'their', 'what',
   'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'while', 'during'
 ]);
+
+/**
+ * Check if a keyword matches in the token list (with word boundaries)
+ * Returns true only if found and NOT negated
+ */
+function matchKeyword(tokens: Token[], keyword: string): boolean {
+  const keywordTokens = tokenize(keyword);
+  const keywordRoots = keywordTokens.map(stemWord);
+  
+  for (let i = 0; i <= tokens.length - keywordTokens.length; i++) {
+    let match = true;
+    let anyNegated = false;
+    
+    for (let j = 0; j < keywordTokens.length; j++) {
+      const token = tokens[i + j];
+      const keywordToken = keywordTokens[j];
+      const keywordRoot = keywordRoots[j];
+      const isExactMatch =
+        token.word === keywordToken ||
+        token.root === keywordToken ||
+        token.word === keywordRoot ||
+        token.root === keywordRoot;
+      const isInflectedMatch =
+        keywordToken.length >= MIN_PARTIAL_MATCH_LENGTH &&
+        (token.word.startsWith(keywordToken) || token.word.startsWith(keywordRoot)) &&
+        token.word.length - keywordToken.length <= 2;
+
+      if (!isExactMatch && !isInflectedMatch) {
+        match = false;
+        break;
+      }
+      if (token.isNegated) {
+        anyNegated = true;
+      }
+    }
+    
+    if (match && !anyNegated) {
+      return true;
+    }
+  }
+  
+  return false;
+}
 
 /**
  * Check for partial keyword match (for compound words) with negation awareness
