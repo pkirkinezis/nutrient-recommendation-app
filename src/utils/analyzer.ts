@@ -269,15 +269,33 @@ function findSupplementByNameOrAlias(
   });
 }
 
+function isNegatedSupplementMatch(inputTokens: Token[], supplementName: string, alias: string): boolean {
+  const targetTokens = new Set([
+    ...tokenize(supplementName),
+    ...tokenize(alias)
+  ]);
+  for (const token of inputTokens) {
+    if (!token.isNegated) continue;
+    if (targetTokens.has(token.word) || targetTokens.has(token.root)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function findDirectSupplementMatches(input: string, supplements: Supplement[]): DirectMatchResult {
   const normalizedInput = input.toLowerCase().trim();
   if (!normalizedInput || normalizedInput.length < 3) {
     return { supplements: [], inferredGoals: [], inferredSystems: [] };
   }
 
+  const inputTokens = parseInput(input);
   const alias = normalizeSupplementName(normalizedInput).toLowerCase();
   const matches = supplements.filter(supplement => {
     const normalizedName = supplement.name.toLowerCase();
+    if (isNegatedSupplementMatch(inputTokens, normalizedName, alias)) {
+      return false;
+    }
     return fuzzyMatch(normalizedInput, normalizedName) || fuzzyMatch(alias, normalizedName);
   });
 
