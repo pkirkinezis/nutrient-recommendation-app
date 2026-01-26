@@ -1076,6 +1076,23 @@ function ListCard({ supplement, isExpanded, onToggle, isSelected, onSelect, simi
             </div>
           )}
 
+          {/* Evidence sources */}
+          {supplement.evidenceSources && supplement.evidenceSources.length > 0 && (
+            <div className="bg-white border border-slate-100 rounded-xl p-3">
+              <h4 className="text-xs font-semibold text-slate-700 mb-2">🔗 Evidence Sources</h4>
+              <ul className="space-y-1 text-xs text-slate-600">
+                {supplement.evidenceSources.map((source, index) => (
+                  <li key={`${source.title}-${index}`}>
+                    <a className="text-emerald-700 hover:underline" href={source.url} target="_blank" rel="noreferrer">
+                      {source.title}
+                    </a>
+                    {source.note && <span className="text-slate-400"> — {source.note}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Similar Supplements */}
           {similarSupplements.length > 0 && (
             <div className="border-t border-gray-100 pt-4">
