@@ -3,7 +3,7 @@
  * Improved parsing with negation handling, word boundaries, and comprehensive interaction detection
  */
 
-import { Supplement, UserProfile, GoalAnalysis, RecommendedSupplement, TrackingData } from '../types';
+import { Supplement, SupplementStack, UserProfile, GoalAnalysis, RecommendedSupplement, TrackingData } from '../types';
 import { 
   GOAL_CATEGORIES, 
   SEMANTIC_ASSOCIATIONS,
@@ -16,6 +16,7 @@ import {
 } from '../constants/taxonomy';
 import { normalizeGoals, normalizeSystems } from './normalization';
 import { buildNutrientTargets } from '../data/nutrientRequirements';
+import { premadeStacks } from '../data/stacks';
 
 // ============================================
 // TOKENIZATION & PARSING
@@ -38,6 +39,27 @@ interface SemanticMatchResult {
   supplements: Supplement[];
   inferredGoals: string[];
   inferredSystems: string[];
+}
+
+const INTIMACY_GOALS = new Set(['libido', 'fertility', 'hormones', 'sexual-health']);
+
+export function getRecommendedStacks(profile?: UserProfile, goals: string[] = []): SupplementStack[] {
+  const normalizedGoals = normalizeGoals(goals);
+  const targetGender = profile?.sex === 'male' ? 'men' : profile?.sex === 'female' ? 'women' : 'all';
+  const availableStacks = premadeStacks.filter(stack => stack.targetGender === 'all' || stack.targetGender === targetGender);
+
+  if (normalizedGoals.length === 0) {
+    return availableStacks;
+  }
+
+  const goalMatches = normalizedGoals.filter(goal => INTIMACY_GOALS.has(goal));
+  if (goalMatches.length === 0) {
+    return availableStacks;
+  }
+
+  return availableStacks.filter(stack =>
+    goalMatches.some(goal => stack.primaryGoal === goal || (goal === 'hormones' && stack.primaryGoal === 'fertility'))
+  );
 }
 
 /**
@@ -1425,12 +1447,19 @@ export function analyzeGoal(
     none: 0.2
   };
 
+  const recommendedStacks = getRecommendedStacks(profile, matchedGoals.map(goal => goal.id));
+  const tips = generateTips(matchedGoals, profile);
+  if (recommendedStacks.length > 0 && matchedGoals.some(goal => INTIMACY_GOALS.has(goal.id))) {
+    tips.unshift('Consider a pre-made intimacy or reproductive health stack to combine synergistic nutrients and adaptogens.');
+  }
+
   return {
     query: input,
     identifiedGoals: matchedGoals.map(g => g.id),
     identifiedSystems: matchedSystems.map(s => s.id),
     recommendations: finalRecommendations,
-    tips: generateTips(matchedGoals, profile),
+    tips,
+    recommendedStacks,
     matchType,
     confidence: confidenceMap[matchType ?? 'none'],
     directSupplements: directMatchIds,
