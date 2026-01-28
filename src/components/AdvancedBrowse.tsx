@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { CuratedStack, Supplement, SupplementStack, UserProfile } from '../types/index';
 import { curatedStacks } from '../data/curatedStacks';
 import { premadeStacks } from '../data/stacks';
@@ -133,6 +133,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [expandedStack, setExpandedStack] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [showPremadeStacks, setShowPremadeStacks] = useState(true);
   const [activeQuickFilter, setActiveQuickFilter] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     types: [],
@@ -271,6 +272,18 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     if (!highlightIntimacyStacks) return [];
     return visiblePremadeStacks.filter(stack => ['libido', 'fertility'].includes(stack.primaryGoal));
   }, [highlightIntimacyStacks, visiblePremadeStacks]);
+
+  const orderedPremadeStacks = useMemo(() => {
+    if (!highlightIntimacyStacks || highlightedPremadeStacks.length === 0) {
+      return visiblePremadeStacks;
+    }
+
+    const highlightedIds = new Set(highlightedPremadeStacks.map(stack => stack.id));
+    return [
+      ...highlightedPremadeStacks,
+      ...visiblePremadeStacks.filter(stack => !highlightedIds.has(stack.id))
+    ];
+  }, [highlightIntimacyStacks, highlightedPremadeStacks, visiblePremadeStacks]);
 
   const handleAddPremadeStack = useCallback((stack: SupplementStack) => {
     stack.ingredients.forEach(ingredient => {
@@ -443,6 +456,14 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     (filters.traditionalOnly ? 1 : 0) +
     (filters.modernOnly ? 1 : 0);
 
+  const hasActiveSearch = searchQuery.trim().length > 0;
+  const hasActiveFilters = Boolean(activeQuickFilter) || activeFilterCount > 0;
+  const shouldCollapsePremadeStacks = hasActiveSearch || hasActiveFilters;
+
+  useEffect(() => {
+    setShowPremadeStacks(!shouldCollapsePremadeStacks);
+  }, [shouldCollapsePremadeStacks]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -492,81 +513,6 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 </button>
               );
             })}
-          </div>
-        </div>
-      )}
-
-      {browseMode === 'supplements' && highlightIntimacyStacks && highlightedPremadeStacks.length > 0 && (
-        <div className="bg-white rounded-2xl border border-emerald-200 p-5 shadow-sm space-y-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-500">Pre-Made Stacks</p>
-            <h3 className="font-bold text-emerald-800 flex items-center gap-2">
-              <span>💞</span> Pre-made Intimacy & Reproductive Stacks
-            </h3>
-            <p className="text-sm text-emerald-700">Prioritized stacks based on your reproductive health or intimacy goals.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {highlightedPremadeStacks.map(stack => (
-              <div key={stack.id} className="border border-emerald-100 rounded-2xl bg-emerald-50/40 overflow-hidden">
-                <div className="p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">💫</span>
-                        <h4 className="font-semibold text-gray-900">{stack.name}</h4>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">{stack.description}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setExpandedStack(expandedStack === stack.id ? null : stack.id)}
-                      className="text-xs font-medium text-emerald-600 bg-white border border-emerald-200 px-2 py-1 rounded-full hover:bg-emerald-50"
-                    >
-                      {expandedStack === stack.id ? 'Hide' : 'Details'}
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {stack.ingredients.map(ingredient => {
-                      const supplement = supplementMap.get(ingredient.supplementId);
-                      return supplement ? (
-                        <span key={ingredient.supplementId} className="text-xs bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded-full">
-                          {supplement.name}
-                        </span>
-                      ) : null;
-                    })}
-                  </div>
-                  {expandedStack === stack.id && (
-                    <div className="space-y-3">
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
-                        <p className="text-xs uppercase tracking-wide text-emerald-600 font-semibold">Synergy</p>
-                        <p className="text-sm text-emerald-900">{stack.synergyDescription}</p>
-                      </div>
-                      <div className="space-y-2">
-                        {stack.ingredients.map(ingredient => {
-                          const supplement = supplementMap.get(ingredient.supplementId);
-                          if (!supplement) return null;
-                          return (
-                            <div key={ingredient.supplementId} className="text-xs text-gray-600">
-                              <span className="font-semibold text-gray-800">{supplement.name}:</span> {ingredient.dosage} — {ingredient.reason}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="border-t border-gray-100 p-3 flex items-center justify-between bg-white">
-                  <span className="text-xs text-gray-500">Adds all supplements to your stack builder.</span>
-                  <button
-                    type="button"
-                    onClick={() => handleAddPremadeStack(stack)}
-                    className="text-xs font-semibold text-white bg-emerald-500 px-3 py-1.5 rounded-lg hover:bg-emerald-600 transition"
-                  >
-                    Add Stack
-                  </button>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       )}
@@ -734,58 +680,164 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
 
       {browseMode === 'supplements' && (
         <>
+          <div className="bg-white rounded-2xl border border-emerald-200 p-5 shadow-sm space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-500">Pre-Made Stacks</p>
+                <h3 className="font-bold text-emerald-800 flex items-center gap-2">
+                  <span>🌿</span> Goal-Based Stack Starters
+                </h3>
+                <p className="text-sm text-emerald-700">Quickly add evidence-informed combinations tailored to major health goals.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPremadeStacks(prev => !prev)}
+                className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition"
+              >
+                {showPremadeStacks ? 'Hide Stacks' : 'View Stacks'}
+              </button>
+            </div>
+            {showPremadeStacks ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {orderedPremadeStacks.map(stack => {
+                  const isHighlighted = highlightIntimacyStacks && ['libido', 'fertility'].includes(stack.primaryGoal);
+
+                  return (
+                    <div
+                      key={stack.id}
+                      className={`border rounded-2xl overflow-hidden ${
+                        isHighlighted
+                          ? 'border-emerald-200 bg-emerald-50/40'
+                          : 'border-gray-200 bg-white'
+                      }`}
+                    >
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">{isHighlighted ? '💞' : '💫'}</span>
+                              <h4 className="font-semibold text-gray-900">{stack.name}</h4>
+                            </div>
+                            <p className="text-sm text-gray-600 mt-1">{stack.description}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setExpandedStack(expandedStack === stack.id ? null : stack.id)}
+                            className="text-xs font-medium text-emerald-600 bg-white border border-emerald-200 px-2 py-1 rounded-full hover:bg-emerald-50"
+                          >
+                            {expandedStack === stack.id ? 'Hide' : 'Details'}
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {stack.ingredients.map(ingredient => {
+                            const supplement = supplementMap.get(ingredient.supplementId);
+                            return supplement ? (
+                              <span key={ingredient.supplementId} className="text-xs bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                                {supplement.name}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                        {expandedStack === stack.id && (
+                          <div className="space-y-3">
+                            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
+                              <p className="text-xs uppercase tracking-wide text-emerald-600 font-semibold">Synergy</p>
+                              <p className="text-sm text-emerald-900">{stack.synergyDescription}</p>
+                            </div>
+                            <div className="space-y-2">
+                              {stack.ingredients.map(ingredient => {
+                                const supplement = supplementMap.get(ingredient.supplementId);
+                                if (!supplement) return null;
+                                return (
+                                  <div key={ingredient.supplementId} className="text-xs text-gray-600">
+                                    <span className="font-semibold text-gray-800">{supplement.name}:</span> {ingredient.dosage} — {ingredient.reason}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="border-t border-gray-100 p-3 flex items-center justify-between bg-white">
+                        <span className="text-xs text-gray-500">Adds all supplements to your stack builder.</span>
+                        <button
+                          type="button"
+                          onClick={() => handleAddPremadeStack(stack)}
+                          className="text-xs font-semibold text-white bg-emerald-500 px-3 py-1.5 rounded-lg hover:bg-emerald-600 transition"
+                        >
+                          Add Stack
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2 text-xs text-emerald-700">
+                <span className="bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
+                  {shouldCollapsePremadeStacks ? 'Stacks minimized while filters are active.' : 'Stacks are hidden.'}
+                </span>
+                <span className="text-gray-500">
+                  {shouldCollapsePremadeStacks ? 'Clear filters or use “View Stacks” to expand.' : 'Use “View Stacks” to expand.'}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Quick Filters */}
+          {!showFilters && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-gray-700">Quick Filters</h4>
+                {(activeQuickFilter || activeFilterCount > 0) && (
+                  <button onClick={clearFilters} className="text-xs text-emerald-600 hover:text-emerald-700">
+                    Clear all
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {quickFilters.map(qf => (
+                  <button
+                    key={qf.id}
+                    onClick={() => {
+                      setActiveQuickFilter(activeQuickFilter === qf.id ? null : qf.id);
+                      setFilters({ ...filters, types: [], evidence: [], goals: [], systems: [], timing: [], safeFor: [], hasFormGuidance: false, traditionalOnly: false, modernOnly: false });
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
+                      activeQuickFilter === qf.id
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {qf.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Search Bar */}
           <div className="relative">
             <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => { setSearchQuery(e.target.value); setActiveQuickFilter(null); }}
-          placeholder="Search supplements, benefits, or goals..."
-          className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-          </div>
-
-          {/* Quick Filters */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium text-gray-700">Quick Filters</h4>
-              {(activeQuickFilter || activeFilterCount > 0) && (
-                <button onClick={clearFilters} className="text-xs text-emerald-600 hover:text-emerald-700">
-                  Clear all
-                </button>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-          {quickFilters.map(qf => (
-            <button
-              key={qf.id}
-              onClick={() => {
-                setActiveQuickFilter(activeQuickFilter === qf.id ? null : qf.id);
-                setFilters({ ...filters, types: [], evidence: [], goals: [], systems: [], timing: [], safeFor: [], hasFormGuidance: false, traditionalOnly: false, modernOnly: false });
-              }}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
-                activeQuickFilter === qf.id
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              {qf.label}
-            </button>
-          ))}
-        </div>
+              type="text"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setActiveQuickFilter(null); }}
+              placeholder="Search supplements, benefits, or goals..."
+              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* Advanced Filters Toggle */}
