@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Supplement, UserProfile } from '../types';
 import { supplements, formGuidance } from '../data/supplements';
 import { normalizeGoals, normalizeSystems } from '../utils/normalization';
@@ -122,6 +122,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeSupplement, setActiveSupplement] = useState<Supplement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const loadingTimeoutRef = useRef<number | null>(null);
   const listContainerRef = useRef<HTMLDivElement | null>(null);
   const [listScrollTop, setListScrollTop] = useState(0);
   const [listHeight, setListHeight] = useState(520);
@@ -138,12 +139,21 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     modernOnly: false,
   });
 
-  useEffect(() => {
-    // Lightweight skeleton state to smooth perceived performance.
+  const triggerLoading = useCallback((): void => {
+    if (loadingTimeoutRef.current !== null) {
+      window.clearTimeout(loadingTimeoutRef.current);
+    }
     setIsLoading(true);
-    const timeout = window.setTimeout(() => setIsLoading(false), 280);
-    return () => window.clearTimeout(timeout);
-  }, [searchQuery, filters, sortBy, viewMode, activeQuickFilter]);
+    loadingTimeoutRef.current = window.setTimeout(() => setIsLoading(false), 280);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (loadingTimeoutRef.current !== null) {
+        window.clearTimeout(loadingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const container = listContainerRef.current;
@@ -327,11 +337,13 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
 
   const handleQuickFilter = (filterId: string): void => {
     const next = activeQuickFilter === filterId ? null : filterId;
+    triggerLoading();
     setActiveQuickFilter(next);
     setFilters(prev => ({ ...prev, goals: [], types: [], evidence: [], systems: [], timing: [], safeFor: [], hasFormGuidance: false, traditionalOnly: false, modernOnly: false }));
   };
 
   const clearFilters = (): void => {
+    triggerLoading();
     setFilters({
       types: [],
       evidence: [],
@@ -352,8 +364,29 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     const nextFilters = currentValues.includes(value)
       ? { ...filters, [key]: currentValues.filter(v => v !== value) }
       : { ...filters, [key]: [...currentValues, value] };
+    triggerLoading();
     setFilters(nextFilters);
     setActiveQuickFilter(null);
+  };
+
+  const handleSearchChange = (value: string): void => {
+    triggerLoading();
+    setSearchQuery(value);
+  };
+
+  const handleClearSearch = (): void => {
+    triggerLoading();
+    setSearchQuery('');
+  };
+
+  const handleSortChange = (value: SortOption): void => {
+    triggerLoading();
+    setSortBy(value);
+  };
+
+  const handleViewModeChange = (mode: ViewMode): void => {
+    triggerLoading();
+    setViewMode(mode);
   };
 
   return (
@@ -393,14 +426,14 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         <input
           type="text"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
           placeholder="Search supplements, benefits, or goals..."
           className="w-full rounded-2xl border border-gray-200 bg-white py-3 pl-12 pr-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
         />
         {searchQuery && (
           <button
             type="button"
-            onClick={() => setSearchQuery('')}
+            onClick={handleClearSearch}
             aria-label="Clear search"
             className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-full p-1"
           >
@@ -467,6 +500,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                       const nextGoals = hasAny
                         ? filters.goals.filter(goal => !goals.includes(goal))
                         : [...filters.goals, ...goals.filter(goal => !filters.goals.includes(goal))];
+                      triggerLoading();
                       setFilters(prev => ({ ...prev, goals: nextGoals }));
                       setActiveQuickFilter(null);
                     }}
@@ -528,7 +562,10 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => setFilters(prev => ({ ...prev, hasFormGuidance: !prev.hasFormGuidance }))}
+                  onClick={() => {
+                    triggerLoading();
+                    setFilters(prev => ({ ...prev, hasFormGuidance: !prev.hasFormGuidance }));
+                  }}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                     filters.hasFormGuidance ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -537,7 +574,10 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFilters(prev => ({ ...prev, traditionalOnly: !prev.traditionalOnly, modernOnly: false }))}
+                  onClick={() => {
+                    triggerLoading();
+                    setFilters(prev => ({ ...prev, traditionalOnly: !prev.traditionalOnly, modernOnly: false }));
+                  }}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                     filters.traditionalOnly ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -546,7 +586,10 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFilters(prev => ({ ...prev, modernOnly: !prev.modernOnly, traditionalOnly: false }))}
+                  onClick={() => {
+                    triggerLoading();
+                    setFilters(prev => ({ ...prev, modernOnly: !prev.modernOnly, traditionalOnly: false }));
+                  }}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                     filters.modernOnly ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -615,7 +658,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         <div className="flex flex-wrap items-center gap-3">
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            onChange={(e) => handleSortChange(e.target.value as SortOption)}
             className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="relevance">Sort: Relevance</option>
@@ -628,7 +671,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
               <button
                 key={mode}
                 type="button"
-                onClick={() => setViewMode(mode)}
+                onClick={() => handleViewModeChange(mode)}
                 className={`rounded-md px-2 py-1 text-xs font-medium transition ${
                   viewMode === mode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
                 }`}

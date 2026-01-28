@@ -976,11 +976,13 @@ export function App() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span>🧘</span> Lifestyle first
-                    </div>
-                  </div>
                 </div>
               </div>
-        ) : (
+            </div>
+          </div>
+            )}
+
+            {findMode === 'recommend' && hasAnalyzed && (
               /* Results View */
               <div className="space-y-6">
                 {/* Refine Search */}
