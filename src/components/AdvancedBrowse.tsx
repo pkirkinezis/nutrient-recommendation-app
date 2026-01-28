@@ -386,7 +386,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     }
     
     return result;
-  }, [searchQuery, filters, sortBy, activeQuickFilter, personalizedRecommendations]);
+  }, [searchQuery, filters, sortBy, activeQuickFilter, personalizedRecommendations, normalizedFilterGoals]);
 
   // Similar supplements finder
   const findSimilarSupplements = useCallback((supplement: Supplement) => {
