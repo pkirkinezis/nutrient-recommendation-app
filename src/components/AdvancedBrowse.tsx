@@ -90,6 +90,39 @@ const popularityScores: Record<string, number> = {
 
 const getNormalizedGoals = (supplement: Supplement) => normalizeGoals(supplement.goals);
 const getNormalizedSystems = (supplement: Supplement) => normalizeSystems(supplement.systems);
+const intimacySearchKeywords = [
+  'libido',
+  'fertility',
+  'testosterone',
+  'hormonal-balance',
+  'reproductive',
+  'women-health',
+  'sexual-health',
+  'hormones',
+  'intimacy',
+  'sexual'
+];
+
+const tokenizeSearchQuery = (query: string) => {
+  const lowered = query.toLowerCase();
+  const tokens = lowered.split(/[^a-z0-9]+/).filter(Boolean);
+  const expandedTokens = new Set(tokens);
+  const hasIntimacySignal = tokens.some(token => ['libido', 'fertility', 'reproductive', 'intimacy', 'sexual'].includes(token))
+    || lowered.includes('sexual health')
+    || lowered.includes('reproductive health');
+
+  if (hasIntimacySignal) {
+    intimacySearchKeywords.forEach(keyword => expandedTokens.add(keyword));
+  }
+
+  const expandedList = Array.from(expandedTokens);
+  return {
+    lowered,
+    tokens: expandedList,
+    normalizedGoals: normalizeGoals(expandedList),
+    normalizedSystems: normalizeSystems(expandedList)
+  };
+};
 
 export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupplements, onSelectStack }: AdvancedBrowseProps) {
   // State
@@ -112,6 +145,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     traditionalOnly: false,
     modernOnly: false,
   });
+  const normalizedFilterGoals = useMemo(() => normalizeGoals(filters.goals), [filters.goals]);
 
   // Quick filter presets - defined outside useMemo to avoid recreation
   const getQuickFilterIds = (filterId: string): string[] => {
@@ -261,14 +295,21 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     
     // Search query
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+      const { lowered, tokens, normalizedGoals, normalizedSystems } = tokenizeSearchQuery(searchQuery);
+      const matchesText = (text: string) => {
+        const lowerText = text.toLowerCase();
+        return lowerText.includes(lowered) || tokens.some(token => lowerText.includes(token));
+      };
+
       result = result.filter(s => 
-        s.name.toLowerCase().includes(query) ||
-        s.description.toLowerCase().includes(query) ||
-        s.benefits.some(b => b.toLowerCase().includes(query)) ||
-        s.goals.some(g => g.toLowerCase().includes(query)) ||
-        getNormalizedGoals(s).some(goal => goal.includes(query)) ||
-        (s.traditionalUse && s.traditionalUse.toLowerCase().includes(query))
+        matchesText(s.name) ||
+        matchesText(s.description) ||
+        s.benefits.some(b => matchesText(b)) ||
+        s.goals.some(g => matchesText(g)) ||
+        s.systems.some(system => matchesText(system)) ||
+        normalizedGoals.some(goal => getNormalizedGoals(s).includes(goal)) ||
+        normalizedSystems.some(system => getNormalizedSystems(s).includes(system)) ||
+        (s.traditionalUse && matchesText(s.traditionalUse))
       );
     }
     
@@ -283,9 +324,9 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     }
     
     // Goals filter
-    if (filters.goals.length > 0) {
+    if (normalizedFilterGoals.length > 0) {
       result = result.filter(s => 
-        filters.goals.some(goal => getNormalizedGoals(s).includes(goal))
+        normalizedFilterGoals.some(goal => getNormalizedGoals(s).includes(goal))
       );
     }
     
@@ -458,6 +499,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       {browseMode === 'supplements' && highlightIntimacyStacks && highlightedPremadeStacks.length > 0 && (
         <div className="bg-white rounded-2xl border border-emerald-200 p-5 shadow-sm space-y-4">
           <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-500">Pre-Made Stacks</p>
             <h3 className="font-bold text-emerald-800 flex items-center gap-2">
               <span>💞</span> Pre-made Intimacy & Reproductive Stacks
             </h3>
@@ -928,19 +970,36 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           )}
 
           {/* Results Count */}
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <span>Showing {filteredSupplements.length} of {supplements.length} supplements</span>
-            {selectedSupplements.length > 0 && (
-              <span className="text-emerald-600 font-medium">{selectedSupplements.length} selected</span>
-            )}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Individual Supplements</p>
+                <h3 className="text-base font-semibold text-gray-900">Supplement Results</h3>
+              </div>
+              {selectedSupplements.length > 0 && (
+                <span className="text-sm text-emerald-600 font-medium">{selectedSupplements.length} selected</span>
+              )}
+            </div>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>Showing {filteredSupplements.length} of {supplements.length} supplements</span>
+            </div>
           </div>
 
           {/* Results */}
           {filteredSupplements.length === 0 ? (
             <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
               <div className="text-4xl mb-3">🔍</div>
-              <p className="text-gray-600 font-medium">No supplements match your filters</p>
-              <p className="text-sm text-gray-500 mt-1">Try adjusting your search or filters</p>
+              {highlightIntimacyStacks && highlightedPremadeStacks.length > 0 ? (
+                <>
+                  <p className="text-gray-600 font-medium">No individual supplements found.</p>
+                  <p className="text-sm text-gray-500 mt-1">Showing pre-made stacks only.</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-gray-600 font-medium">No supplements match your filters</p>
+                  <p className="text-sm text-gray-500 mt-1">Try adjusting your search or filters</p>
+                </>
+              )}
               <button onClick={clearFilters} className="mt-4 text-emerald-600 font-medium hover:text-emerald-700">
                 Clear all filters
               </button>

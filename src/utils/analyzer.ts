@@ -41,18 +41,34 @@ interface SemanticMatchResult {
   inferredSystems: string[];
 }
 
-const INTIMACY_GOALS = new Set(['libido', 'fertility', 'hormones', 'sexual-health']);
+const INTIMACY_GOALS = new Set([
+  'libido',
+  'fertility',
+  'hormones',
+  'sexual-health',
+  'reproductive',
+  'women-health',
+  'hormonal-balance',
+  'testosterone',
+  'intimacy',
+  'sexual'
+]);
 
 export function getRecommendedStacks(profile?: UserProfile, goals: string[] = []): SupplementStack[] {
   const normalizedGoals = normalizeGoals(goals);
+  const rawGoals = goals.map(goal => goal.toLowerCase());
   const targetGender = profile?.sex === 'male' ? 'men' : profile?.sex === 'female' ? 'women' : 'all';
   const availableStacks = premadeStacks.filter(stack => stack.targetGender === 'all' || stack.targetGender === targetGender);
+  const hasRawIntimacyGoal = rawGoals.some(goal => INTIMACY_GOALS.has(goal));
 
-  if (normalizedGoals.length === 0) {
+  if (normalizedGoals.length === 0 && !hasRawIntimacyGoal) {
     return availableStacks;
   }
 
   const goalMatches = normalizedGoals.filter(goal => INTIMACY_GOALS.has(goal));
+  if (goalMatches.length === 0 && hasRawIntimacyGoal) {
+    goalMatches.push('hormones');
+  }
   if (goalMatches.length === 0) {
     return availableStacks;
   }
