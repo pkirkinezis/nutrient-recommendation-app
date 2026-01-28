@@ -66,6 +66,26 @@ export interface CuratedStack {
 }
 
 // ============================================
+// PREMADE STACK TYPES
+// ============================================
+
+export interface SupplementStackIngredient {
+  supplementId: string;
+  dosage: string;
+  reason: string;
+}
+
+export interface SupplementStack {
+  id: string;
+  name: string;
+  description: string;
+  targetGender: 'men' | 'women' | 'all';
+  primaryGoal: string;
+  synergyDescription: string;
+  ingredients: SupplementStackIngredient[];
+}
+
+// ============================================
 // USER PROFILE TYPES
 // ============================================
 
@@ -116,6 +136,7 @@ export interface GoalAnalysis {
   identifiedSystems: string[];
   recommendations: RecommendedSupplement[];
   tips: string[];
+  recommendedStacks?: SupplementStack[];
   matchType?: 'keyword' | 'direct' | 'semantic' | 'none';
   confidence?: number;
   directSupplements?: string[];
