@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { CuratedStack, Supplement, SupplementStack, UserProfile } from '../types/index';
 import { curatedStacks } from '../data/curatedStacks';
 import { premadeStacks } from '../data/stacks';
@@ -147,6 +147,27 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     modernOnly: false,
   });
   const normalizedFilterGoals = useMemo(() => normalizeGoals(filters.goals), [filters.goals]);
+
+  const countActiveFilters = (state: FilterState): number => (
+    state.types.length +
+    state.evidence.length +
+    state.goals.length +
+    state.systems.length +
+    (state.hasFormGuidance ? 1 : 0) +
+    (state.traditionalOnly ? 1 : 0) +
+    (state.modernOnly ? 1 : 0)
+  );
+
+  const getShouldCollapsePremadeStacks = (
+    nextSearchQuery: string,
+    nextActiveQuickFilter: string | null,
+    nextFilters: FilterState
+  ): boolean => {
+    const nextHasActiveSearch = nextSearchQuery.trim().length > 0;
+    const nextActiveFilterCount = countActiveFilters(nextFilters);
+    const nextHasActiveFilters = Boolean(nextActiveQuickFilter) || nextActiveFilterCount > 0;
+    return nextHasActiveSearch || nextHasActiveFilters;
+  };
 
   // Quick filter presets - defined outside useMemo to avoid recreation
   const getQuickFilterIds = (filterId: string): string[] => {
@@ -417,22 +438,36 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       .map(x => x.supplement);
   }, []);
 
+  const activeFilterCount = countActiveFilters(filters);
+  const hasActiveSearch = searchQuery.trim().length > 0;
+  const hasActiveFilters = Boolean(activeQuickFilter) || activeFilterCount > 0;
+  const shouldCollapsePremadeStacks = hasActiveSearch || hasActiveFilters;
+
+  const updateShowPremadeStacksOnCollapseChange = (nextShouldCollapse: boolean): void => {
+    if (!shouldCollapsePremadeStacks && nextShouldCollapse) {
+      setShowPremadeStacks(false);
+      return;
+    }
+    if (shouldCollapsePremadeStacks && !nextShouldCollapse) {
+      setShowPremadeStacks(true);
+    }
+  };
+
   // Toggle filter
-  const toggleFilter = (key: keyof FilterState, value: string) => {
-    setFilters(prev => {
-      const arr = prev[key] as string[];
-      if (arr.includes(value)) {
-        return { ...prev, [key]: arr.filter(v => v !== value) };
-      } else {
-        return { ...prev, [key]: [...arr, value] };
-      }
-    });
+  const toggleFilter = (key: keyof FilterState, value: string): void => {
+    const currentValues = filters[key] as string[];
+    const nextFilters = currentValues.includes(value)
+      ? { ...filters, [key]: currentValues.filter(v => v !== value) }
+      : { ...filters, [key]: [...currentValues, value] };
+    const nextShouldCollapse = getShouldCollapsePremadeStacks(searchQuery, null, nextFilters);
+    updateShowPremadeStacksOnCollapseChange(nextShouldCollapse);
+    setFilters(nextFilters);
     setActiveQuickFilter(null);
   };
 
   // Clear all filters
-  const clearFilters = () => {
-    setFilters({
+  const clearFilters = (): void => {
+    const clearedFilters: FilterState = {
       types: [],
       evidence: [],
       goals: [],
@@ -442,27 +477,15 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       hasFormGuidance: false,
       traditionalOnly: false,
       modernOnly: false,
-    });
-    setSearchQuery('');
-    setActiveQuickFilter(null);
+    };
+    const nextSearchQuery = '';
+    const nextActiveQuickFilter = null;
+    const nextShouldCollapse = getShouldCollapsePremadeStacks(nextSearchQuery, nextActiveQuickFilter, clearedFilters);
+    updateShowPremadeStacksOnCollapseChange(nextShouldCollapse);
+    setFilters(clearedFilters);
+    setSearchQuery(nextSearchQuery);
+    setActiveQuickFilter(nextActiveQuickFilter);
   };
-
-  const activeFilterCount = 
-    filters.types.length + 
-    filters.evidence.length + 
-    filters.goals.length + 
-    filters.systems.length +
-    (filters.hasFormGuidance ? 1 : 0) +
-    (filters.traditionalOnly ? 1 : 0) +
-    (filters.modernOnly ? 1 : 0);
-
-  const hasActiveSearch = searchQuery.trim().length > 0;
-  const hasActiveFilters = Boolean(activeQuickFilter) || activeFilterCount > 0;
-  const shouldCollapsePremadeStacks = hasActiveSearch || hasActiveFilters;
-
-  useEffect(() => {
-    setShowPremadeStacks(!shouldCollapsePremadeStacks);
-  }, [shouldCollapsePremadeStacks]);
 
   return (
     <div className="space-y-6">
@@ -800,8 +823,23 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                   <button
                     key={qf.id}
                     onClick={() => {
-                      setActiveQuickFilter(activeQuickFilter === qf.id ? null : qf.id);
-                      setFilters({ ...filters, types: [], evidence: [], goals: [], systems: [], timing: [], safeFor: [], hasFormGuidance: false, traditionalOnly: false, modernOnly: false });
+                      const nextActiveQuickFilter = activeQuickFilter === qf.id ? null : qf.id;
+                      const nextFilters: FilterState = {
+                        ...filters,
+                        types: [],
+                        evidence: [],
+                        goals: [],
+                        systems: [],
+                        timing: [],
+                        safeFor: [],
+                        hasFormGuidance: false,
+                        traditionalOnly: false,
+                        modernOnly: false
+                      };
+                      const nextShouldCollapse = getShouldCollapsePremadeStacks(searchQuery, nextActiveQuickFilter, nextFilters);
+                      updateShowPremadeStacksOnCollapseChange(nextShouldCollapse);
+                      setActiveQuickFilter(nextActiveQuickFilter);
+                      setFilters(nextFilters);
                     }}
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                       activeQuickFilter === qf.id
@@ -824,13 +862,25 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setActiveQuickFilter(null); }}
+              onChange={(e) => {
+                const nextSearchQuery = e.target.value;
+                const nextActiveQuickFilter = null;
+                const nextShouldCollapse = getShouldCollapsePremadeStacks(nextSearchQuery, nextActiveQuickFilter, filters);
+                updateShowPremadeStacksOnCollapseChange(nextShouldCollapse);
+                setSearchQuery(nextSearchQuery);
+                setActiveQuickFilter(nextActiveQuickFilter);
+              }}
               placeholder="Search supplements, benefits, or goals..."
               className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  const nextSearchQuery = '';
+                  const nextShouldCollapse = getShouldCollapsePremadeStacks(nextSearchQuery, activeQuickFilter, filters);
+                  updateShowPremadeStacksOnCollapseChange(nextShouldCollapse);
+                  setSearchQuery(nextSearchQuery);
+                }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -950,11 +1000,13 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                   key={category}
                   onClick={() => {
                     const hasAny = goals.some(g => filters.goals.includes(g));
-                    if (hasAny) {
-                      setFilters(prev => ({ ...prev, goals: prev.goals.filter(g => !goals.includes(g)) }));
-                    } else {
-                      setFilters(prev => ({ ...prev, goals: [...prev.goals, ...goals.filter(g => !prev.goals.includes(g))] }));
-                    }
+                    const nextGoals = hasAny
+                      ? filters.goals.filter(g => !goals.includes(g))
+                      : [...filters.goals, ...goals.filter(g => !filters.goals.includes(g))];
+                    const nextFilters: FilterState = { ...filters, goals: nextGoals };
+                    const nextShouldCollapse = getShouldCollapsePremadeStacks(searchQuery, activeQuickFilter, nextFilters);
+                    updateShowPremadeStacksOnCollapseChange(nextShouldCollapse);
+                    setFilters(nextFilters);
                   }}
                   className={`px-3 py-2 rounded-lg text-xs font-medium transition text-left ${
                     goals.some(g => filters.goals.includes(g))
@@ -993,7 +1045,12 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
             <h5 className="text-xs font-semibold text-gray-500 uppercase mb-2">Special</h5>
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => setFilters(prev => ({ ...prev, hasFormGuidance: !prev.hasFormGuidance }))}
+                onClick={() => {
+                  const nextFilters: FilterState = { ...filters, hasFormGuidance: !filters.hasFormGuidance };
+                  const nextShouldCollapse = getShouldCollapsePremadeStacks(searchQuery, activeQuickFilter, nextFilters);
+                  updateShowPremadeStacksOnCollapseChange(nextShouldCollapse);
+                  setFilters(nextFilters);
+                }}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                   filters.hasFormGuidance ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
@@ -1001,7 +1058,16 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 💊 Has Form Guidance
               </button>
               <button
-                onClick={() => setFilters(prev => ({ ...prev, traditionalOnly: !prev.traditionalOnly, modernOnly: false }))}
+                onClick={() => {
+                  const nextFilters: FilterState = {
+                    ...filters,
+                    traditionalOnly: !filters.traditionalOnly,
+                    modernOnly: false
+                  };
+                  const nextShouldCollapse = getShouldCollapsePremadeStacks(searchQuery, activeQuickFilter, nextFilters);
+                  updateShowPremadeStacksOnCollapseChange(nextShouldCollapse);
+                  setFilters(nextFilters);
+                }}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                   filters.traditionalOnly ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
@@ -1009,7 +1075,16 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 🕉️ Traditional Only
               </button>
               <button
-                onClick={() => setFilters(prev => ({ ...prev, modernOnly: !prev.modernOnly, traditionalOnly: false }))}
+                onClick={() => {
+                  const nextFilters: FilterState = {
+                    ...filters,
+                    modernOnly: !filters.modernOnly,
+                    traditionalOnly: false
+                  };
+                  const nextShouldCollapse = getShouldCollapsePremadeStacks(searchQuery, activeQuickFilter, nextFilters);
+                  updateShowPremadeStacksOnCollapseChange(nextShouldCollapse);
+                  setFilters(nextFilters);
+                }}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                   filters.modernOnly ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
