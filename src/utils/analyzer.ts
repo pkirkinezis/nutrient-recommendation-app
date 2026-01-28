@@ -3,6 +3,7 @@
  * Improved parsing with negation handling, word boundaries, and comprehensive interaction detection
  */
 
+import { useMemo } from 'react';
 import { Supplement, SupplementStack, UserProfile, GoalAnalysis, RecommendedSupplement, TrackingData } from '../types';
 import { 
   GOAL_CATEGORIES, 
@@ -1483,6 +1484,18 @@ export function analyzeGoal(
     inferredGoals,
     inferredSystems
   };
+}
+
+export function useGoalAnalysis(
+  input: string,
+  supplements: Supplement[],
+  profile?: UserProfile,
+  trackingData?: TrackingData
+): GoalAnalysis {
+  return useMemo(
+    () => analyzeGoal(input, supplements, profile, trackingData),
+    [input, supplements, profile, trackingData]
+  );
 }
 
 /**
