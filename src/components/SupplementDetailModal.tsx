@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Recommendation, Supplement } from '../types';
 import { formGuidance } from '../data/supplements';
 
@@ -53,23 +53,21 @@ export function SupplementDetailModal({
   recommendation,
 }: SupplementDetailModalProps) {
   const [showSafety, setShowSafety] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setShowSafety(false);
-    }
-  }, [isOpen]);
+  const handleClose = useCallback((): void => {
+    setShowSafety(false);
+    onClose();
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   const weightBasedDose = useMemo(() => {
     if (!supplement?.dosagePerKg || !weightKg) {
@@ -95,7 +93,7 @@ export function SupplementDetailModal({
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/40 px-4 py-10">
       <div
         className="absolute inset-0"
-        onClick={onClose}
+        onClick={handleClose}
         aria-hidden="true"
       />
       <div
@@ -108,7 +106,7 @@ export function SupplementDetailModal({
           <div className="space-y-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-600 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-full px-2 py-1"
             >
               ← Back to results
@@ -138,7 +136,7 @@ export function SupplementDetailModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close supplement details"
             className="h-10 w-10 rounded-full border border-slate-200 text-slate-500 hover:text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
