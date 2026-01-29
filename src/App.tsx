@@ -1,7 +1,6 @@
 import { Suspense, lazy, useMemo, useEffect, useState } from 'react';
 import { CuratedStack, Supplement, SupplementStack, UserProfile, Recommendation, InteractionWarning, TrackingData, DailyLog, LabResult } from './types/index';
 import { supplements, formGuidance, supplementComparisons, misinformationAlerts } from './data/supplements';
-import { buildNutrientTargets, NutrientPriority } from './data/nutrientRequirements';
 import { checkInteractions, generateTimingSchedule, useGoalAnalysis } from './utils/analyzer';
 import { AdvancedBrowse } from './components/AdvancedBrowse';
 import { SupplementDetailModal } from './components/SupplementDetailModal';
@@ -201,18 +200,10 @@ export function App() {
     };
   }, [trackingData.logs]);
 
-  const nutrientTargets = useMemo(() => buildNutrientTargets(userProfile), [userProfile]);
-
   const activeRecommendation = useMemo(() => {
     if (!activeSupplement) return undefined;
     return recommendations.find(rec => rec.supplement.id === activeSupplement.id);
   }, [activeSupplement, recommendations]);
-
-  const nutrientPriorityStyles: Record<NutrientPriority, string> = {
-    high: 'bg-red-100 text-red-700',
-    medium: 'bg-amber-100 text-amber-700',
-    baseline: 'bg-slate-100 text-slate-700'
-  };
 
   const normalizeLabUnit = (unit: string) => unit.trim().toLowerCase().replace(/\s+/g, '');
 
@@ -1121,53 +1112,6 @@ export function App() {
                     </ul>
                   </div>
                 )}
-
-                <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-                  <div className="flex items-center justify-between gap-3 mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">Nutrient Targets</h3>
-                      <p className="text-xs text-gray-500">
-                        Built from Dietary Reference Intakes (NIH ODS). Priority flags reflect your profile and diet.
-                      </p>
-                    </div>
-                    <span className="text-xs text-gray-400">Estimates only</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {nutrientTargets.map(target => (
-                      <div key={target.id} className="border border-slate-100 rounded-xl p-3 bg-slate-50">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <p className="font-semibold text-slate-900">{target.name}</p>
-                            <p className="text-sm text-slate-600">{target.target}</p>
-                          </div>
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${nutrientPriorityStyles[target.priority]}`}>
-                            {target.priority} priority
-                          </span>
-                        </div>
-                        <ul className="mt-2 space-y-1 text-xs text-slate-600">
-                          {target.rationale.map((item, index) => (
-                            <li key={index}>• {item}</li>
-                          ))}
-                        </ul>
-                        <p className="mt-2 text-xs text-slate-500">
-                          Food sources: {target.foodSources.join(', ')}.
-                        </p>
-                        {target.supplementIds.length > 0 && (
-                          <p className="text-xs text-emerald-700 mt-1">
-                            Related supplements: {target.supplementIds.map(id => supplements.find(s => s.id === id)?.name || id).join(', ')}.
-                          </p>
-                        )}
-                        <div className="mt-2 text-[11px] text-slate-400">
-                          {target.references.map(ref => (
-                            <a key={ref.url} className="hover:text-emerald-600" href={ref.url} target="_blank" rel="noreferrer">
-                              {ref.title}
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
                 {/* Recommendations */}
                 <div>
