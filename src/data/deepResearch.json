@@ -1,0 +1,176 @@
+{
+  "id": "nervous-system-brain-health",
+  "title": "Nervous system & brain health",
+  "subtitle": "Evidence-based guidance for cognition, mood, sleep, stress resilience, and mental energy",
+  "disclaimer": "Wellness guidance only; not diagnosis or treatment. Severe or sudden neurologic symptoms require medical care.",
+  "sections": [
+    {
+      "id": "operating-system",
+      "title": "The brain’s operating system",
+      "points": [
+        "Hardware: neurons, synapses, myelin, blood vessels, mitochondria, immune cells.",
+        "Software: sleep-wake rhythms, stress circuits, learning/plasticity, neurotransmitter balance.",
+        "Most optimization is blood flow + sleep architecture + inflammation control + glucose stability + stress regulation."
+      ]
+    },
+    {
+      "id": "high-roi",
+      "title": "Highest-ROI levers",
+      "items": [
+        {
+          "id": "sleep",
+          "title": "Sleep",
+          "targets": ["≥7 hours/night (consistent schedule)", "Morning light, dim nights", "Cool, dark, quiet room"],
+          "why": ["Memory consolidation", "Emotional regulation", "Attention stability"]
+        },
+        {
+          "id": "movement",
+          "title": "Movement",
+          "targets": ["150–300 min/week moderate or equivalent", "2 strength sessions/week", "Movement snacks during sedentary time"],
+          "why": ["Improves mood/anxiety", "Supports cognition and learning", "Boosts vascular and metabolic health"]
+        },
+        {
+          "id": "caffeine",
+          "title": "Caffeine",
+          "targets": ["≤400 mg/day for most adults", "Avoid late-day use"],
+          "why": ["Improves alertness", "Protects sleep quality"]
+        }
+      ]
+    },
+    {
+      "id": "nutrition",
+      "title": "Nutrition patterns",
+      "points": [
+        "Plenty of plants (fiber + polyphenols)",
+        "Adequate protein",
+        "Healthy fats (omega-3 sources)",
+        "Minimize ultra-processed foods to stabilize glucose"
+      ]
+    }
+  ],
+  "supplements": {
+    "foundation": [
+      {
+        "name": "Omega-3 (EPA/DHA)",
+        "useCase": "Low fish intake; mood/brain structural support",
+        "approach": "Prefer fatty fish; supplement if intake is low",
+        "cautions": ["Bleeding risk at high doses", "Quality varies"]
+      },
+      {
+        "name": "Magnesium",
+        "useCase": "Sleep quality and stress edge, dietary shortfall",
+        "approach": "Food first; glycinate/citrate often better tolerated",
+        "cautions": ["Diarrhea at higher doses", "Caution in kidney disease"]
+      },
+      {
+        "name": "Creatine",
+        "useCase": "Physical performance; emerging cognitive support",
+        "approach": "3–5 g/day",
+        "cautions": ["Can raise creatinine lab marker", "Hydration"]
+      },
+      {
+        "name": "Vitamin D",
+        "useCase": "Correct deficiency; general health",
+        "approach": "Test if possible; avoid mega-dosing",
+        "cautions": ["UL often ~4,000 IU/day", "Toxicity with excess"]
+      },
+      {
+        "name": "Choline",
+        "useCase": "Acetylcholine + membrane support",
+        "approach": "Food first (eggs, fish, meat, soy)",
+        "cautions": ["High doses can cause fishy odor/GI upset"]
+      }
+    ],
+    "conditional": [
+      {
+        "name": "Ashwagandha",
+        "useCase": "Stress/sleep support",
+        "approach": "Short-term trials with clinician awareness",
+        "cautions": ["GI effects", "Thyroid effects", "Avoid in pregnancy"]
+      },
+      {
+        "name": "B12 / Folate",
+        "useCase": "Vegetarian/vegan or deficiency risk",
+        "approach": "Check status if symptomatic",
+        "cautions": ["Avoid masking B12 deficiency with folate alone"]
+      },
+      {
+        "name": "Probiotics",
+        "useCase": "IBS-like symptoms; stress-gut issues",
+        "approach": "Strain-specific selection",
+        "cautions": ["Effects vary by strain/product"]
+      }
+    ]
+  },
+  "stress": {
+    "title": "Stress downshift",
+    "tips": [
+      "10 minutes/day slow nasal breathing",
+      "Worry window to contain rumination",
+      "Daily walk outdoors",
+      "Social contact"
+    ]
+  },
+  "risks": {
+    "title": "Environmental and substance risks",
+    "items": [
+      "Alcohol disrupts sleep architecture",
+      "Nicotine/vaping can worsen anxiety loops",
+      "Cannabis can reduce REM and affect drive",
+      "Sedentary time is a standalone risk"
+    ]
+  },
+  "redFlags": [
+    "New severe headaches, fainting, seizures",
+    "Weakness/numbness or speech/vision changes",
+    "Persistent major sleep disruption",
+    "Mania/psychosis, severe depression, suicidality",
+    "Rapid cognitive decline or personality change"
+  ],
+  "protocols": [
+    {
+      "id": "brain-reboot-8-week",
+      "title": "8-week brain reboot",
+      "weeks": [
+        {
+          "range": "Week 1–2",
+          "focus": ["Consistent wake time", "≥7 hours sleep", "Brisk walk 4–5x/week", "Caffeine cutoff"]
+        },
+        {
+          "range": "Week 3–4",
+          "focus": ["Add 2 strength sessions/week", "10 min breathing", "Protein at breakfast + fiber at meals"]
+        },
+        {
+          "range": "Week 5–8",
+          "focus": ["Movement snacks", "Optional single supplement trial (magnesium, omega-3, or creatine)"]
+        }
+      ]
+    },
+    {
+      "id": "resilience-cognition-12-week",
+      "title": "12-week resilience + cognition",
+      "steps": [
+        "Increase aerobic volume toward WHO targets",
+        "Consider labs if symptoms persist (D, B12, thyroid, ferritin, HbA1c)",
+        "Structured exercise is a legitimate treatment tool for mood symptoms"
+      ]
+    }
+  ],
+  "checklist": [
+    "Sleep ≥7h with fixed wake time",
+    "Morning daylight + dim evenings",
+    "Movement: 150 min/week + 2 strength sessions",
+    "Sedentary breaks every 60–90 minutes",
+    "Caffeine ≤400 mg/day; avoid late use",
+    "Protein + fiber daily; omega-3 intake",
+    "10 min/day breathing or wind-down",
+    "Targeted supplements only for clear bottlenecks"
+  ],
+  "personalizationQuestions": [
+    "Average sleep hours and wake-time consistency",
+    "Caffeine amount and timing",
+    "Weekly exercise (type and minutes)",
+    "Main complaint (focus, anxiety, low mood, brain fog, sleep)",
+    "Diet pattern (fish intake, protein at breakfast)"
+  ]
+}
