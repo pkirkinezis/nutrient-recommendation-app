@@ -30,7 +30,7 @@ export const supplements: Supplement[] = [
     synergies: ['Rhodiola (for stress)', 'Magnesium (for sleep)', 'Shilajit (for energy)'],
     conflicts: [],
     systems: ['nervous', 'endocrine', 'immune', 'muscular'],
-    goals: ['stress', 'anxiety', 'sleep', 'energy', 'testosterone', 'muscle', 'recovery', 'libido', 'cortisol']
+    goals: ['stress', 'anxiety', 'sleep', 'energy', 'testosterone', 'muscle', 'recovery', 'libido', 'cortisol', 'fertility', 'male-reproductive', 'sperm-quality', 'sperm-count', 'sperm-motility']
   },
   {
     id: 'brahmi-bacopa',
@@ -118,7 +118,7 @@ export const supplements: Supplement[] = [
     synergies: ['Ashwagandha', 'Licorice', 'Fennel'],
     conflicts: [],
     systems: ['reproductive', 'digestive', 'immune'],
-    goals: ['hormonal-balance', 'fertility', 'menopause', 'lactation', 'vitality', 'women-health']
+    goals: ['hormonal-balance', 'fertility', 'menopause', 'lactation', 'vitality', 'women-health', 'female-reproductive', 'ovulation', 'cervical-mucus']
   },
   {
     id: 'triphala',
@@ -346,7 +346,7 @@ export const supplements: Supplement[] = [
     synergies: ['Ashwagandha', 'Tribulus', 'Shilajit'],
     conflicts: ['Other dopaminergic substances'],
     systems: ['nervous', 'reproductive', 'endocrine'],
-    goals: ['dopamine', 'mood', 'libido', 'fertility', 'motivation', 'testosterone']
+    goals: ['dopamine', 'mood', 'libido', 'fertility', 'motivation', 'testosterone', 'male-reproductive', 'sperm-quality', 'sexual-performance']
   },
   {
     id: 'boswellia',
@@ -2426,7 +2426,7 @@ export const supplements: Supplement[] = [
     synergies: ['Magnesium', 'Folate', 'Choline'],
     conflicts: [],
     systems: ['nervous', 'metabolic', 'reproductive'],
-    goals: ['anxiety', 'sleep', 'pcos', 'blood-sugar', 'fertility', 'ocd']
+    goals: ['anxiety', 'sleep', 'pcos', 'blood-sugar', 'fertility', 'ocd', 'ovulation', 'insulin-sensitivity', 'female-reproductive', 'hormonal-balance']
   },
   {
     id: 'apigenin',
@@ -3126,7 +3126,7 @@ export const supplements: Supplement[] = [
     synergies: ['Ashwagandha', 'Tongkat Ali', 'Maca'],
     conflicts: [],
     systems: ['urinary', 'reproductive'],
-    goals: ['libido', 'urinary-health', 'kidney-stones', 'prostate']
+    goals: ['libido', 'urinary-health', 'kidney-stones', 'prostate', 'fertility', 'male-reproductive', 'sperm-quality', 'testosterone']
   },
   {
     id: 'fenugreek',
@@ -3148,7 +3148,89 @@ export const supplements: Supplement[] = [
     synergies: ['Ashwagandha', 'Zinc'],
     conflicts: [],
     systems: ['metabolic', 'endocrine', 'digestive'],
-    goals: ['blood-sugar', 'testosterone', 'lactation', 'libido', 'digestion']
+    goals: ['blood-sugar', 'testosterone', 'lactation', 'libido', 'digestion', 'fertility', 'male-reproductive']
+  },
+  // ============ FERTILITY & REPRODUCTIVE HEALTH (NEW ADDITIONS) ============
+  {
+    id: 'vitex',
+    name: 'Vitex (Chasteberry)',
+    type: 'herb',
+    category: 'both',
+    description: 'Premier herbal fertility support. Clinical trials show 26-36% pregnancy rate improvement. Works through LH/FSH modulation.',
+    traditionalUse: 'Used for centuries in Europe for female fertility and cycle regulation. Called "Female Viagra" for reproductive hormones.',
+    benefits: [
+      'Improves ovulation quality',
+      'Increases progesterone levels',
+      'Regulates menstrual cycle length',
+      'Reduces luteal phase defect',
+      'Improves fertility rates',
+      'Reduces PMS symptoms'
+    ],
+    dosage: '400mg standardized extract (0.6% agnuside) daily',
+    timing: 'Morning on empty stomach',
+    timeframe: 'Cycle regulation 1-3 months. Fertility effects 3-6 months.',
+    evidence: 'strong',
+    foodSources: ['Not available in food'],
+    cautions: ['May cause dopamine-related effects', 'Discontinue once pregnancy confirmed'],
+    drugInteractions: ['Dopamine antagonists', 'Antipsychotics', 'Hormonal contraceptives'],
+    avoidIf: ['On dopamine-blocking medications', 'Pregnancy (use for conception only)'],
+    cycleTiming: 'Daily throughout cycle. Minimum 3 months.',
+    synergies: ['Maca', 'Red Clover', 'CoQ10'],
+    conflicts: [],
+    systems: ['reproductive', 'endocrine', 'hormonal'],
+    goals: ['fertility', 'female-reproductive', 'hormonal-balance', 'ovulation', 'progesterone', 'pms', 'cycle-regulation']
+  },
+  {
+    id: 'red-clover',
+    name: 'Red Clover',
+    type: 'herb',
+    category: 'traditional',
+    description: 'Rich in isoflavones that support estrogen balance and cervical mucus quality.',
+    traditionalUse: 'Traditional women\'s tonic for fertility and hormone balance.',
+    benefits: [
+      'Supports estrogen balance',
+      'Improves cervical mucus',
+      'Supports uterine health'
+    ],
+    dosage: '40-80mg isoflavones daily',
+    timing: 'Any time',
+    timeframe: 'Weeks to months.',
+    evidence: 'moderate',
+    foodSources: ['Red clover tea'],
+    cautions: ['Estrogenic effects'],
+    drugInteractions: ['Blood thinners', 'Estrogen therapies'],
+    avoidIf: ['Estrogen-sensitive cancers'],
+    cycleTiming: 'Continuous.',
+    synergies: ['Vitex', 'Shatavari'],
+    conflicts: [],
+    systems: ['reproductive', 'hormonal'],
+    goals: ['fertility', 'female-reproductive', 'hormonal-balance', 'cervical-mucus']
+  },
+  {
+    id: 'l-carnitine',
+    name: 'L-Carnitine',
+    type: 'amino-acid',
+    category: 'modern',
+    description: 'Essential for sperm mitochondrial energy. Improves sperm motility by 30-40%.',
+    traditionalUse: 'Modern supplement.',
+    benefits: [
+      'Improves sperm motility',
+      'Supports mitochondrial energy',
+      'Reduces sperm DNA fragmentation'
+    ],
+    dosage: '1-3g daily',
+    timing: 'With food',
+    timeframe: '3-6 months for sperm quality.',
+    evidence: 'moderate',
+    foodSources: ['Red meat', 'Dairy'],
+    cautions: ['Fishy body odor (rare)'],
+    drugInteractions: [],
+    avoidIf: [],
+    cycleTiming: 'Continuous.',
+    synergies: ['CoQ10', 'Zinc'],
+    conflicts: [],
+    systems: ['reproductive', 'energy'],
+    goals: ['fertility', 'male-reproductive', 'sperm-quality', 'sperm-motility', 'energy']
   }
 ];
 
