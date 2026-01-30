@@ -28,6 +28,7 @@ export interface Supplement {
   category: 'modern' | 'traditional' | 'both';
   description: string;
   topLevelSafetyAlert?: string;
+  safetyNote?: string;
   traditionalUse?: string;
   mechanism?: string;
   benefits: string[];
@@ -36,6 +37,7 @@ export interface Supplement {
   timing: string;
   timeframe: string;
   evidence: EvidenceLevel;
+  bioavailabilityNote?: string;
   evidenceSources?: EvidenceSource[];
   goalEvidence?: Partial<Record<string, EvidenceLevel>>;
   foodSources?: string[];
