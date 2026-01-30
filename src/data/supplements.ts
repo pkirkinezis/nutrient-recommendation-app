@@ -1689,7 +1689,7 @@ export const supplements: Supplement[] = [
       }
     ],
     foodSources: ['Fatty fish (salmon, mackerel)', 'Egg yolks', 'Fortified foods', 'Cod liver oil'],
-    cautions: ['Avoid routine high-dose supplementation without clear risk or deficiency', 'Can cause toxicity if overdone'],
+    cautions: ['Avoid routine high-dose supplementation without clear risk or deficiency', 'Can cause toxicity if overdone', 'UL often ~4,000 IU/day unless clinician-directed'],
     drugInteractions: ['Thiazide diuretics', 'Steroids', 'Weight loss drugs', 'Seizure medications'],
     avoidIf: ['Hypercalcemia', 'Kidney disease', 'Sarcoidosis'],
     cycleTiming: 'Use continuously if deficient or at risk; otherwise consider food/sun exposure first.',
@@ -1943,7 +1943,7 @@ export const supplements: Supplement[] = [
     synergies: ['Copper', 'Vitamin C', 'Vitamin A'],
     conflicts: ['Take separately from iron and calcium (compete for absorption)', 'Antibiotics'],
     systems: ['immune', 'reproductive', 'skin', 'metabolic'],
-    goals: ['immunity', 'testosterone', 'skin', 'wound-healing', 'cold', 'acne', 'libido']
+    goals: ['immunity', 'testosterone', 'skin', 'wound-healing', 'cold', 'acne', 'libido', 'fertility']
   },
   {
     id: 'copper',
@@ -2263,7 +2263,7 @@ export const supplements: Supplement[] = [
       }
     ],
     foodSources: ['Red meat', 'Fish'],
-    cautions: ['May cause water retention initially', 'Stay hydrated'],
+    cautions: ['May cause water retention initially', 'Stay hydrated', 'Can raise creatinine lab marker without kidney injury'],
     drugInteractions: ['Nephrotoxic drugs (kidney concern)'],
     avoidIf: ['Pre-existing kidney disease (consult doctor)'],
     cycleTiming: 'Can be used continuously. No need to cycle.',
@@ -2314,7 +2314,7 @@ export const supplements: Supplement[] = [
     synergies: ['Alpha Lipoic Acid', 'CoQ10', 'B vitamins'],
     conflicts: [],
     systems: ['energy', 'nervous', 'cognitive'],
-    goals: ['energy', 'brain-health', 'anti-aging', 'fat-metabolism', 'mood', 'cognitive']
+    goals: ['energy', 'brain-health', 'anti-aging', 'fat-metabolism', 'mood', 'cognitive', 'fertility']
   },
   {
     id: '5-htp',
@@ -2369,7 +2369,7 @@ export const supplements: Supplement[] = [
     category: 'modern',
     description: 'Essential coenzyme for mitochondrial ATP production. Ubiquinol is the active form. Depleted by statins. Declines with age.',
     traditionalUse: 'N/A - modern understanding. Found in organ meats.',
-    benefits: ['Boosts cellular energy', 'Heart health', 'Powerful antioxidant', 'Reduces statin side effects', 'Anti-aging', 'Migraine prevention'],
+    benefits: ['Boosts cellular energy', 'Heart health', 'Powerful antioxidant', 'Reduces statin side effects', 'Anti-aging', 'Migraine prevention', 'Sperm motility support'],
     dosage: '100-200mg ubiquinol daily (up to 300mg for therapeutic use)',
     timing: 'Morning with fatty food for absorption',
     timeframe: 'Energy effects 2-4 weeks. Heart benefits ongoing.',
@@ -2382,7 +2382,7 @@ export const supplements: Supplement[] = [
     synergies: ['Shilajit (enhances CoQ10)', 'PQQ', 'Magnesium'],
     conflicts: [],
     systems: ['energy', 'cardiovascular'],
-    goals: ['energy', 'heart-health', 'mitochondria', 'statin-support', 'anti-aging', 'migraine']
+    goals: ['energy', 'heart-health', 'mitochondria', 'statin-support', 'anti-aging', 'migraine', 'fertility']
   },
   {
     id: 'nmn',
@@ -2588,7 +2588,7 @@ export const supplements: Supplement[] = [
     synergies: ['Vitamin E (prevents oxidation)', 'Vitamin D', 'Curcumin'],
     conflicts: ['Take at different time than fiber supplements'],
     systems: ['cardiovascular', 'nervous', 'immune', 'skin'],
-    goals: ['brain-health', 'heart-health', 'inflammation', 'mood', 'depression', 'joints', 'skin', 'eyes']
+    goals: ['brain-health', 'heart-health', 'inflammation', 'mood', 'depression', 'joints', 'skin', 'eyes', 'fertility']
   },
   {
     id: 'krill-oil',
