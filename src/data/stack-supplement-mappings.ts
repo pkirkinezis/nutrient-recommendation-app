@@ -8,7 +8,7 @@ export const stackSupplementMappings = {
       { id: 'maca', priority: 2, reason: 'Vitality & Libido' }
     ],
     conditionalStack: [
-      { id: 'inositol-myo', condition: 'PCOS', reason: 'Ovulation Restoration' },
+      { id: 'inositol', condition: 'PCOS', reason: 'Ovulation Restoration' },
       { id: 'red-clover', condition: 'General', reason: 'Estrogen Support' }
     ],
     supportingStack: [
