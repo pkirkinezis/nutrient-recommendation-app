@@ -8,7 +8,7 @@ export const premadeStacks: SupplementStack[] = [
     description: 'Foundational nutrient plus adaptogen support for libido, hormone balance, and fertility.',
     targetGender: 'all',
     primaryGoal: 'fertility',
-    synergyDescription: 'Zinc, selenium, folate, vitamin D, omega-3, magnesium, and boron support reproductive nutrient status while ashwagandha and shilajit bolster stress resilience and vitality. CoQ10 and carnitine support mitochondrial fertility; Vitex (women) and Tribulus (men) are optional gender-specific additions.',
+    synergyDescription: 'Zinc, selenium, folate, vitamin D, omega-3, magnesium, and boron support reproductive nutrient status while ashwagandha and shilajit bolster stress resilience and vitality. CoQ10 and carnitine support mitochondrial fertility; see gender-specific stacks for targeted herbal additions.',
     ingredients: [
       {
         supplementId: 'zinc',
@@ -59,16 +59,6 @@ export const premadeStacks: SupplementStack[] = [
         supplementId: 'acetyl-l-carnitine',
         dosage: '1–2 g daily',
         reason: 'Supports sperm energy metabolism and motility.'
-      },
-      {
-        supplementId: 'vitex',
-        dosage: '400 mg daily',
-        reason: 'Female-focused cycle and ovulation support; discontinue once pregnant.'
-      },
-      {
-        supplementId: 'tribulus',
-        dosage: '750–1500 mg daily',
-        reason: 'Male-focused sperm quality and libido support; discontinue once partner is pregnant.'
       },
       {
         supplementId: 'shilajit',
