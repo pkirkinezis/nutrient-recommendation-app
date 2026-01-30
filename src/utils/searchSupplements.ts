@@ -7,19 +7,26 @@ interface SearchOptions {
 }
 
 export const searchSupplements = (query: string, options?: SearchOptions): Supplement[] => {
-  if (!query?.trim()) {
+  const normalizedQuery = query?.toLowerCase().trim() ?? '';
+  const normalizedGoal = options?.goal?.toLowerCase().trim() ?? '';
+  const hasQuery = normalizedQuery.length > 0;
+  const hasGoal = normalizedGoal.length > 0;
+
+  if (!hasQuery && !hasGoal) {
     return [];
   }
 
-  const normalizedQuery = query.toLowerCase().trim();
   const isFertilityQuery = normalizedQuery.includes('fertility') ||
     normalizedQuery.includes('conception') ||
-    normalizedQuery.includes('pregnant');
+    normalizedQuery.includes('pregnant') ||
+    normalizedGoal.includes('fertility') ||
+    normalizedGoal.includes('conception') ||
+    normalizedGoal.includes('pregnant');
   const evidenceScore = { strong: 3, moderate: 2, limited: 1 } as const;
 
   return supplements
     .filter(supplement => {
-      const matchesQuery =
+      const matchesQuery = !hasQuery ||
         supplement.name.toLowerCase().includes(normalizedQuery) ||
         supplement.goals.some(g => g.toLowerCase().includes(normalizedQuery)) ||
         supplement.benefits.some(b => b.toLowerCase().includes(normalizedQuery));
@@ -28,8 +35,8 @@ export const searchSupplements = (query: string, options?: SearchOptions): Suppl
         return false;
       }
 
-      if (options?.goal) {
-        const matchesGoal = supplement.goals.some(g => g.toLowerCase().includes(options.goal.toLowerCase()));
+      if (hasGoal) {
+        const matchesGoal = supplement.goals.some(g => g.toLowerCase().includes(normalizedGoal));
         if (!matchesGoal) {
           return false;
         }
