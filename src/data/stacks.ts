@@ -7,7 +7,7 @@ export const premadeStacks: SupplementStack[] = [
     description: 'Foundational nutrient plus adaptogen support for libido, hormone balance, and fertility.',
     targetGender: 'all',
     primaryGoal: 'fertility',
-    synergyDescription: 'Zinc, vitamin D, magnesium, and boron work together to optimize hormone production and free testosterone, while ashwagandha and shilajit combine to reduce stress and elevate vitality. Maca complements the stack with libido and mood support.',
+    synergyDescription: 'Zinc, selenium, folate, vitamin D, omega-3, magnesium, and boron support reproductive nutrient status while ashwagandha and shilajit bolster stress resilience and vitality. Maca rounds out libido and mood support.',
     ingredients: [
       {
         supplementId: 'zinc',
@@ -15,9 +15,24 @@ export const premadeStacks: SupplementStack[] = [
         reason: 'Supports testosterone production, sperm health, and libido; take with meals to limit GI upset.'
       },
       {
+        supplementId: 'selenium',
+        dosage: '100–200 mcg daily',
+        reason: 'Antioxidant support for sperm motility and thyroid function.'
+      },
+      {
+        supplementId: 'folate',
+        dosage: '400 mcg daily',
+        reason: 'Supports DNA synthesis and works synergistically with zinc in sperm development.'
+      },
+      {
         supplementId: 'vitamin-d3',
         dosage: '2,000 IU daily',
         reason: 'Supports reproductive hormone balance and sperm motility; take with a fatty meal for absorption.'
+      },
+      {
+        supplementId: 'omega-3',
+        dosage: '500 mg EPA+DHA daily (≥200 mg DHA)',
+        reason: 'Supports sperm membrane integrity and vascular health.'
       },
       {
         supplementId: 'magnesium',
@@ -33,6 +48,16 @@ export const premadeStacks: SupplementStack[] = [
         supplementId: 'ashwagandha',
         dosage: '300–600 mg extract, 1–2× daily',
         reason: 'Adaptogen that reduces cortisol while supporting testosterone and sexual function.'
+      },
+      {
+        supplementId: 'coq10',
+        dosage: '100–200 mg daily',
+        reason: 'Supports mitochondrial energy and sperm motility in fertility-focused protocols.'
+      },
+      {
+        supplementId: 'acetyl-l-carnitine',
+        dosage: '1–2 g daily',
+        reason: 'Supports sperm energy metabolism and motility.'
       },
       {
         supplementId: 'shilajit',
@@ -52,7 +77,7 @@ export const premadeStacks: SupplementStack[] = [
     description: 'Targeted male stack focused on testosterone, libido, sperm quality, and prostate support.',
     targetGender: 'men',
     primaryGoal: 'libido',
-    synergyDescription: 'Ashwagandha and shilajit amplify stress resilience and vitality, while tongkat ali plus mucuna support testosterone and dopamine-driven libido. Zinc, vitamin D, and magnesium anchor hormone output and sperm metrics.',
+    synergyDescription: 'Ashwagandha and shilajit amplify stress resilience and vitality, while tongkat ali plus mucuna support testosterone and dopamine-driven libido. Zinc, selenium, folate, vitamin D, omega-3, CoQ10, and carnitine anchor hormone output and sperm metrics.',
     ingredients: [
       {
         supplementId: 'zinc',
@@ -60,9 +85,24 @@ export const premadeStacks: SupplementStack[] = [
         reason: 'Essential for testosterone and sperm production; take with food.'
       },
       {
+        supplementId: 'selenium',
+        dosage: '100–200 mcg daily',
+        reason: 'Antioxidant support for sperm motility and thyroid balance.'
+      },
+      {
+        supplementId: 'folate',
+        dosage: '400 mcg daily',
+        reason: 'Supports DNA synthesis in spermatogenesis; commonly paired with zinc.'
+      },
+      {
         supplementId: 'vitamin-d3',
         dosage: '2,000 IU daily',
         reason: 'Supports testosterone and sperm motility; take with a fatty meal.'
+      },
+      {
+        supplementId: 'omega-3',
+        dosage: '500 mg EPA+DHA daily (≥200 mg DHA)',
+        reason: 'Supports sperm membrane integrity and vascular function.'
       },
       {
         supplementId: 'magnesium',
@@ -78,6 +118,21 @@ export const premadeStacks: SupplementStack[] = [
         supplementId: 'ashwagandha',
         dosage: '300–600 mg extract, 1–2× daily',
         reason: 'Improves libido and sexual function while lowering stress.'
+      },
+      {
+        supplementId: 'coq10',
+        dosage: '100–200 mg daily',
+        reason: 'Supports mitochondrial energy and sperm motility.'
+      },
+      {
+        supplementId: 'acetyl-l-carnitine',
+        dosage: '1–2 g daily',
+        reason: 'Supports sperm energy metabolism and motility over 3–6 months.'
+      },
+      {
+        supplementId: 'l-citrulline',
+        dosage: '1.5–3 g daily',
+        reason: 'Supports nitric-oxide-driven blood flow; avoid with nitrates or low BP.'
       },
       {
         supplementId: 'shilajit',
@@ -112,8 +167,18 @@ export const premadeStacks: SupplementStack[] = [
     description: 'Women-focused stack supporting hormone balance, fertility, and reproductive vitality.',
     targetGender: 'women',
     primaryGoal: 'fertility',
-    synergyDescription: 'Shatavari brings phytoestrogenic support for female reproductive health, while ashwagandha eases stress-related hormone disruption. Zinc, vitamin D, magnesium, and boron provide foundational reproductive nutrient support.',
+    synergyDescription: 'Foundational micronutrients (folate/folic acid, iodine, vitamin D, omega-3, zinc, magnesium) support preconception health while shatavari and ashwagandha address stress and reproductive balance. Add iron only if ferritin is low.',
     ingredients: [
+      {
+        supplementId: 'folate',
+        dosage: '400–800 mcg daily',
+        reason: 'Core preconception nutrient (folic acid or methylfolate) that supports neural tube development and methylation.'
+      },
+      {
+        supplementId: 'iodine',
+        dosage: '150 mcg daily',
+        reason: 'Supports thyroid hormone production and early fetal neurodevelopment.'
+      },
       {
         supplementId: 'zinc',
         dosage: '15–30 mg daily',
@@ -123,6 +188,11 @@ export const premadeStacks: SupplementStack[] = [
         supplementId: 'vitamin-d3',
         dosage: '2,000 IU daily',
         reason: 'Supports hormone balance and reproductive outcomes.'
+      },
+      {
+        supplementId: 'omega-3',
+        dosage: '500 mg EPA+DHA daily (≥200 mg DHA)',
+        reason: 'Supports fetal brain development and may reduce preterm risk.'
       },
       {
         supplementId: 'magnesium',
@@ -142,12 +212,12 @@ export const premadeStacks: SupplementStack[] = [
       {
         supplementId: 'ashwagandha',
         dosage: '300–600 mg extract, 1–2× daily',
-        reason: 'Adaptogen to reduce stress and support libido and energy.'
+        reason: 'Adaptogen to reduce stress and support libido and energy (stop once pregnant).'
       },
       {
         supplementId: 'maca',
         dosage: '1,500 mg once or twice daily',
-        reason: 'Supports mood, energy, and sexual desire.'
+        reason: 'Supports mood, energy, and sexual desire (use preconception only).'
       }
     ]
   },

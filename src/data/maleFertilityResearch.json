@@ -1,0 +1,128 @@
+{
+  "id": "male-fertility-sexual-health",
+  "title": "Male fertility & sexual health",
+  "subtitle": "Evidence-based overview of evaluation, nutrients, and practical 8–12 week protocol",
+  "disclaimer": "Wellness guidance only; ED or fertility concerns warrant clinical evaluation.",
+  "sections": [
+    {
+      "id": "evaluation",
+      "title": "Clinical evaluation (first steps)",
+      "points": [
+        "Assess both partners in parallel and complete a full history and physical exam.",
+        "Order semen analysis and basic endocrine/metabolic labs when indicated.",
+        "Male infertility can signal broader health issues, so optimize overall health." 
+      ]
+    },
+    {
+      "id": "key-nutrients",
+      "title": "Key nutrients and typical doses",
+      "items": [
+        {
+          "name": "Zinc",
+          "dose": "15–30 mg/day",
+          "role": "Supports spermatogenesis and testosterone; avoid chronic >40 mg/day"
+        },
+        {
+          "name": "Selenium",
+          "dose": "100–200 mcg/day",
+          "role": "Seminal antioxidant supporting motility; UL 400 mcg/day"
+        },
+        {
+          "name": "Folate (B9)",
+          "dose": "400–800 mcg/day",
+          "role": "DNA synthesis in spermatogenesis; often paired with zinc"
+        },
+        {
+          "name": "Vitamin D",
+          "dose": "1,000–2,000 IU/day",
+          "role": "Hormone regulation and sperm motility; aim ≥30 ng/mL"
+        },
+        {
+          "name": "L-Carnitine",
+          "dose": "1–3 g/day",
+          "role": "Sperm energy metabolism; studies use 3–6 months"
+        },
+        {
+          "name": "CoQ10",
+          "dose": "100–200 mg/day",
+          "role": "Mitochondrial energy and sperm antioxidant support"
+        },
+        {
+          "name": "Omega-3 (EPA/DHA)",
+          "dose": "≥500 mg/day",
+          "role": "Sperm membrane integrity and vascular health"
+        }
+      ]
+    },
+    {
+      "id": "herbs-drugs",
+      "title": "Herbal and pharmacologic agents",
+      "items": [
+        {
+          "name": "Ashwagandha",
+          "dose": "300–600 mg/day",
+          "notes": "Promising sperm/testosterone data; rare liver injury reports; discontinue once pregnancy occurs"
+        },
+        {
+          "name": "Tongkat Ali",
+          "dose": "100–300 mg/day",
+          "notes": "May increase testosterone in some men; avoid excess dosing"
+        },
+        {
+          "name": "Maca",
+          "dose": "1,500–3,000 mg/day",
+          "notes": "Libido support; semen-parameter evidence mixed"
+        },
+        {
+          "name": "PDE5 inhibitors",
+          "dose": "Sildenafil 25–100 mg; Tadalafil 5–20 mg",
+          "notes": "First-line ED therapy; contraindicated with nitrates"
+        }
+      ]
+    },
+    {
+      "id": "labs",
+      "title": "Labs and target ranges",
+      "items": [
+        {
+          "name": "Semen analysis",
+          "targets": "Volume ≥1.4 mL; count ≥39M; total motility ≥42%; morphology ≥4%"
+        },
+        {
+          "name": "Hormones",
+          "targets": "Total testosterone ~300–1000 ng/dL; LH 1.4–15; FSH 1.5–12; prolactin <20 ng/mL"
+        },
+        {
+          "name": "Metabolic",
+          "targets": "HbA1c <5.7% if tested; assess lipids and glucose with risk factors"
+        }
+      ]
+    }
+  ],
+  "protocol": {
+    "duration": "8–12 weeks (covering full spermatogenesis cycle)",
+    "steps": [
+      "Mediterranean-style diet with lean protein, plants, and omega-3s",
+      "Exercise ~150 min/week + resistance training",
+      "Avoid smoking/vaping; limit alcohol; manage stress and sleep",
+      "Targeted supplements based on labs (zinc, selenium, folate, vitamin D, omega-3)",
+      "Add carnitine or CoQ10 if motility is low",
+      "Recheck semen analysis and key labs after ~12 weeks"
+    ]
+  },
+  "notes": {
+    "semenVolume": [
+      "Semen volume is influenced more by hydration and abstinence interval than supplements.",
+      "Consider 2–3 days abstinence for peak volume if needed."
+    ],
+    "refractoryPeriod": [
+      "Improves with sleep, stress reduction, fitness, and reduced alcohol.",
+      "Pharmacologic prolactin modulation is not DIY and requires a clinician."
+    ]
+  },
+  "redFlags": [
+    "New or persistent ED with cardiovascular risk factors",
+    "Pain, curvature, blood in semen",
+    "Very low semen volume or dry orgasm"
+  ]
+}
