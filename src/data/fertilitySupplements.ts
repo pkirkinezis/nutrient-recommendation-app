@@ -153,7 +153,7 @@ export const fertilitySupplements: Supplement[] = [
     dosage: '1-3g daily',
     timing: 'With food',
     timeframe: '3-6 months for sperm quality.',
-    evidence: 'moderate-strong',
+    evidence: 'moderate',
     foodSources: ['Red meat', 'Dairy'],
     cautions: ['Fishy body odor (rare)'],
     drugInteractions: [],
