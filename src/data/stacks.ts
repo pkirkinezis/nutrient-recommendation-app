@@ -1,13 +1,14 @@
 import { SupplementStack } from '../types';
 
 export const premadeStacks: SupplementStack[] = [
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
     id: 'reproductive-foundation',
     name: 'Reproductive Health Foundation Stack',
     description: 'Foundational nutrient plus adaptogen support for libido, hormone balance, and fertility.',
     targetGender: 'all',
     primaryGoal: 'fertility',
-    synergyDescription: 'Zinc, selenium, folate, vitamin D, omega-3, magnesium, and boron support reproductive nutrient status while ashwagandha and shilajit bolster stress resilience and vitality. Maca rounds out libido and mood support.',
+    synergyDescription: 'Zinc, selenium, folate, vitamin D, omega-3, magnesium, and boron support reproductive nutrient status while ashwagandha and shilajit bolster stress resilience and vitality. CoQ10 and carnitine support mitochondrial fertility; Vitex (women) and Tribulus (men) are optional gender-specific additions.',
     ingredients: [
       {
         supplementId: 'zinc',
@@ -51,13 +52,23 @@ export const premadeStacks: SupplementStack[] = [
       },
       {
         supplementId: 'coq10',
-        dosage: '100–200 mg daily',
+        dosage: '200–300 mg daily',
         reason: 'Supports mitochondrial energy and sperm motility in fertility-focused protocols.'
       },
       {
         supplementId: 'acetyl-l-carnitine',
         dosage: '1–2 g daily',
         reason: 'Supports sperm energy metabolism and motility.'
+      },
+      {
+        supplementId: 'vitex',
+        dosage: '400 mg daily',
+        reason: 'Female-focused cycle and ovulation support; discontinue once pregnant.'
+      },
+      {
+        supplementId: 'tribulus',
+        dosage: '750–1500 mg daily',
+        reason: 'Male-focused sperm quality and libido support; discontinue once partner is pregnant.'
       },
       {
         supplementId: 'shilajit',
@@ -71,13 +82,14 @@ export const premadeStacks: SupplementStack[] = [
       }
     ]
   },
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
     id: 'male-libido-fertility',
     name: 'Male Libido & Fertility Stack',
     description: 'Targeted male stack focused on testosterone, libido, sperm quality, and prostate support.',
     targetGender: 'men',
     primaryGoal: 'libido',
-    synergyDescription: 'Ashwagandha and shilajit amplify stress resilience and vitality, while tongkat ali plus mucuna support testosterone and dopamine-driven libido. Zinc, selenium, folate, vitamin D, omega-3, CoQ10, and carnitine anchor hormone output and sperm metrics.',
+    synergyDescription: 'Ashwagandha and shilajit amplify stress resilience and vitality, while tongkat ali plus mucuna support testosterone and dopamine-driven libido. Zinc, selenium, folate, vitamin D, omega-3, CoQ10, tribulus, and carnitine anchor hormone output and sperm metrics.',
     ingredients: [
       {
         supplementId: 'zinc',
@@ -121,13 +133,23 @@ export const premadeStacks: SupplementStack[] = [
       },
       {
         supplementId: 'coq10',
-        dosage: '100–200 mg daily',
+        dosage: '200–300 mg daily',
         reason: 'Supports mitochondrial energy and sperm motility.'
+      },
+      {
+        supplementId: 'tribulus',
+        dosage: '750–1500 mg daily',
+        reason: 'Supports sperm count, motility, and libido over a full 3–6 month cycle.'
       },
       {
         supplementId: 'acetyl-l-carnitine',
         dosage: '1–2 g daily',
         reason: 'Supports sperm energy metabolism and motility over 3–6 months.'
+      },
+      {
+        supplementId: 'l-carnitine',
+        dosage: '2–3 g daily',
+        reason: 'Supports sperm motility and mitochondrial energy; pair with CoQ10.'
       },
       {
         supplementId: 'l-citrulline',
@@ -141,12 +163,12 @@ export const premadeStacks: SupplementStack[] = [
       },
       {
         supplementId: 'tongkat-ali',
-        dosage: '100–200 mg daily',
+        dosage: '200–300 mg daily',
         reason: 'Traditionally used to raise testosterone and improve libido.'
       },
       {
         supplementId: 'mucuna',
-        dosage: '200–500 mg daily (standardized L-DOPA)',
+        dosage: '500–1000 mg daily (standardized L-DOPA)',
         reason: 'L-DOPA source that supports dopamine, testosterone, and semen quality.'
       },
       {
@@ -161,13 +183,14 @@ export const premadeStacks: SupplementStack[] = [
       }
     ]
   },
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
     id: 'female-hormone-fertility',
     name: 'Female Hormone & Fertility Stack',
     description: 'Women-focused stack supporting hormone balance, fertility, and reproductive vitality.',
     targetGender: 'women',
     primaryGoal: 'fertility',
-    synergyDescription: 'Foundational micronutrients (folate/folic acid, iodine, vitamin D, omega-3, zinc, magnesium) support preconception health while shatavari and ashwagandha address stress and reproductive balance. Add iron only if ferritin is low.',
+    synergyDescription: 'Foundational micronutrients (folate/folic acid, iodine, vitamin D, omega-3, zinc, magnesium) support preconception health while vitex, myo-inositol, shatavari, and ashwagandha address cycle balance, ovulation, and stress. Add iron only if ferritin is low.',
     ingredients: [
       {
         supplementId: 'folate',
@@ -210,6 +233,16 @@ export const premadeStacks: SupplementStack[] = [
         reason: 'Traditional female tonic that supports fertility, menstrual balance, and libido.'
       },
       {
+        supplementId: 'vitex',
+        dosage: '400 mg daily',
+        reason: 'Supports ovulation quality and progesterone balance; discontinue once pregnant.'
+      },
+      {
+        supplementId: 'inositol',
+        dosage: '2–4 g daily',
+        reason: 'Supports ovulation and insulin signaling, especially in PCOS.'
+      },
+      {
         supplementId: 'ashwagandha',
         dosage: '300–600 mg extract, 1–2× daily',
         reason: 'Adaptogen to reduce stress and support libido and energy (stop once pregnant).'
@@ -218,6 +251,129 @@ export const premadeStacks: SupplementStack[] = [
         supplementId: 'maca',
         dosage: '1,500 mg once or twice daily',
         reason: 'Supports mood, energy, and sexual desire (use preconception only).'
+      }
+    ]
+  },
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
+  {
+    id: 'female-ovulation-optimizer',
+    name: 'Female Ovulation Optimizer',
+    description: 'Targeted female protocol to support ovulation quality and cycle regularity.',
+    targetGender: 'women',
+    primaryGoal: 'fertility',
+    synergyDescription: 'Vitex and myo-inositol drive cycle and ovulation support, while CoQ10, vitamin D3, and folate provide mitochondrial and preconception coverage.',
+    ingredients: [
+      {
+        supplementId: 'vitex',
+        dosage: '400 mg daily',
+        reason: 'Supports progesterone balance and ovulation quality; discontinue once pregnant.'
+      },
+      {
+        supplementId: 'inositol',
+        dosage: '2–4 g daily',
+        reason: 'Supports ovulation and insulin sensitivity, especially in PCOS.'
+      },
+      {
+        supplementId: 'coq10',
+        dosage: '200–300 mg daily',
+        reason: 'Mitochondrial support for egg quality and reproductive energy.'
+      },
+      {
+        supplementId: 'vitamin-d3',
+        dosage: '2,000 IU daily',
+        reason: 'Supports hormone balance and reproductive outcomes; take with fat.'
+      },
+      {
+        supplementId: 'folate',
+        dosage: '400–800 mcg daily',
+        reason: 'Core preconception nutrient for methylation and early fetal development.'
+      }
+    ]
+  },
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
+  {
+    id: 'male-sperm-optimizer',
+    name: 'Male Sperm Optimizer',
+    description: 'Male-focused protocol to improve sperm count, motility, and mitochondrial output.',
+    targetGender: 'men',
+    primaryGoal: 'fertility',
+    synergyDescription: 'Tribulus, mucuna, and carnitine support sperm metrics and libido, while CoQ10 and zinc enhance mitochondrial and antioxidant defense.',
+    ingredients: [
+      {
+        supplementId: 'tribulus',
+        dosage: '750–1500 mg daily',
+        reason: 'Supports sperm count, motility, and libido over a 3–6 month cycle.'
+      },
+      {
+        supplementId: 'l-carnitine',
+        dosage: '2–3 g daily',
+        reason: 'Improves sperm motility and mitochondrial energy production.'
+      },
+      {
+        supplementId: 'coq10',
+        dosage: '200–300 mg daily',
+        reason: 'Mitochondrial antioxidant support for sperm quality.'
+      },
+      {
+        supplementId: 'mucuna',
+        dosage: '500–1000 mg daily (standardized L-DOPA)',
+        reason: 'Supports dopamine-driven libido and semen quality.'
+      },
+      {
+        supplementId: 'zinc',
+        dosage: '30–50 mg daily',
+        reason: 'Essential for spermatogenesis and testosterone support.'
+      }
+    ]
+  },
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
+  {
+    id: 'couples-fertility-protocol',
+    name: 'Couples Fertility Protocol',
+    description: 'Combined protocol for partners preparing for conception.',
+    targetGender: 'all',
+    primaryGoal: 'fertility',
+    synergyDescription: 'Combines male and female fertility drivers with shared mitochondrial and micronutrient support to cover the full preconception window.',
+    ingredients: [
+      {
+        supplementId: 'vitex',
+        dosage: '400 mg daily (female)',
+        reason: 'Female ovulation and progesterone support; discontinue once pregnant.'
+      },
+      {
+        supplementId: 'inositol',
+        dosage: '2–4 g daily (female)',
+        reason: 'Female ovulation and insulin sensitivity support.'
+      },
+      {
+        supplementId: 'tribulus',
+        dosage: '750–1500 mg daily (male)',
+        reason: 'Male sperm quality and libido support.'
+      },
+      {
+        supplementId: 'l-carnitine',
+        dosage: '2–3 g daily (male)',
+        reason: 'Male sperm motility and energy support.'
+      },
+      {
+        supplementId: 'coq10',
+        dosage: '200–300 mg daily (shared)',
+        reason: 'Shared mitochondrial support for egg and sperm quality.'
+      },
+      {
+        supplementId: 'vitamin-d3',
+        dosage: '2,000 IU daily (shared)',
+        reason: 'Shared hormone balance support; take with fat.'
+      },
+      {
+        supplementId: 'folate',
+        dosage: '400–800 mcg daily (shared)',
+        reason: 'Shared preconception methylation support.'
+      },
+      {
+        supplementId: 'zinc',
+        dosage: '15–30 mg daily (shared)',
+        reason: 'Shared reproductive nutrient support.'
       }
     ]
   },

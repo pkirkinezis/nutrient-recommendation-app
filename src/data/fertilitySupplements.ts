@@ -2,6 +2,7 @@ import { Supplement } from '../types/index';
 
 export const fertilitySupplements: Supplement[] = [
   // ============ FERTILITY & REPRODUCTIVE HEALTH (NEW ADDITIONS) ============
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
     id: 'vitex',
     name: 'Vitex (Chasteberry)',
@@ -9,6 +10,7 @@ export const fertilitySupplements: Supplement[] = [
     category: 'both',
     description: 'Premier herbal fertility support. Clinical trials show 26-36% pregnancy rate improvement. Works through LH/FSH modulation.',
     traditionalUse: 'Used for centuries in Europe for female fertility and cycle regulation. Called "Female Viagra" for reproductive hormones.',
+    safetyNote: 'Discontinue immediately upon positive pregnancy test.',
     benefits: [
       'Improves ovulation quality',
       'Increases progesterone levels',
@@ -31,6 +33,7 @@ export const fertilitySupplements: Supplement[] = [
     systems: ['reproductive', 'endocrine', 'hormonal'],
     goals: ['fertility', 'female-reproductive', 'hormonal-balance', 'ovulation', 'progesterone', 'pms', 'cycle-regulation']
   },
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
     id: 'tribulus',
     name: 'Tribulus terrestris',
@@ -38,6 +41,7 @@ export const fertilitySupplements: Supplement[] = [
     category: 'both',
     description: 'Primary male fertility herb. Studies show 60-70% improvement in sperm count and motility. Supports testosterone.',
     traditionalUse: 'Called "Gokshura" in Ayurveda. Used for male vitality, fertility, and sexual function.',
+    safetyNote: 'Discontinue immediately upon positive pregnancy test.',
     benefits: [
       'Improves sperm count & motility',
       'Supports testosterone levels',
@@ -58,10 +62,11 @@ export const fertilitySupplements: Supplement[] = [
     systems: ['reproductive', 'endocrine', 'urinary'],
     goals: ['fertility', 'male-reproductive', 'sperm-quality', 'testosterone', 'sexual-function', 'libido']
   },
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
-    id: 'inositol-myo',
+    id: 'inositol',
     name: 'Myo-Inositol',
-    type: 'supplement',
+    type: 'other',
     category: 'modern',
     description: 'Critical for PCOS fertility. Restores ovulation in 60-80% of PCOS women by improving insulin signaling.',
     traditionalUse: 'Modern research-driven supplement.',
@@ -85,6 +90,7 @@ export const fertilitySupplements: Supplement[] = [
     systems: ['endocrine', 'metabolic', 'reproductive'],
     goals: ['fertility', 'pcos', 'ovulation', 'insulin-sensitivity', 'female-reproductive', 'hormonal-balance']
   },
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
     id: 'red-clover',
     name: 'Red Clover',
@@ -111,6 +117,7 @@ export const fertilitySupplements: Supplement[] = [
     systems: ['reproductive', 'hormonal'],
     goals: ['fertility', 'female-reproductive', 'hormonal-balance', 'cervical-mucus']
   },
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
     id: 'fenugreek',
     name: 'Fenugreek',
@@ -138,6 +145,7 @@ export const fertilitySupplements: Supplement[] = [
     systems: ['reproductive', 'endocrine', 'metabolic'],
     goals: ['fertility', 'male-reproductive', 'testosterone', 'libido', 'lactation']
   },
+  /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
     id: 'l-carnitine',
     name: 'L-Carnitine',
@@ -150,7 +158,7 @@ export const fertilitySupplements: Supplement[] = [
       'Supports mitochondrial energy',
       'Reduces sperm DNA fragmentation'
     ],
-    dosage: '1-3g daily',
+    dosage: '2-3g daily',
     timing: 'With food',
     timeframe: '3-6 months for sperm quality.',
     evidence: 'moderate',
