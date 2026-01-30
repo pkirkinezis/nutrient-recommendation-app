@@ -112,8 +112,18 @@ export const premadeStacks: SupplementStack[] = [
     description: 'Women-focused stack supporting hormone balance, fertility, and reproductive vitality.',
     targetGender: 'women',
     primaryGoal: 'fertility',
-    synergyDescription: 'Shatavari brings phytoestrogenic support for female reproductive health, while ashwagandha eases stress-related hormone disruption. Zinc, vitamin D, magnesium, and boron provide foundational reproductive nutrient support.',
+    synergyDescription: 'Foundational micronutrients (folate/folic acid, iodine, vitamin D, omega-3, zinc, magnesium) support preconception health while shatavari and ashwagandha address stress and reproductive balance. Add iron only if ferritin is low.',
     ingredients: [
+      {
+        supplementId: 'folate',
+        dosage: '400–800 mcg daily',
+        reason: 'Core preconception nutrient (folic acid or methylfolate) that supports neural tube development and methylation.'
+      },
+      {
+        supplementId: 'iodine',
+        dosage: '150 mcg daily',
+        reason: 'Supports thyroid hormone production and early fetal neurodevelopment.'
+      },
       {
         supplementId: 'zinc',
         dosage: '15–30 mg daily',
@@ -125,9 +135,19 @@ export const premadeStacks: SupplementStack[] = [
         reason: 'Supports hormone balance and reproductive outcomes.'
       },
       {
+        supplementId: 'omega-3',
+        dosage: '500 mg EPA+DHA daily (≥200 mg DHA)',
+        reason: 'Supports fetal brain development and may reduce preterm risk.'
+      },
+      {
         supplementId: 'magnesium',
         dosage: '300–400 mg nightly (citrate or glycinate)',
         reason: 'Supports hormone balance and vitamin D activation while aiding recovery.'
+      },
+      {
+        supplementId: 'iron',
+        dosage: '18 mg daily; 45–60 mg daily only if deficient',
+        reason: 'Use higher doses when ferritin or hemoglobin is low; otherwise prioritize iron-rich foods.'
       },
       {
         supplementId: 'boron',
@@ -142,12 +162,12 @@ export const premadeStacks: SupplementStack[] = [
       {
         supplementId: 'ashwagandha',
         dosage: '300–600 mg extract, 1–2× daily',
-        reason: 'Adaptogen to reduce stress and support libido and energy.'
+        reason: 'Adaptogen to reduce stress and support libido and energy (stop once pregnant).'
       },
       {
         supplementId: 'maca',
         dosage: '1,500 mg once or twice daily',
-        reason: 'Supports mood, energy, and sexual desire.'
+        reason: 'Supports mood, energy, and sexual desire (use preconception only).'
       }
     ]
   },
