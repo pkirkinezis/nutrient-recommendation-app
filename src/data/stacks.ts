@@ -200,11 +200,6 @@ export const premadeStacks: SupplementStack[] = [
         reason: 'Supports hormone balance and vitamin D activation while aiding recovery.'
       },
       {
-        supplementId: 'iron',
-        dosage: '18 mg daily; 45–60 mg daily only if deficient',
-        reason: 'Use higher doses when ferritin or hemoglobin is low; otherwise prioritize iron-rich foods.'
-      },
-      {
         supplementId: 'boron',
         dosage: '3–6 mg daily',
         reason: 'Supports estrogen metabolism and hormone balance.'
