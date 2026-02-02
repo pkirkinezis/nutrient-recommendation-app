@@ -34,6 +34,7 @@ const goalCategories = {
   'Sleep & Recovery': ['sleep'],
   'Hormones & Balance': ['hormones'],
   'Reproductive Health': ['fertility'],
+  'Sexual Function': ['sexual-health'],
   'Intimacy & Libido': ['libido'],
   'Immune Support': ['immunity'],
   'Digestion & Gut': ['digestion'],
@@ -95,12 +96,12 @@ const tokenizeSearchQuery = (query: string): {
   const lowered = query.toLowerCase();
   const tokens = lowered.split(/[^a-z0-9]+/).filter(Boolean);
   const expandedTokens = new Set(tokens);
-  const hasIntimacySignal = tokens.some(token => ['libido', 'fertility', 'reproductive', 'intimacy', 'sexual'].includes(token))
+  const hasIntimacySignal = tokens.some(token => ['libido', 'fertility', 'reproductive', 'intimacy', 'sexual', 'sex', 'drive', 'erectile', 'erection', 'semen', 'sperm', 'ejaculation', 'refractory'].includes(token))
     || lowered.includes('sexual health')
     || lowered.includes('reproductive health');
 
   if (hasIntimacySignal) {
-    ['libido', 'fertility', 'testosterone', 'hormonal-balance', 'reproductive', 'women-health', 'sexual-health', 'hormones', 'intimacy', 'sexual']
+    ['libido', 'sex-drive', 'fertility', 'testosterone', 'hormonal-balance', 'reproductive', 'women-health', 'sexual-health', 'sexual-function', 'erectile-function', 'semen-volume', 'sperm-quality', 'hormones', 'intimacy', 'sexual']
       .forEach(keyword => expandedTokens.add(keyword));
   }
 
