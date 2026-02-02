@@ -78,6 +78,11 @@ NutriCompass is a comprehensive, evidence-based nutrition and supplement recomme
 - Priority indicators based on diet, age, and lifestyle
 - Food-first guidance with supplement tie-ins
 
+### 🥗 Food Source Intelligence
+- Food-source tables with % NRV for vitamins and minerals (EU reference values)
+- CIQUAL + EuroFIR food composition sources
+- Research-based reference doses for non‑NRV compounds (e.g., melatonin, creatine, CoQ10)
+
 ### 🧪 Stack Builder
 - Build custom supplement stacks
 - Automatic interaction/conflict detection
@@ -226,7 +231,8 @@ nutricompass/
 │   ├── data/
 │   │   ├── curatedStacks.ts       # Curated goal-based stacks
 │   │   ├── nutrientRequirements.ts # Nutrient target guidance
-│   │   └── supplements.ts        # Supplement database
+│   │   ├── nutrientFoodSources.ts # Nutrient → food source helpers
+│   │   └── supplements.ts        # Supplement database + nutrient food data
 │   ├── types/
 │   │   └── index.ts              # TypeScript interfaces
 │   ├── utils/
@@ -908,6 +914,14 @@ export const supplements: Supplement[] = [
 ];
 ```
 
+### Updating Nutrient Food Data
+
+Food-source data lives in `src/data/supplements.ts`:
+- `nutrientFoodMapping` stores NRV/AI reference values and sources
+- `nutrientFoodSources` lists foods, amounts, and % NRV/Reference
+
+If you add a new nutrient with food data, also ensure the supplement ID maps to the nutrient ID in `src/data/nutrientFoodSources.ts`.
+
 ### Modifying Goal Analysis
 
 Edit `src/utils/goalAnalyzer.ts` to add new goal keywords and body system mappings.
@@ -993,6 +1007,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Nutritional data compiled from peer-reviewed research
+- Food composition references: CIQUAL and EuroFIR (for vitamins/minerals)
 - Ayurvedic knowledge from traditional texts and modern research
 - Built with React, Vite, TypeScript, and Tailwind CSS
 
