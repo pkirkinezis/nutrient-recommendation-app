@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Recommendation, Supplement } from '../types';
 import { formGuidance } from '../data/supplements';
+import NutrientFoodSources from './NutrientFoodSources';
 
 interface SupplementDetailModalProps {
   supplement: Supplement | null;
@@ -196,12 +197,7 @@ export function SupplementDetailModal({
             </section>
           )}
 
-          {supplement.foodSources && supplement.foodSources.length > 0 && (
-            <section className="rounded-2xl bg-green-50 p-4">
-              <h3 className="text-sm font-semibold text-green-700 mb-1">Food Sources</h3>
-              <p className="text-sm text-green-800">{supplement.foodSources.join(', ')}</p>
-            </section>
-          )}
+          <NutrientFoodSources supplement={supplement} />
 
           {supplement.synergies && supplement.synergies.length > 0 && (
             <section>

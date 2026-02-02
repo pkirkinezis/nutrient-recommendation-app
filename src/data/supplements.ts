@@ -1,4 +1,4 @@
-import { Supplement } from '../types/index';
+﻿import { Supplement, FoodSource } from '../types/index';
 
 export const supplements: Supplement[] = [
   // ============ AYURVEDIC HERBS ============
@@ -240,7 +240,7 @@ export const supplements: Supplement[] = [
     category: 'both',
     description: 'Golden spice of India with powerful anti-inflammatory effects. Curcumin is the active compound. Best results come from delivery-enhanced forms.',
     traditionalUse: 'Used in Ayurveda for digestive issues, wounds, inflammation, and as a blood purifier. Central to Indian cooking and medicine.',
-    mechanism: 'Curcuminoids modulate NF-κB and COX-2 pathways to reduce inflammatory signaling.',
+    mechanism: 'Curcuminoids modulate NF-ÎºB and COX-2 pathways to reduce inflammatory signaling.',
     benefits: ['Powerful anti-inflammatory', 'Joint pain relief', 'Antioxidant', 'Brain health', 'Mood support', 'Digestive aid'],
     dosage: '500-1000mg curcumin in phytosome, liposomal, or nanoparticle form',
     timing: 'With meals containing fat for absorption (if applicable to product)',
@@ -603,10 +603,10 @@ export const supplements: Supplement[] = [
     name: 'Tongkat Ali / Longjack (Eurycoma longifolia)',
     type: 'herb',
     category: 'both',
-    description: 'Malaysian "ginseng" known for testosterone and stress support. Clinically studied water extracts include LJ100® (standardized glycosaponins, eurypeptides, eurycomanone).',
+    description: 'Malaysian "ginseng" known for testosterone and stress support. Clinically studied water extracts include LJ100Â® (standardized glycosaponins, eurypeptides, eurycomanone).',
     traditionalUse: 'Traditional Southeast Asian remedy for energy, male vitality, and fever. Used by athletes and as an aphrodisiac.',
     benefits: ['Supports testosterone', 'Reduces cortisol', 'Improves body composition', 'Enhances libido', 'Reduces fatigue', 'Improves mood'],
-    dosage: '100-200mg/day of water extract (e.g., LJ100®). Up to 300mg/day for athletic support.',
+    dosage: '100-200mg/day of water extract (e.g., LJ100Â®). Up to 300mg/day for athletic support.',
     timing: 'Morning with food (water extract preferred)',
     timeframe: 'Energy effects 1-2 weeks. Hormonal effects 4-8 weeks.',
     evidence: 'strong',
@@ -1026,7 +1026,7 @@ export const supplements: Supplement[] = [
     description: 'Polyphenol-rich tea with EGCG and L-theanine for antioxidant and cognitive support. Matcha provides a higher catechin and caffeine concentration.',
     traditionalUse: 'Consumed for centuries in China and Japan for calm alertness, digestion, and longevity rituals.',
     benefits: ['Powerful antioxidant support', 'Calm alertness and focus', 'Cardiovascular support', 'Metabolic support', 'Supports fat oxidation'],
-    dosage: '1-3 cups brewed tea daily or 1-2 tsp matcha powder. Extracts typically 300-800mg EGCG (prefer ≥50% EGCG standardization).',
+    dosage: '1-3 cups brewed tea daily or 1-2 tsp matcha powder. Extracts typically 300-800mg EGCG (prefer â‰¥50% EGCG standardization).',
     timing: 'Morning or early afternoon. Avoid late evening if caffeine-sensitive.',
     timeframe: 'Focus and energy within 30-60 minutes. Metabolic effects over 4-8 weeks.',
     evidence: 'strong',
@@ -1042,7 +1042,7 @@ export const supplements: Supplement[] = [
   },
   {
     id: 'peppermint-tea',
-    name: 'Peppermint (Mentha × piperita)',
+    name: 'Peppermint (Mentha Ã— piperita)',
     type: 'tea',
     category: 'traditional',
     description: 'Carminative tea that relaxes intestinal smooth muscle, easing gas, cramping, and post-meal discomfort. Enteric-coated oil capsules are best studied for IBS.',
@@ -1070,7 +1070,7 @@ export const supplements: Supplement[] = [
     description: 'Gentle calming tea with apigenin that supports relaxation, sleep quality, and digestive comfort.',
     traditionalUse: 'European and Middle Eastern remedy for sleep, anxiety, and digestive upset.',
     benefits: ['Promotes relaxation', 'Supports sleep quality', 'Soothes digestion', 'Mild anti-inflammatory'],
-    dosage: '1-2 cups in the evening (1-2 tsp dried flowers steeped 5-10 minutes) or 300-500mg extract standardized to ≥1.2% apigenin.',
+    dosage: '1-2 cups in the evening (1-2 tsp dried flowers steeped 5-10 minutes) or 300-500mg extract standardized to â‰¥1.2% apigenin.',
     timing: 'Evening or before bed.',
     timeframe: 'Calming effects within 30-60 minutes. Sleep benefits within days.',
     evidence: 'moderate',
@@ -1253,7 +1253,7 @@ export const supplements: Supplement[] = [
     evidence: 'moderate',
     evidenceSources: [
       {
-        title: 'Tea’s anti-obesity properties - PMC',
+        title: 'Teaâ€™s anti-obesity properties - PMC',
         url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10563719',
         note: 'Cardiometabolic benefits across tea polyphenols.'
       },
@@ -1683,7 +1683,7 @@ export const supplements: Supplement[] = [
     traditionalUse: 'N/A - modern understanding. Traditionally obtained through sun exposure and fatty fish.',
     mechanism: 'Acts as a hormone that regulates calcium balance, immune signaling, and gene expression via vitamin D receptors.',
     benefits: ['Immune regulation', 'Bone health', 'Mood support', 'Muscle function', 'Reduces infection risk', 'Hormone support'],
-    dosage: '600-800 IU daily for most healthy adults; 1,000-2,000 IU daily to reach ≥30 ng/mL in many adults (higher doses only if deficient under clinician guidance)',
+    dosage: '600-800 IU daily for most healthy adults; 1,000-2,000 IU daily to reach â‰¥30 ng/mL in many adults (higher doses only if deficient under clinician guidance)',
     timing: 'With a meal containing fat. Pair with K2 when supplementing.',
     timeframe: 'Blood levels rise over 2-3 months. Some feel better in 2-4 weeks.',
     evidence: 'strong',
@@ -3144,10 +3144,10 @@ export const supplements: Supplement[] = [
     name: 'Fenugreek (Methi)',
     type: 'ayurvedic',
     category: 'both',
-    description: 'Culinary spice with evidence for blood sugar, libido, and testosterone support. Best-studied extracts include Testofen® and Trigozim®.',
+    description: 'Culinary spice with evidence for blood sugar, libido, and testosterone support. Best-studied extracts include TestofenÂ® and TrigozimÂ®.',
     traditionalUse: 'Used in Indian cooking and Ayurveda for digestion, lactation, and as a tonic.',
     benefits: ['Blood sugar support', 'May support testosterone', 'Lactation enhancement', 'Digestive support', 'May improve libido'],
-    dosage: '600mg/day Testofen® for libido or 1200-1800mg/day Trigozim® for testosterone support',
+    dosage: '600mg/day TestofenÂ® for libido or 1200-1800mg/day TrigozimÂ® for testosterone support',
     timing: 'With meals. For blood sugar: before carb-heavy meals.',
     timeframe: 'Blood sugar effects 2-4 weeks. Hormonal effects 6-12 weeks.',
     evidence: 'moderate',
@@ -3247,6 +3247,763 @@ export const supplements: Supplement[] = [
     goals: ['fertility', 'male-reproductive', 'sperm-quality', 'sperm-motility', 'energy']
   }
 ];
+
+// ============ NUTRIENT FOOD DATA ============
+export const nutrientFoodMapping = {
+  "dataSource": {
+    "nrvValues": {
+      "name": "EU Nutrient Reference Values",
+      "regulation": "Regulation (EU) No 1169/2011, Annex XIII",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011R1169",
+      "notes": "Single reference values for adults, used for food labelling in the EU"
+    },
+    "efsaRecommendations": {
+      "name": "EFSA Scientific Opinions",
+      "url": "https://www.efsa.europa.eu/en/topics/topic/dietary-reference-values",
+      "notes": "Adequate Intake values for nutrients without EU NRV (e.g., omega-3, choline)"
+    },
+    "foodComposition": {
+      "primary": {
+        "name": "CIQUAL",
+        "fullName": "Table de composition nutritionnelle des aliments",
+        "organization": "ANSES (French Agency for Food, Environmental and Occupational Health & Safety)",
+        "url": "https://ciqual.anses.fr/",
+        "notes": "French food composition database, one of the most comprehensive in Europe"
+      },
+      "secondary": {
+        "name": "EuroFIR",
+        "fullName": "European Food Information Resource",
+        "organization": "EuroFIR AISBL",
+        "url": "https://www.eurofir.org/",
+        "notes": "Pan-European food composition data network harmonizing European food databases"
+      }
+    }
+  },
+  "lastUpdated": "2024",
+  "note": "Food composition data from European databases (CIQUAL, EuroFIR) for vitamins/minerals; non-NRV compounds use peer-reviewed literature. %NRV uses EU NRV where available; otherwise reference doses from app guidance.",
+  "nutrients": [
+    {
+      "nutrientId": "vitamin-a",
+      "nutrientName": "Vitamin A",
+      "nrv": { "amount": 800, "unit": "Âµg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Beef liver, cooked", "basis": "per 100g", "amount": 9442, "unit": "Âµg", "percentNRV": 1180, "source": "CIQUAL 2020", "sourceId": "6170" },
+        { "food": "Carrots, raw", "basis": "per 100g", "amount": 835, "unit": "Âµg", "percentNRV": 104, "source": "CIQUAL 2020", "sourceId": "20009" },
+        { "food": "Sweet potato, baked", "basis": "per 100g", "amount": 709, "unit": "Âµg", "percentNRV": 89, "source": "CIQUAL 2020", "sourceId": "4726" },
+        { "food": "Spinach, cooked", "basis": "per 100g", "amount": 524, "unit": "Âµg", "percentNRV": 66, "source": "CIQUAL 2020", "sourceId": "20107" },
+        { "food": "Kale, cooked", "basis": "per 100g", "amount": 370, "unit": "Âµg", "percentNRV": 46, "source": "EuroFIR", "sourceId": "EF003421" }
+      ]
+    },
+    {
+      "nutrientId": "vitamin-b1",
+      "nutrientName": "Thiamin (Vitamin B1)",
+      "nrv": { "amount": 1.1, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Sunflower seeds", "basis": "per 100g", "amount": 1.48, "unit": "mg", "percentNRV": 135, "source": "CIQUAL 2020", "sourceId": "15035" },
+        { "food": "Pork, lean", "basis": "per 100g", "amount": 0.89, "unit": "mg", "percentNRV": 81, "source": "CIQUAL 2020", "sourceId": "28100" },
+        { "food": "Oats", "basis": "per 100g", "amount": 0.76, "unit": "mg", "percentNRV": 69, "source": "CIQUAL 2020", "sourceId": "9310" },
+        { "food": "Whole wheat bread", "basis": "per 100g", "amount": 0.30, "unit": "mg", "percentNRV": 27, "source": "CIQUAL 2020", "sourceId": "7010" }
+      ]
+    },
+    {
+      "nutrientId": "vitamin-b2",
+      "nutrientName": "Riboflavin (Vitamin B2)",
+      "nrv": { "amount": 1.4, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Beef liver, cooked", "basis": "per 100g", "amount": 2.76, "unit": "mg", "percentNRV": 197, "source": "CIQUAL 2020", "sourceId": "6170" },
+        { "food": "Almonds", "basis": "per 100g", "amount": 1.01, "unit": "mg", "percentNRV": 72, "source": "CIQUAL 2020", "sourceId": "15001" },
+        { "food": "Mushrooms", "basis": "per 100g", "amount": 0.49, "unit": "mg", "percentNRV": 35, "source": "EuroFIR", "sourceId": "EF001892" },
+        { "food": "Egg, whole", "basis": "per 100g", "amount": 0.46, "unit": "mg", "percentNRV": 33, "source": "CIQUAL 2020", "sourceId": "22000" }
+      ]
+    },
+    {
+      "nutrientId": "vitamin-b3",
+      "nutrientName": "Niacin (Vitamin B3)",
+      "nrv": { "amount": 16, "unit": "mg NE", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Tuna, cooked", "basis": "per 100g", "amount": 18.8, "unit": "mg", "percentNRV": 118, "source": "CIQUAL 2020", "sourceId": "26400" },
+        { "food": "Chicken breast", "basis": "per 100g", "amount": 13.7, "unit": "mg", "percentNRV": 86, "source": "CIQUAL 2020", "sourceId": "36010" },
+        { "food": "Peanuts", "basis": "per 100g", "amount": 12.1, "unit": "mg", "percentNRV": 76, "source": "CIQUAL 2020", "sourceId": "15010" }
+      ]
+    },
+    {
+      "nutrientId": "vitamin-b6",
+      "nutrientName": "Vitamin B6",
+      "nrv": { "amount": 1.4, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Salmon", "basis": "per 100g", "amount": 0.64, "unit": "mg", "percentNRV": 46, "source": "CIQUAL 2020", "sourceId": "26040" },
+        { "food": "Chicken breast", "basis": "per 100g", "amount": 0.60, "unit": "mg", "percentNRV": 43, "source": "CIQUAL 2020", "sourceId": "36010" },
+        { "food": "Chickpeas", "basis": "per 100g", "amount": 0.54, "unit": "mg", "percentNRV": 39, "source": "CIQUAL 2020", "sourceId": "20520" },
+        { "food": "Banana", "basis": "per 100g", "amount": 0.37, "unit": "mg", "percentNRV": 26, "source": "CIQUAL 2020", "sourceId": "13004" }
+      ]
+    },
+    {
+      "nutrientId": "vitamin-b9",
+      "nutrientName": "Folate (Vitamin B9)",
+      "nrv": { "amount": 200, "unit": "Âµg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Beef liver, cooked", "basis": "per 100g", "amount": 253, "unit": "Âµg", "percentNRV": 127, "source": "CIQUAL 2020", "sourceId": "6170" },
+        { "food": "Lentils, cooked", "basis": "per 100g", "amount": 181, "unit": "Âµg", "percentNRV": 91, "source": "CIQUAL 2020", "sourceId": "20518" },
+        { "food": "Asparagus", "basis": "per 100g", "amount": 149, "unit": "Âµg", "percentNRV": 75, "source": "CIQUAL 2020", "sourceId": "20001" },
+        { "food": "Spinach, cooked", "basis": "per 100g", "amount": 146, "unit": "Âµg", "percentNRV": 73, "source": "CIQUAL 2020", "sourceId": "20107" }
+      ]
+    },
+    {
+      "nutrientId": "vitamin-b12",
+      "nutrientName": "Vitamin B12",
+      "nrv": { "amount": 2.5, "unit": "Âµg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Clams", "basis": "per 100g", "amount": 98.9, "unit": "Âµg", "percentNRV": 3956, "source": "EuroFIR", "sourceId": "EF002789" },
+        { "food": "Beef liver, cooked", "basis": "per 100g", "amount": 83.1, "unit": "Âµg", "percentNRV": 3324, "source": "CIQUAL 2020", "sourceId": "6170" },
+        { "food": "Sardines", "basis": "per 100g", "amount": 8.9, "unit": "Âµg", "percentNRV": 356, "source": "CIQUAL 2020", "sourceId": "26210" },
+        { "food": "Salmon", "basis": "per 100g", "amount": 3.2, "unit": "Âµg", "percentNRV": 128, "source": "CIQUAL 2020", "sourceId": "26040" }
+      ]
+    },
+    {
+      "nutrientId": "vitamin-c",
+      "nutrientName": "Vitamin C",
+      "nrv": { "amount": 80, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Blackcurrants", "basis": "per 100g", "amount": 181, "unit": "mg", "percentNRV": 226, "source": "CIQUAL 2020", "sourceId": "13017" },
+        { "food": "Red pepper, raw", "basis": "per 100g", "amount": 128, "unit": "mg", "percentNRV": 160, "source": "CIQUAL 2020", "sourceId": "20151" },
+        { "food": "Kiwi fruit", "basis": "per 100g", "amount": 92.7, "unit": "mg", "percentNRV": 116, "source": "CIQUAL 2020", "sourceId": "13025" },
+        { "food": "Broccoli, cooked", "basis": "per 100g", "amount": 65, "unit": "mg", "percentNRV": 81, "source": "CIQUAL 2020", "sourceId": "20053" }
+      ]
+    },
+    {
+      "nutrientId": "vitamin-d",
+      "nutrientName": "Vitamin D",
+      "nrv": { "amount": 5, "unit": "Âµg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Cod liver oil", "basis": "1 tbsp (15ml)", "amount": 34, "unit": "Âµg", "percentNRV": 680, "source": "CIQUAL 2020", "sourceId": "17100" },
+        { "food": "Salmon, cooked", "basis": "per 100g", "amount": 11, "unit": "Âµg", "percentNRV": 220, "source": "CIQUAL 2020", "sourceId": "26040" },
+        { "food": "Mackerel, cooked", "basis": "per 100g", "amount": 8.5, "unit": "Âµg", "percentNRV": 170, "source": "CIQUAL 2020", "sourceId": "26070" },
+        { "food": "Herring, cooked", "basis": "per 100g", "amount": 5.4, "unit": "Âµg", "percentNRV": 108, "source": "EuroFIR", "sourceId": "EF002156" }
+      ]
+    },
+    {
+      "nutrientId": "vitamin-e",
+      "nutrientName": "Vitamin E",
+      "nrv": { "amount": 12, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Sunflower oil", "basis": "per 100g", "amount": 41.1, "unit": "mg", "percentNRV": 343, "source": "CIQUAL 2020", "sourceId": "17440" },
+        { "food": "Sunflower seeds", "basis": "per 100g", "amount": 35.2, "unit": "mg", "percentNRV": 293, "source": "CIQUAL 2020", "sourceId": "15035" },
+        { "food": "Almonds", "basis": "per 100g", "amount": 25.6, "unit": "mg", "percentNRV": 213, "source": "CIQUAL 2020", "sourceId": "15001" },
+        { "food": "Hazelnuts", "basis": "per 100g", "amount": 15.0, "unit": "mg", "percentNRV": 125, "source": "CIQUAL 2020", "sourceId": "15024" }
+      ]
+    },
+    {
+      "nutrientId": "vitamin-k",
+      "nutrientName": "Vitamin K",
+      "nrv": { "amount": 75, "unit": "Âµg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Parsley, fresh", "basis": "per 100g", "amount": 1640, "unit": "Âµg", "percentNRV": 2187, "source": "CIQUAL 2020", "sourceId": "11015" },
+        { "food": "Kale, raw", "basis": "per 100g", "amount": 817, "unit": "Âµg", "percentNRV": 1089, "source": "EuroFIR", "sourceId": "EF003421" },
+        { "food": "Spinach, raw", "basis": "per 100g", "amount": 483, "unit": "Âµg", "percentNRV": 644, "source": "CIQUAL 2020", "sourceId": "20106" },
+        { "food": "Brussels sprouts", "basis": "per 100g", "amount": 177, "unit": "Âµg", "percentNRV": 236, "source": "CIQUAL 2020", "sourceId": "20051" }
+      ]
+    },
+    {
+      "nutrientId": "calcium",
+      "nutrientName": "Calcium",
+      "nrv": { "amount": 800, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Parmesan cheese", "basis": "per 100g", "amount": 1184, "unit": "mg", "percentNRV": 148, "source": "CIQUAL 2020", "sourceId": "12120" },
+        { "food": "GruyÃ¨re cheese", "basis": "per 100g", "amount": 1011, "unit": "mg", "percentNRV": 126, "source": "CIQUAL 2020", "sourceId": "12080" },
+        { "food": "Sardines with bones", "basis": "per 100g", "amount": 382, "unit": "mg", "percentNRV": 48, "source": "CIQUAL 2020", "sourceId": "26210" },
+        { "food": "Almonds", "basis": "per 100g", "amount": 269, "unit": "mg", "percentNRV": 34, "source": "CIQUAL 2020", "sourceId": "15001" }
+      ]
+    },
+    {
+      "nutrientId": "iron",
+      "nutrientName": "Iron",
+      "nrv": { "amount": 14, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Clams", "basis": "per 100g", "amount": 28, "unit": "mg", "percentNRV": 200, "source": "EuroFIR", "sourceId": "EF002789" },
+        { "food": "Dark chocolate (70%)", "basis": "per 100g", "amount": 11.9, "unit": "mg", "percentNRV": 85, "source": "CIQUAL 2020", "sourceId": "31058" },
+        { "food": "Beef liver, cooked", "basis": "per 100g", "amount": 6.5, "unit": "mg", "percentNRV": 46, "source": "CIQUAL 2020", "sourceId": "6170" },
+        { "food": "Spinach, cooked", "basis": "per 100g", "amount": 3.6, "unit": "mg", "percentNRV": 26, "source": "CIQUAL 2020", "sourceId": "20107" }
+      ]
+    },
+    {
+      "nutrientId": "magnesium",
+      "nutrientName": "Magnesium",
+      "nrv": { "amount": 375, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Pumpkin seeds", "basis": "per 100g", "amount": 592, "unit": "mg", "percentNRV": 158, "source": "CIQUAL 2020", "sourceId": "15030" },
+        { "food": "Cashews", "basis": "per 100g", "amount": 292, "unit": "mg", "percentNRV": 78, "source": "CIQUAL 2020", "sourceId": "15013" },
+        { "food": "Almonds", "basis": "per 100g", "amount": 270, "unit": "mg", "percentNRV": 72, "source": "CIQUAL 2020", "sourceId": "15001" },
+        { "food": "Dark chocolate (70%)", "basis": "per 100g", "amount": 228, "unit": "mg", "percentNRV": 61, "source": "CIQUAL 2020", "sourceId": "31058" }
+      ]
+    },
+    {
+      "nutrientId": "zinc",
+      "nutrientName": "Zinc",
+      "nrv": { "amount": 10, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Oysters", "basis": "per 100g", "amount": 78.6, "unit": "mg", "percentNRV": 786, "source": "CIQUAL 2020", "sourceId": "26600" },
+        { "food": "Pumpkin seeds", "basis": "per 100g", "amount": 7.8, "unit": "mg", "percentNRV": 78, "source": "CIQUAL 2020", "sourceId": "15030" },
+        { "food": "Crab", "basis": "per 100g", "amount": 6.5, "unit": "mg", "percentNRV": 65, "source": "EuroFIR", "sourceId": "EF002801" },
+        { "food": "Beef", "basis": "per 100g", "amount": 4.8, "unit": "mg", "percentNRV": 48, "source": "CIQUAL 2020", "sourceId": "6100" }
+      ]
+    },
+    {
+      "nutrientId": "selenium",
+      "nutrientName": "Selenium",
+      "nrv": { "amount": 55, "unit": "Âµg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Brazil nuts", "basis": "per 100g", "amount": 1917, "unit": "Âµg", "percentNRV": 3485, "source": "CIQUAL 2020", "sourceId": "15005" },
+        { "food": "Tuna", "basis": "per 100g", "amount": 82, "unit": "Âµg", "percentNRV": 149, "source": "CIQUAL 2020", "sourceId": "26400" },
+        { "food": "Sardines", "basis": "per 100g", "amount": 52, "unit": "Âµg", "percentNRV": 95, "source": "CIQUAL 2020", "sourceId": "26210" },
+        { "food": "Egg", "basis": "per 100g", "amount": 30.8, "unit": "Âµg", "percentNRV": 56, "source": "CIQUAL 2020", "sourceId": "22000" }
+      ]
+    },
+    {
+      "nutrientId": "iodine",
+      "nutrientName": "Iodine",
+      "nrv": { "amount": 150, "unit": "Âµg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Seaweed (kelp)", "basis": "per 100g", "amount": 2000, "unit": "Âµg", "percentNRV": 1333, "source": "EuroFIR", "sourceId": "EF005123" },
+        { "food": "Cod", "basis": "per 100g", "amount": 120, "unit": "Âµg", "percentNRV": 80, "source": "CIQUAL 2020", "sourceId": "26020" },
+        { "food": "Egg", "basis": "per 100g", "amount": 52, "unit": "Âµg", "percentNRV": 35, "source": "CIQUAL 2020", "sourceId": "22000" },
+        { "food": "Shrimp", "basis": "per 100g", "amount": 35, "unit": "Âµg", "percentNRV": 23, "source": "CIQUAL 2020", "sourceId": "26700" }
+      ]
+    },
+    {
+      "nutrientId": "potassium",
+      "nutrientName": "Potassium",
+      "nrv": { "amount": 2000, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "White beans, cooked", "basis": "per 100g", "amount": 561, "unit": "mg", "percentNRV": 28, "source": "CIQUAL 2020", "sourceId": "20502" },
+        { "food": "Potatoes, baked", "basis": "per 100g", "amount": 535, "unit": "mg", "percentNRV": 27, "source": "CIQUAL 2020", "sourceId": "4020" },
+        { "food": "Avocado", "basis": "per 100g", "amount": 485, "unit": "mg", "percentNRV": 24, "source": "EuroFIR", "sourceId": "EF001234" },
+        { "food": "Spinach, cooked", "basis": "per 100g", "amount": 466, "unit": "mg", "percentNRV": 23, "source": "CIQUAL 2020", "sourceId": "20107" }
+      ]
+    },
+    {
+      "nutrientId": "phosphorus",
+      "nutrientName": "Phosphorus",
+      "nrv": { "amount": 700, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Pumpkin seeds", "basis": "per 100g", "amount": 1233, "unit": "mg", "percentNRV": 176, "source": "CIQUAL 2020", "sourceId": "15030" },
+        { "food": "Parmesan cheese", "basis": "per 100g", "amount": 694, "unit": "mg", "percentNRV": 99, "source": "CIQUAL 2020", "sourceId": "12120" },
+        { "food": "Salmon", "basis": "per 100g", "amount": 252, "unit": "mg", "percentNRV": 36, "source": "CIQUAL 2020", "sourceId": "26040" },
+        { "food": "Chicken breast", "basis": "per 100g", "amount": 228, "unit": "mg", "percentNRV": 33, "source": "CIQUAL 2020", "sourceId": "36010" }
+      ]
+    },
+    {
+      "nutrientId": "copper",
+      "nutrientName": "Copper",
+      "nrv": { "amount": 1, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Beef liver", "basis": "per 100g", "amount": 14.3, "unit": "mg", "percentNRV": 1430, "source": "CIQUAL 2020", "sourceId": "6170" },
+        { "food": "Oysters", "basis": "per 100g", "amount": 5.7, "unit": "mg", "percentNRV": 570, "source": "CIQUAL 2020", "sourceId": "26600" },
+        { "food": "Cashews", "basis": "per 100g", "amount": 2.2, "unit": "mg", "percentNRV": 220, "source": "CIQUAL 2020", "sourceId": "15013" },
+        { "food": "Dark chocolate", "basis": "per 100g", "amount": 1.8, "unit": "mg", "percentNRV": 180, "source": "CIQUAL 2020", "sourceId": "31058" }
+      ]
+    },
+    {
+      "nutrientId": "manganese",
+      "nutrientName": "Manganese",
+      "nrv": { "amount": 2, "unit": "mg", "source": "EU Regulation 1169/2011" },
+      "foods": [
+        { "food": "Mussels", "basis": "per 100g", "amount": 6.8, "unit": "mg", "percentNRV": 340, "source": "CIQUAL 2020", "sourceId": "26650" },
+        { "food": "Hazelnuts", "basis": "per 100g", "amount": 6.2, "unit": "mg", "percentNRV": 310, "source": "CIQUAL 2020", "sourceId": "15024" },
+        { "food": "Oats", "basis": "per 100g", "amount": 4.9, "unit": "mg", "percentNRV": 245, "source": "CIQUAL 2020", "sourceId": "9310" },
+        { "food": "Brown rice", "basis": "per 100g", "amount": 1.1, "unit": "mg", "percentNRV": 55, "source": "CIQUAL 2020", "sourceId": "9100" }
+      ]
+    },
+    {
+      "nutrientId": "omega-3",
+      "nutrientName": "Omega-3 Fatty Acids (EPA+DHA)",
+      "nrv": { "amount": 250, "unit": "mg", "source": "EFSA 2010 - health claim reference" },
+      "foods": [
+        { "food": "Mackerel", "basis": "per 100g", "amount": 2670, "unit": "mg", "percentNRV": 1068, "source": "CIQUAL 2020", "sourceId": "26070" },
+        { "food": "Salmon", "basis": "per 100g", "amount": 2260, "unit": "mg", "percentNRV": 904, "source": "CIQUAL 2020", "sourceId": "26040" },
+        { "food": "Anchovies", "basis": "per 100g", "amount": 2113, "unit": "mg", "percentNRV": 845, "source": "CIQUAL 2020", "sourceId": "26001" },
+        { "food": "Herring", "basis": "per 100g", "amount": 1729, "unit": "mg", "percentNRV": 692, "source": "EuroFIR", "sourceId": "EF002156" }
+      ]
+    },
+    {
+      "nutrientId": "choline",
+      "nutrientName": "Choline",
+      "nrv": { "amount": 400, "unit": "mg", "source": "EFSA 2016 Adequate Intake" },
+      "foods": [
+        { "food": "Beef liver", "basis": "per 100g", "amount": 418, "unit": "mg", "percentNRV": 105, "source": "EuroFIR", "sourceId": "EF006170" },
+        { "food": "Egg (1 large, 50g)", "basis": "per serving", "amount": 147, "unit": "mg", "percentNRV": 37, "source": "CIQUAL 2020", "sourceId": "22000" },
+        { "food": "Soybeans", "basis": "per 100g", "amount": 116, "unit": "mg", "percentNRV": 29, "source": "EuroFIR", "sourceId": "EF004560" },
+        { "food": "Salmon", "basis": "per 100g", "amount": 90, "unit": "mg", "percentNRV": 23, "source": "CIQUAL 2020", "sourceId": "26040" }
+      ]
+    },
+    {
+      "nutrientId": "melatonin",
+      "nutrientName": "Melatonin",
+      "nrv": { "amount": 1, "unit": "mg", "source": "EFSA health claim (1 mg for sleep onset)" },
+      "foods": [
+        { "food": "Pistachios (dry)", "basis": "per 100g", "amount": 23.3, "unit": "mg", "percentNRV": 2330, "source": "Nutrients 2017" },
+        { "food": "Tart cherries (Balaton)", "basis": "per 100g", "amount": 1.35, "unit": "mcg", "percentNRV": 0.13, "source": "Nutrients 2017" },
+        { "food": "Walnuts", "basis": "per 100g", "amount": 0.35, "unit": "mcg", "percentNRV": 0.04, "source": "Nutrients 2017" },
+        { "food": "Oats", "basis": "per 100g", "amount": 0.18, "unit": "mcg", "percentNRV": 0.02, "source": "Nutrients 2017" },
+        { "food": "Salmon", "basis": "per 100g", "amount": 0.37, "unit": "mcg", "percentNRV": 0.04, "source": "Nutrients 2017" }
+      ]
+    },
+    {
+      "nutrientId": "creatine",
+      "nutrientName": "Creatine",
+      "nrv": { "amount": 3000, "unit": "mg", "source": "Typical supplement dose (app guidance)" },
+      "foods": [
+        { "food": "Salmon", "basis": "per 100g", "amount": 450, "unit": "mg", "percentNRV": 15, "source": "Antioxidants 2019" },
+        { "food": "Tuna", "basis": "per 100g", "amount": 400, "unit": "mg", "percentNRV": 13.33, "source": "Antioxidants 2019" },
+        { "food": "Beef, semitendinosus muscle", "basis": "per 100g", "amount": 401, "unit": "mg", "percentNRV": 13.37, "source": "Antioxidants 2019" },
+        { "food": "Cod", "basis": "per 100g", "amount": 300, "unit": "mg", "percentNRV": 10, "source": "Antioxidants 2019" },
+        { "food": "Beef heart", "basis": "per 100g", "amount": 298, "unit": "mg", "percentNRV": 9.93, "source": "Antioxidants 2019" },
+        { "food": "Beef liver", "basis": "per 100g", "amount": 16, "unit": "mg", "percentNRV": 0.53, "source": "Antioxidants 2019" }
+      ]
+    },
+    {
+      "nutrientId": "coq10",
+      "nutrientName": "CoQ10",
+      "nrv": { "amount": 200, "unit": "mg", "source": "Typical supplement dose (app guidance)" },
+      "foods": [
+        { "food": "Pork heart", "basis": "per 100g", "amount": 12.6, "unit": "mg", "percentNRV": 6.3, "source": "Antioxidants 2019" },
+        { "food": "Beef heart", "basis": "per 100g", "amount": 11.3, "unit": "mg", "percentNRV": 5.65, "source": "Antioxidants 2019" },
+        { "food": "Beef liver", "basis": "per 100g", "amount": 3.9, "unit": "mg", "percentNRV": 1.95, "source": "Antioxidants 2019" },
+        { "food": "Beef, semitendinosus muscle", "basis": "per 100g", "amount": 3.65, "unit": "mg", "percentNRV": 1.83, "source": "Antioxidants 2019" },
+        { "food": "Chicken", "basis": "per 100g", "amount": 1.4, "unit": "mg", "percentNRV": 0.7, "source": "Antioxidants 2019" },
+        { "food": "Eggs", "basis": "per 100g", "amount": 0.12, "unit": "mg", "percentNRV": 0.06, "source": "Antioxidants 2019" }
+      ]
+    },
+    {
+      "nutrientId": "taurine",
+      "nutrientName": "Taurine",
+      "nrv": { "amount": 1000, "unit": "mg", "source": "Typical supplement dose (app guidance)" },
+      "foods": [
+        { "food": "Oysters", "basis": "per 100g", "amount": 396, "unit": "mg", "percentNRV": 39.6, "source": "Antioxidants 2019" },
+        { "food": "Atlantic salmon", "basis": "per 100g", "amount": 130, "unit": "mg", "percentNRV": 13, "source": "Antioxidants 2019" },
+        { "food": "Pork liver", "basis": "per 100g", "amount": 89, "unit": "mg", "percentNRV": 8.9, "source": "Antioxidants 2019" },
+        { "food": "Beef liver", "basis": "per 100g", "amount": 69, "unit": "mg", "percentNRV": 6.9, "source": "Antioxidants 2019" },
+        { "food": "Pork", "basis": "per 100g", "amount": 61.2, "unit": "mg", "percentNRV": 6.12, "source": "Antioxidants 2019" },
+        { "food": "Beef", "basis": "per 100g", "amount": 43.1, "unit": "mg", "percentNRV": 4.31, "source": "Antioxidants 2019" }
+      ]
+    },
+    {
+      "nutrientId": "l-carnitine",
+      "nutrientName": "L-Carnitine",
+      "nrv": { "amount": 2000, "unit": "mg", "source": "Typical supplement dose (app guidance)" },
+      "foods": [
+        { "food": "Beef ribs", "basis": "per 100g", "amount": 226, "unit": "mg", "percentNRV": 11.3, "source": "Antioxidants 2019" },
+        { "food": "Lamb", "basis": "per 100g", "amount": 190, "unit": "mg", "percentNRV": 9.5, "source": "Antioxidants 2019" },
+        { "food": "Steak tartare", "basis": "per 100g", "amount": 183, "unit": "mg", "percentNRV": 9.15, "source": "Antioxidants 2019" },
+        { "food": "Duck fillet", "basis": "per 100g", "amount": 73.2, "unit": "mg", "percentNRV": 3.66, "source": "Antioxidants 2019" },
+        { "food": "Cow milk", "basis": "per 100g", "amount": 40, "unit": "mg", "percentNRV": 2, "source": "Antioxidants 2019" },
+        { "food": "Beef liver", "basis": "per 100g", "amount": 15.6, "unit": "mg", "percentNRV": 0.78, "source": "Antioxidants 2019" }
+      ]
+    },
+    {
+      "nutrientId": "l-theanine",
+      "nutrientName": "L-Theanine",
+      "nrv": { "amount": 200, "unit": "mg", "source": "Typical supplement dose (app guidance)" },
+      "foods": [
+        { "food": "Green tea leaves (low cultivar)", "basis": "per 2g (dry leaves)", "amount": 5.62, "unit": "mg", "percentNRV": 2.81, "source": "Appl Biol Chem 2024" },
+        { "food": "Green tea leaves (high cultivar)", "basis": "per 2g (dry leaves)", "amount": 49.2, "unit": "mg", "percentNRV": 24.6, "source": "Appl Biol Chem 2024" }
+      ]
+    }
+  ],
+  "supplementsWithoutNRV": [
+    "ashwagandha",
+    "turmeric",
+    "ginkgo-biloba",
+    "milk-thistle",
+    "valerian",
+    "lions-mane",
+    "bacopa",
+    "rhodiola",
+    "l-theanine",
+    "glycine",
+    "creatine",
+    "taurine",
+    "l-carnitine",
+    "coq10",
+    "probiotics",
+    "melatonin"
+  ],
+  "nrvReference": {
+    "source": "EU Regulation (EU) No 1169/2011, Annex XIII",
+    "description": "Nutrient Reference Values (NRVs) are daily reference intakes for vitamins and minerals for food labelling purposes in the European Union.",
+    "notes": "NRVs are single values for adults and do not differentiate by sex, age, or life stage (unlike US RDAs)."
+  },
+  "foodDatabaseReferences": {
+    "CIQUAL": {
+      "name": "CIQUAL - Table de composition nutritionnelle des aliments",
+      "organization": "ANSES (Agence nationale de sÃ©curitÃ© sanitaire de l'alimentation, de l'environnement et du travail)",
+      "country": "France",
+      "url": "https://ciqual.anses.fr/",
+      "version": "2020"
+    },
+    "EuroFIR": {
+      "name": "European Food Information Resource",
+      "organization": "EuroFIR AISBL",
+      "url": "https://www.eurofir.org/",
+      "description": "Network of European food composition database organizations providing standardized, harmonized food data"
+    }
+  }
+}
+;
+
+export const nutrientFoodSources: Record<string, FoodSource[]> = {
+  // Vitamin A - EU NRV: 800 Âµg
+  'vitamin-a': [
+    { food: 'Beef liver', basis: '100g', amount: 9442, unit: 'Âµg', percentNRV: 1180, source: 'CIQUAL 2020', sourceId: '6170' },
+    { food: 'Carrots, raw', basis: '100g', amount: 835, unit: 'Âµg', percentNRV: 104, source: 'CIQUAL 2020', sourceId: '20009' },
+    { food: 'Sweet potato, baked', basis: '100g', amount: 709, unit: 'Âµg', percentNRV: 89, source: 'CIQUAL 2020', sourceId: '4726' },
+    { food: 'Spinach, cooked', basis: '100g', amount: 524, unit: 'Âµg', percentNRV: 66, source: 'CIQUAL 2020', sourceId: '20107' },
+    { food: 'Kale, cooked', basis: '100g', amount: 370, unit: 'Âµg', percentNRV: 46, source: 'EuroFIR', sourceId: 'EF003421' },
+    { food: 'Butter', basis: '100g', amount: 684, unit: 'Âµg', percentNRV: 86, source: 'CIQUAL 2020', sourceId: '16401' },
+    { food: 'Egg, whole', basis: '100g', amount: 140, unit: 'Âµg', percentNRV: 18, source: 'CIQUAL 2020', sourceId: '22000' },
+  ],
+
+  // Vitamin D - EU NRV: 5 Âµg
+  'vitamin-d': [
+    { food: 'Cod liver oil', basis: '1 tbsp (15ml)', amount: 34, unit: 'Âµg', percentNRV: 680, source: 'CIQUAL 2020', sourceId: '17100' },
+    { food: 'Salmon, cooked', basis: '100g', amount: 11, unit: 'Âµg', percentNRV: 220, source: 'CIQUAL 2020', sourceId: '26040' },
+    { food: 'Mackerel, cooked', basis: '100g', amount: 8.5, unit: 'Âµg', percentNRV: 170, source: 'CIQUAL 2020', sourceId: '26070' },
+    { food: 'Sardines, canned', basis: '100g', amount: 4.8, unit: 'Âµg', percentNRV: 96, source: 'CIQUAL 2020', sourceId: '26210' },
+    { food: 'Herring, cooked', basis: '100g', amount: 5.4, unit: 'Âµg', percentNRV: 108, source: 'EuroFIR', sourceId: 'EF002156' },
+    { food: 'Egg yolk', basis: '100g', amount: 5.4, unit: 'Âµg', percentNRV: 108, source: 'CIQUAL 2020', sourceId: '22002' },
+    { food: 'Mushrooms, exposed to UV', basis: '100g', amount: 7.0, unit: 'Âµg', percentNRV: 140, source: 'EuroFIR', sourceId: 'EF001892' },
+  ],
+
+  // Vitamin E - EU NRV: 12 mg
+  'vitamin-e': [
+    { food: 'Sunflower seeds', basis: '100g', amount: 35.2, unit: 'mg', percentNRV: 293, source: 'CIQUAL 2020', sourceId: '15035' },
+    { food: 'Almonds', basis: '100g', amount: 25.6, unit: 'mg', percentNRV: 213, source: 'CIQUAL 2020', sourceId: '15001' },
+    { food: 'Hazelnuts', basis: '100g', amount: 15.0, unit: 'mg', percentNRV: 125, source: 'CIQUAL 2020', sourceId: '15024' },
+    { food: 'Sunflower oil', basis: '100g', amount: 41.1, unit: 'mg', percentNRV: 343, source: 'CIQUAL 2020', sourceId: '17440' },
+    { food: 'Olive oil', basis: '100g', amount: 14.4, unit: 'mg', percentNRV: 120, source: 'CIQUAL 2020', sourceId: '17270' },
+    { food: 'Spinach, cooked', basis: '100g', amount: 2.1, unit: 'mg', percentNRV: 18, source: 'CIQUAL 2020', sourceId: '20107' },
+    { food: 'Avocado', basis: '100g', amount: 2.1, unit: 'mg', percentNRV: 18, source: 'EuroFIR', sourceId: 'EF001234' },
+  ],
+
+  // Vitamin K - EU NRV: 75 Âµg
+  'vitamin-k': [
+    { food: 'Kale, raw', basis: '100g', amount: 817, unit: 'Âµg', percentNRV: 1089, source: 'EuroFIR', sourceId: 'EF003421' },
+    { food: 'Spinach, raw', basis: '100g', amount: 483, unit: 'Âµg', percentNRV: 644, source: 'CIQUAL 2020', sourceId: '20106' },
+    { food: 'Broccoli, cooked', basis: '100g', amount: 141, unit: 'Âµg', percentNRV: 188, source: 'CIQUAL 2020', sourceId: '20053' },
+    { food: 'Brussels sprouts', basis: '100g', amount: 177, unit: 'Âµg', percentNRV: 236, source: 'CIQUAL 2020', sourceId: '20051' },
+    { food: 'Parsley, fresh', basis: '100g', amount: 1640, unit: 'Âµg', percentNRV: 2187, source: 'CIQUAL 2020', sourceId: '11015' },
+    { food: 'Lettuce, green', basis: '100g', amount: 126, unit: 'Âµg', percentNRV: 168, source: 'EuroFIR', sourceId: 'EF002876' },
+  ],
+
+  // Vitamin C - EU NRV: 80 mg
+  'vitamin-c': [
+    { food: 'Red pepper, raw', basis: '100g', amount: 128, unit: 'mg', percentNRV: 160, source: 'CIQUAL 2020', sourceId: '20151' },
+    { food: 'Blackcurrants', basis: '100g', amount: 181, unit: 'mg', percentNRV: 226, source: 'CIQUAL 2020', sourceId: '13017' },
+    { food: 'Kiwi fruit', basis: '100g', amount: 92.7, unit: 'mg', percentNRV: 116, source: 'CIQUAL 2020', sourceId: '13025' },
+    { food: 'Orange', basis: '100g', amount: 53.2, unit: 'mg', percentNRV: 67, source: 'CIQUAL 2020', sourceId: '13027' },
+    { food: 'Strawberries', basis: '100g', amount: 58.8, unit: 'mg', percentNRV: 74, source: 'CIQUAL 2020', sourceId: '13037' },
+    { food: 'Broccoli, cooked', basis: '100g', amount: 65, unit: 'mg', percentNRV: 81, source: 'CIQUAL 2020', sourceId: '20053' },
+    { food: 'Lemon', basis: '100g', amount: 53, unit: 'mg', percentNRV: 66, source: 'EuroFIR', sourceId: 'EF001567' },
+  ],
+
+  // Thiamin (B1) - EU NRV: 1.1 mg
+  'vitamin-b1': [
+    { food: 'Pork, lean', basis: '100g', amount: 0.89, unit: 'mg', percentNRV: 81, source: 'CIQUAL 2020', sourceId: '28100' },
+    { food: 'Sunflower seeds', basis: '100g', amount: 1.48, unit: 'mg', percentNRV: 135, source: 'CIQUAL 2020', sourceId: '15035' },
+    { food: 'Black beans', basis: '100g', amount: 0.24, unit: 'mg', percentNRV: 22, source: 'EuroFIR', sourceId: 'EF004521' },
+    { food: 'Lentils, cooked', basis: '100g', amount: 0.17, unit: 'mg', percentNRV: 15, source: 'CIQUAL 2020', sourceId: '20518' },
+    { food: 'Whole wheat bread', basis: '100g', amount: 0.30, unit: 'mg', percentNRV: 27, source: 'CIQUAL 2020', sourceId: '7010' },
+    { food: 'Oats', basis: '100g', amount: 0.76, unit: 'mg', percentNRV: 69, source: 'CIQUAL 2020', sourceId: '9310' },
+  ],
+
+  // Riboflavin (B2) - EU NRV: 1.4 mg
+  'vitamin-b2': [
+    { food: 'Beef liver', basis: '100g', amount: 2.76, unit: 'mg', percentNRV: 197, source: 'CIQUAL 2020', sourceId: '6170' },
+    { food: 'Almonds', basis: '100g', amount: 1.01, unit: 'mg', percentNRV: 72, source: 'CIQUAL 2020', sourceId: '15001' },
+    { food: 'Milk, whole', basis: '100g', amount: 0.18, unit: 'mg', percentNRV: 13, source: 'CIQUAL 2020', sourceId: '19041' },
+    { food: 'Egg, whole', basis: '100g', amount: 0.46, unit: 'mg', percentNRV: 33, source: 'CIQUAL 2020', sourceId: '22000' },
+    { food: 'Mushrooms', basis: '100g', amount: 0.49, unit: 'mg', percentNRV: 35, source: 'EuroFIR', sourceId: 'EF001892' },
+    { food: 'Yogurt', basis: '100g', amount: 0.14, unit: 'mg', percentNRV: 10, source: 'CIQUAL 2020', sourceId: '19401' },
+  ],
+
+  // Niacin (B3) - EU NRV: 16 mg
+  'vitamin-b3': [
+    { food: 'Chicken breast', basis: '100g', amount: 13.7, unit: 'mg', percentNRV: 86, source: 'CIQUAL 2020', sourceId: '36010' },
+    { food: 'Tuna, cooked', basis: '100g', amount: 18.8, unit: 'mg', percentNRV: 118, source: 'CIQUAL 2020', sourceId: '26400' },
+    { food: 'Turkey breast', basis: '100g', amount: 11.8, unit: 'mg', percentNRV: 74, source: 'CIQUAL 2020', sourceId: '36100' },
+    { food: 'Peanuts', basis: '100g', amount: 12.1, unit: 'mg', percentNRV: 76, source: 'CIQUAL 2020', sourceId: '15010' },
+    { food: 'Beef', basis: '100g', amount: 6.3, unit: 'mg', percentNRV: 39, source: 'CIQUAL 2020', sourceId: '6100' },
+    { food: 'Mushrooms', basis: '100g', amount: 3.6, unit: 'mg', percentNRV: 23, source: 'EuroFIR', sourceId: 'EF001892' },
+  ],
+
+  // Pantothenic acid (B5) - EU NRV: 6 mg
+  'vitamin-b5': [
+    { food: 'Beef liver', basis: '100g', amount: 7.17, unit: 'mg', percentNRV: 120, source: 'CIQUAL 2020', sourceId: '6170' },
+    { food: 'Sunflower seeds', basis: '100g', amount: 1.13, unit: 'mg', percentNRV: 19, source: 'CIQUAL 2020', sourceId: '15035' },
+    { food: 'Chicken', basis: '100g', amount: 1.06, unit: 'mg', percentNRV: 18, source: 'CIQUAL 2020', sourceId: '36010' },
+    { food: 'Avocado', basis: '100g', amount: 1.39, unit: 'mg', percentNRV: 23, source: 'EuroFIR', sourceId: 'EF001234' },
+    { food: 'Mushrooms', basis: '100g', amount: 1.5, unit: 'mg', percentNRV: 25, source: 'EuroFIR', sourceId: 'EF001892' },
+    { food: 'Sweet potato', basis: '100g', amount: 0.8, unit: 'mg', percentNRV: 13, source: 'CIQUAL 2020', sourceId: '4726' },
+  ],
+
+  // Vitamin B6 - EU NRV: 1.4 mg
+  'vitamin-b6': [
+    { food: 'Chickpeas', basis: '100g', amount: 0.54, unit: 'mg', percentNRV: 39, source: 'CIQUAL 2020', sourceId: '20520' },
+    { food: 'Chicken breast', basis: '100g', amount: 0.60, unit: 'mg', percentNRV: 43, source: 'CIQUAL 2020', sourceId: '36010' },
+    { food: 'Salmon', basis: '100g', amount: 0.64, unit: 'mg', percentNRV: 46, source: 'CIQUAL 2020', sourceId: '26040' },
+    { food: 'Potatoes', basis: '100g', amount: 0.30, unit: 'mg', percentNRV: 21, source: 'CIQUAL 2020', sourceId: '4020' },
+    { food: 'Banana', basis: '100g', amount: 0.37, unit: 'mg', percentNRV: 26, source: 'CIQUAL 2020', sourceId: '13004' },
+    { food: 'Beef', basis: '100g', amount: 0.38, unit: 'mg', percentNRV: 27, source: 'CIQUAL 2020', sourceId: '6100' },
+  ],
+
+  // Biotin (B7) - EU NRV: 50 Âµg
+  'vitamin-b7': [
+    { food: 'Egg yolk', basis: '100g', amount: 53, unit: 'Âµg', percentNRV: 106, source: 'EuroFIR', sourceId: 'EF002201' },
+    { food: 'Beef liver', basis: '100g', amount: 41, unit: 'Âµg', percentNRV: 82, source: 'CIQUAL 2020', sourceId: '6170' },
+    { food: 'Almonds', basis: '100g', amount: 49, unit: 'Âµg', percentNRV: 98, source: 'CIQUAL 2020', sourceId: '15001' },
+    { food: 'Sweet potato', basis: '100g', amount: 2.4, unit: 'Âµg', percentNRV: 5, source: 'CIQUAL 2020', sourceId: '4726' },
+    { food: 'Peanuts', basis: '100g', amount: 34, unit: 'Âµg', percentNRV: 68, source: 'CIQUAL 2020', sourceId: '15010' },
+    { food: 'Oats', basis: '100g', amount: 20, unit: 'Âµg', percentNRV: 40, source: 'EuroFIR', sourceId: 'EF003156' },
+  ],
+
+  // Folate (B9) - EU NRV: 200 Âµg
+  'vitamin-b9': [
+    { food: 'Beef liver', basis: '100g', amount: 253, unit: 'Âµg', percentNRV: 127, source: 'CIQUAL 2020', sourceId: '6170' },
+    { food: 'Spinach, cooked', basis: '100g', amount: 146, unit: 'Âµg', percentNRV: 73, source: 'CIQUAL 2020', sourceId: '20107' },
+    { food: 'Black-eyed peas', basis: '100g', amount: 208, unit: 'Âµg', percentNRV: 104, source: 'EuroFIR', sourceId: 'EF004567' },
+    { food: 'Asparagus', basis: '100g', amount: 149, unit: 'Âµg', percentNRV: 75, source: 'CIQUAL 2020', sourceId: '20001' },
+    { food: 'Brussels sprouts', basis: '100g', amount: 101, unit: 'Âµg', percentNRV: 51, source: 'CIQUAL 2020', sourceId: '20051' },
+    { food: 'Lentils, cooked', basis: '100g', amount: 181, unit: 'Âµg', percentNRV: 91, source: 'CIQUAL 2020', sourceId: '20518' },
+  ],
+
+  // Vitamin B12 - EU NRV: 2.5 Âµg
+  'vitamin-b12': [
+    { food: 'Beef liver', basis: '100g', amount: 83.1, unit: 'Âµg', percentNRV: 3324, source: 'CIQUAL 2020', sourceId: '6170' },
+    { food: 'Clams', basis: '100g', amount: 98.9, unit: 'Âµg', percentNRV: 3956, source: 'EuroFIR', sourceId: 'EF002789' },
+    { food: 'Sardines', basis: '100g', amount: 8.9, unit: 'Âµg', percentNRV: 356, source: 'CIQUAL 2020', sourceId: '26210' },
+    { food: 'Salmon', basis: '100g', amount: 3.2, unit: 'Âµg', percentNRV: 128, source: 'CIQUAL 2020', sourceId: '26040' },
+    { food: 'Beef', basis: '100g', amount: 2.6, unit: 'Âµg', percentNRV: 104, source: 'CIQUAL 2020', sourceId: '6100' },
+    { food: 'Egg', basis: '100g', amount: 1.3, unit: 'Âµg', percentNRV: 52, source: 'CIQUAL 2020', sourceId: '22000' },
+    { food: 'Milk', basis: '100g', amount: 0.45, unit: 'Âµg', percentNRV: 18, source: 'CIQUAL 2020', sourceId: '19041' },
+  ],
+
+  // Calcium - EU NRV: 800 mg
+  'calcium': [
+    { food: 'Parmesan cheese', basis: '100g', amount: 1184, unit: 'mg', percentNRV: 148, source: 'CIQUAL 2020', sourceId: '12120' },
+    { food: 'GruyÃ¨re cheese', basis: '100g', amount: 1011, unit: 'mg', percentNRV: 126, source: 'CIQUAL 2020', sourceId: '12080' },
+    { food: 'Sardines with bones', basis: '100g', amount: 382, unit: 'mg', percentNRV: 48, source: 'CIQUAL 2020', sourceId: '26210' },
+    { food: 'Milk, whole', basis: '100g', amount: 113, unit: 'mg', percentNRV: 14, source: 'CIQUAL 2020', sourceId: '19041' },
+    { food: 'Yogurt', basis: '100g', amount: 121, unit: 'mg', percentNRV: 15, source: 'CIQUAL 2020', sourceId: '19401' },
+    { food: 'Kale, cooked', basis: '100g', amount: 150, unit: 'mg', percentNRV: 19, source: 'EuroFIR', sourceId: 'EF003421' },
+    { food: 'Almonds', basis: '100g', amount: 269, unit: 'mg', percentNRV: 34, source: 'CIQUAL 2020', sourceId: '15001' },
+  ],
+
+  // Iron - EU NRV: 14 mg
+  'iron': [
+    { food: 'Beef liver', basis: '100g', amount: 6.5, unit: 'mg', percentNRV: 46, source: 'CIQUAL 2020', sourceId: '6170' },
+    { food: 'Clams', basis: '100g', amount: 28, unit: 'mg', percentNRV: 200, source: 'EuroFIR', sourceId: 'EF002789' },
+    { food: 'Lentils, cooked', basis: '100g', amount: 3.3, unit: 'mg', percentNRV: 24, source: 'CIQUAL 2020', sourceId: '20518' },
+    { food: 'Spinach, cooked', basis: '100g', amount: 3.6, unit: 'mg', percentNRV: 26, source: 'CIQUAL 2020', sourceId: '20107' },
+    { food: 'Beef', basis: '100g', amount: 2.6, unit: 'mg', percentNRV: 19, source: 'CIQUAL 2020', sourceId: '6100' },
+    { food: 'Dark chocolate (70%)', basis: '100g', amount: 11.9, unit: 'mg', percentNRV: 85, source: 'CIQUAL 2020', sourceId: '31058' },
+    { food: 'White beans', basis: '100g', amount: 3.7, unit: 'mg', percentNRV: 26, source: 'EuroFIR', sourceId: 'EF004532' },
+  ],
+
+  // Magnesium - EU NRV: 375 mg
+  'magnesium': [
+    { food: 'Pumpkin seeds', basis: '100g', amount: 592, unit: 'mg', percentNRV: 158, source: 'CIQUAL 2020', sourceId: '15030' },
+    { food: 'Dark chocolate (70%)', basis: '100g', amount: 228, unit: 'mg', percentNRV: 61, source: 'CIQUAL 2020', sourceId: '31058' },
+    { food: 'Almonds', basis: '100g', amount: 270, unit: 'mg', percentNRV: 72, source: 'CIQUAL 2020', sourceId: '15001' },
+    { food: 'Cashews', basis: '100g', amount: 292, unit: 'mg', percentNRV: 78, source: 'CIQUAL 2020', sourceId: '15013' },
+    { food: 'Spinach, cooked', basis: '100g', amount: 87, unit: 'mg', percentNRV: 23, source: 'CIQUAL 2020', sourceId: '20107' },
+    { food: 'Black beans', basis: '100g', amount: 70, unit: 'mg', percentNRV: 19, source: 'EuroFIR', sourceId: 'EF004521' },
+    { food: 'Avocado', basis: '100g', amount: 29, unit: 'mg', percentNRV: 8, source: 'EuroFIR', sourceId: 'EF001234' },
+  ],
+
+  // Zinc - EU NRV: 10 mg
+  'zinc': [
+    { food: 'Oysters', basis: '100g', amount: 78.6, unit: 'mg', percentNRV: 786, source: 'CIQUAL 2020', sourceId: '26600' },
+    { food: 'Beef', basis: '100g', amount: 4.8, unit: 'mg', percentNRV: 48, source: 'CIQUAL 2020', sourceId: '6100' },
+    { food: 'Crab', basis: '100g', amount: 6.5, unit: 'mg', percentNRV: 65, source: 'EuroFIR', sourceId: 'EF002801' },
+    { food: 'Pork', basis: '100g', amount: 2.9, unit: 'mg', percentNRV: 29, source: 'CIQUAL 2020', sourceId: '28100' },
+    { food: 'Chickpeas', basis: '100g', amount: 1.5, unit: 'mg', percentNRV: 15, source: 'CIQUAL 2020', sourceId: '20520' },
+    { food: 'Pumpkin seeds', basis: '100g', amount: 7.8, unit: 'mg', percentNRV: 78, source: 'CIQUAL 2020', sourceId: '15030' },
+  ],
+
+  // Selenium - EU NRV: 55 Âµg
+  'selenium': [
+    { food: 'Brazil nuts', basis: '100g', amount: 1917, unit: 'Âµg', percentNRV: 3485, source: 'CIQUAL 2020', sourceId: '15005' },
+    { food: 'Tuna', basis: '100g', amount: 82, unit: 'Âµg', percentNRV: 149, source: 'CIQUAL 2020', sourceId: '26400' },
+    { food: 'Sardines', basis: '100g', amount: 52, unit: 'Âµg', percentNRV: 95, source: 'CIQUAL 2020', sourceId: '26210' },
+    { food: 'Beef', basis: '100g', amount: 30, unit: 'Âµg', percentNRV: 55, source: 'CIQUAL 2020', sourceId: '6100' },
+    { food: 'Chicken', basis: '100g', amount: 22, unit: 'Âµg', percentNRV: 40, source: 'CIQUAL 2020', sourceId: '36010' },
+    { food: 'Egg', basis: '100g', amount: 30.8, unit: 'Âµg', percentNRV: 56, source: 'CIQUAL 2020', sourceId: '22000' },
+  ],
+
+  // Iodine - EU NRV: 150 Âµg
+  'iodine': [
+    { food: 'Seaweed (kelp)', basis: '100g', amount: 2000, unit: 'Âµg', percentNRV: 1333, source: 'EuroFIR', sourceId: 'EF005123' },
+    { food: 'Cod', basis: '100g', amount: 120, unit: 'Âµg', percentNRV: 80, source: 'CIQUAL 2020', sourceId: '26020' },
+    { food: 'Shrimp', basis: '100g', amount: 35, unit: 'Âµg', percentNRV: 23, source: 'CIQUAL 2020', sourceId: '26700' },
+    { food: 'Egg', basis: '100g', amount: 52, unit: 'Âµg', percentNRV: 35, source: 'CIQUAL 2020', sourceId: '22000' },
+    { food: 'Milk', basis: '100g', amount: 14, unit: 'Âµg', percentNRV: 9, source: 'CIQUAL 2020', sourceId: '19041' },
+    { food: 'Yogurt', basis: '100g', amount: 17, unit: 'Âµg', percentNRV: 11, source: 'CIQUAL 2020', sourceId: '19401' },
+  ],
+
+  // Copper - EU NRV: 1 mg
+  'copper': [
+    { food: 'Beef liver', basis: '100g', amount: 14.3, unit: 'mg', percentNRV: 1430, source: 'CIQUAL 2020', sourceId: '6170' },
+    { food: 'Oysters', basis: '100g', amount: 5.7, unit: 'mg', percentNRV: 570, source: 'CIQUAL 2020', sourceId: '26600' },
+    { food: 'Cashews', basis: '100g', amount: 2.2, unit: 'mg', percentNRV: 220, source: 'CIQUAL 2020', sourceId: '15013' },
+    { food: 'Dark chocolate', basis: '100g', amount: 1.8, unit: 'mg', percentNRV: 180, source: 'CIQUAL 2020', sourceId: '31058' },
+    { food: 'Sunflower seeds', basis: '100g', amount: 1.8, unit: 'mg', percentNRV: 180, source: 'CIQUAL 2020', sourceId: '15035' },
+    { food: 'Lentils', basis: '100g', amount: 0.5, unit: 'mg', percentNRV: 50, source: 'CIQUAL 2020', sourceId: '20518' },
+  ],
+
+  // Manganese - EU NRV: 2 mg
+  'manganese': [
+    { food: 'Mussels', basis: '100g', amount: 6.8, unit: 'mg', percentNRV: 340, source: 'CIQUAL 2020', sourceId: '26650' },
+    { food: 'Hazelnuts', basis: '100g', amount: 6.2, unit: 'mg', percentNRV: 310, source: 'CIQUAL 2020', sourceId: '15024' },
+    { food: 'Oats', basis: '100g', amount: 4.9, unit: 'mg', percentNRV: 245, source: 'CIQUAL 2020', sourceId: '9310' },
+    { food: 'Brown rice', basis: '100g', amount: 1.1, unit: 'mg', percentNRV: 55, source: 'CIQUAL 2020', sourceId: '9100' },
+    { food: 'Spinach', basis: '100g', amount: 0.9, unit: 'mg', percentNRV: 45, source: 'CIQUAL 2020', sourceId: '20107' },
+    { food: 'Pineapple', basis: '100g', amount: 0.93, unit: 'mg', percentNRV: 47, source: 'EuroFIR', sourceId: 'EF001456' },
+  ],
+
+  // Chromium - EU NRV: 40 Âµg
+  'chromium': [
+    { food: 'Broccoli', basis: '100g', amount: 11, unit: 'Âµg', percentNRV: 28, source: 'EuroFIR', sourceId: 'EF003567' },
+    { food: 'Grape juice', basis: '100g', amount: 8, unit: 'Âµg', percentNRV: 20, source: 'EuroFIR', sourceId: 'EF001789' },
+    { food: 'Whole wheat bread', basis: '100g', amount: 5.4, unit: 'Âµg', percentNRV: 14, source: 'CIQUAL 2020', sourceId: '7010' },
+    { food: 'Beef', basis: '100g', amount: 2, unit: 'Âµg', percentNRV: 5, source: 'CIQUAL 2020', sourceId: '6100' },
+    { food: 'Orange juice', basis: '100g', amount: 2.2, unit: 'Âµg', percentNRV: 6, source: 'EuroFIR', sourceId: 'EF001568' },
+  ],
+
+  // Molybdenum - EU NRV: 50 Âµg
+  'molybdenum': [
+    { food: 'Lentils', basis: '100g', amount: 148, unit: 'Âµg', percentNRV: 296, source: 'EuroFIR', sourceId: 'EF004518' },
+    { food: 'Black beans', basis: '100g', amount: 130, unit: 'Âµg', percentNRV: 260, source: 'EuroFIR', sourceId: 'EF004521' },
+    { food: 'Split peas', basis: '100g', amount: 86, unit: 'Âµg', percentNRV: 172, source: 'EuroFIR', sourceId: 'EF004525' },
+    { food: 'Oats', basis: '100g', amount: 58, unit: 'Âµg', percentNRV: 116, source: 'EuroFIR', sourceId: 'EF003156' },
+    { food: 'Almonds', basis: '100g', amount: 46, unit: 'Âµg', percentNRV: 92, source: 'EuroFIR', sourceId: 'EF003001' },
+  ],
+
+  // Phosphorus - EU NRV: 700 mg
+  'phosphorus': [
+    { food: 'Pumpkin seeds', basis: '100g', amount: 1233, unit: 'mg', percentNRV: 176, source: 'CIQUAL 2020', sourceId: '15030' },
+    { food: 'Parmesan cheese', basis: '100g', amount: 694, unit: 'mg', percentNRV: 99, source: 'CIQUAL 2020', sourceId: '12120' },
+    { food: 'Salmon', basis: '100g', amount: 252, unit: 'mg', percentNRV: 36, source: 'CIQUAL 2020', sourceId: '26040' },
+    { food: 'Chicken breast', basis: '100g', amount: 228, unit: 'mg', percentNRV: 33, source: 'CIQUAL 2020', sourceId: '36010' },
+    { food: 'Lentils', basis: '100g', amount: 180, unit: 'mg', percentNRV: 26, source: 'CIQUAL 2020', sourceId: '20518' },
+    { food: 'Yogurt', basis: '100g', amount: 95, unit: 'mg', percentNRV: 14, source: 'CIQUAL 2020', sourceId: '19401' },
+  ],
+
+  // Potassium - EU NRV: 2000 mg
+  'potassium': [
+    { food: 'White beans, cooked', basis: '100g', amount: 561, unit: 'mg', percentNRV: 28, source: 'CIQUAL 2020', sourceId: '20502' },
+    { food: 'Potatoes, baked', basis: '100g', amount: 535, unit: 'mg', percentNRV: 27, source: 'CIQUAL 2020', sourceId: '4020' },
+    { food: 'Spinach, cooked', basis: '100g', amount: 466, unit: 'mg', percentNRV: 23, source: 'CIQUAL 2020', sourceId: '20107' },
+    { food: 'Banana', basis: '100g', amount: 358, unit: 'mg', percentNRV: 18, source: 'CIQUAL 2020', sourceId: '13004' },
+    { food: 'Salmon', basis: '100g', amount: 363, unit: 'mg', percentNRV: 18, source: 'CIQUAL 2020', sourceId: '26040' },
+    { food: 'Avocado', basis: '100g', amount: 485, unit: 'mg', percentNRV: 24, source: 'EuroFIR', sourceId: 'EF001234' },
+  ],
+
+  // Chloride - EU NRV: 800 mg
+  'chloride': [
+    { food: 'Table salt', basis: '1g', amount: 607, unit: 'mg', percentNRV: 76, source: 'EuroFIR', sourceId: 'EF009001' },
+    { food: 'Seaweed', basis: '100g', amount: 2081, unit: 'mg', percentNRV: 260, source: 'EuroFIR', sourceId: 'EF005123' },
+    { food: 'Olives', basis: '100g', amount: 1556, unit: 'mg', percentNRV: 195, source: 'CIQUAL 2020', sourceId: '20135' },
+    { food: 'Bread', basis: '100g', amount: 587, unit: 'mg', percentNRV: 73, source: 'CIQUAL 2020', sourceId: '7010' },
+    { food: 'Celery', basis: '100g', amount: 140, unit: 'mg', percentNRV: 18, source: 'CIQUAL 2020', sourceId: '20043' },
+  ],
+
+  // Fluoride - EU NRV: 3.5 mg
+  'fluoride': [
+    { food: 'Black tea, brewed', basis: '100ml', amount: 0.37, unit: 'mg', percentNRV: 11, source: 'EuroFIR', sourceId: 'EF008012' },
+    { food: 'Shrimp', basis: '100g', amount: 0.20, unit: 'mg', percentNRV: 6, source: 'CIQUAL 2020', sourceId: '26700' },
+    { food: 'Crab', basis: '100g', amount: 0.21, unit: 'mg', percentNRV: 6, source: 'EuroFIR', sourceId: 'EF002801' },
+    { food: 'Raisins', basis: '100g', amount: 0.23, unit: 'mg', percentNRV: 7, source: 'EuroFIR', sourceId: 'EF001345' },
+    { food: 'Wine, white', basis: '100ml', amount: 0.15, unit: 'mg', percentNRV: 4, source: 'EuroFIR', sourceId: 'EF008101' },
+  ],
+
+  // Omega-3 (EPA + DHA) - EFSA: 250 mg
+  'omega-3': [
+    { food: 'Mackerel', basis: '100g', amount: 2670, unit: 'mg', percentNRV: 1068, source: 'CIQUAL 2020', sourceId: '26070' },
+    { food: 'Salmon', basis: '100g', amount: 2260, unit: 'mg', percentNRV: 904, source: 'CIQUAL 2020', sourceId: '26040' },
+    { food: 'Sardines', basis: '100g', amount: 1480, unit: 'mg', percentNRV: 592, source: 'CIQUAL 2020', sourceId: '26210' },
+    { food: 'Herring', basis: '100g', amount: 1729, unit: 'mg', percentNRV: 692, source: 'EuroFIR', sourceId: 'EF002156' },
+    { food: 'Anchovies', basis: '100g', amount: 2113, unit: 'mg', percentNRV: 845, source: 'CIQUAL 2020', sourceId: '26001' },
+    { food: 'Trout', basis: '100g', amount: 936, unit: 'mg', percentNRV: 374, source: 'CIQUAL 2020', sourceId: '26380' },
+  ],
+
+  // Choline - EFSA AI: 400 mg
+  'choline': [
+    { food: 'Beef liver', basis: '100g', amount: 418, unit: 'mg', percentNRV: 105, source: 'EuroFIR', sourceId: 'EF006170' },
+    { food: 'Egg', basis: '1 large (50g)', amount: 147, unit: 'mg', percentNRV: 37, source: 'CIQUAL 2020', sourceId: '22000' },
+    { food: 'Chicken breast', basis: '100g', amount: 85, unit: 'mg', percentNRV: 21, source: 'CIQUAL 2020', sourceId: '36010' },
+    { food: 'Salmon', basis: '100g', amount: 90, unit: 'mg', percentNRV: 23, source: 'CIQUAL 2020', sourceId: '26040' },
+    { food: 'Broccoli', basis: '100g', amount: 40, unit: 'mg', percentNRV: 10, source: 'CIQUAL 2020', sourceId: '20053' },
+    { food: 'Soybeans', basis: '100g', amount: 116, unit: 'mg', percentNRV: 29, source: 'EuroFIR', sourceId: 'EF004560' },
+  ],
+
+  // Melatonin - EFSA health claim: 1 mg
+  'melatonin': [
+    { food: 'Pistachios (dry)', basis: '100g', amount: 23.3, unit: 'mg', percentNRV: 2330, source: 'Nutrients 2017' },
+    { food: 'Tart cherries (Balaton)', basis: '100g', amount: 1.35, unit: 'mcg', percentNRV: 0.13, source: 'Nutrients 2017' },
+    { food: 'Walnuts', basis: '100g', amount: 0.35, unit: 'mcg', percentNRV: 0.04, source: 'Nutrients 2017' },
+    { food: 'Oats', basis: '100g', amount: 0.18, unit: 'mcg', percentNRV: 0.02, source: 'Nutrients 2017' },
+    { food: 'Salmon', basis: '100g', amount: 0.37, unit: 'mcg', percentNRV: 0.04, source: 'Nutrients 2017' },
+  ],
+
+  // Creatine - reference dose: 3 g
+  'creatine': [
+    { food: 'Salmon', basis: '100g', amount: 450, unit: 'mg', percentNRV: 15, source: 'Antioxidants 2019' },
+    { food: 'Tuna', basis: '100g', amount: 400, unit: 'mg', percentNRV: 13.33, source: 'Antioxidants 2019' },
+    { food: 'Beef, semitendinosus muscle', basis: '100g', amount: 401, unit: 'mg', percentNRV: 13.37, source: 'Antioxidants 2019' },
+    { food: 'Cod', basis: '100g', amount: 300, unit: 'mg', percentNRV: 10, source: 'Antioxidants 2019' },
+    { food: 'Beef heart', basis: '100g', amount: 298, unit: 'mg', percentNRV: 9.93, source: 'Antioxidants 2019' },
+    { food: 'Beef liver', basis: '100g', amount: 16, unit: 'mg', percentNRV: 0.53, source: 'Antioxidants 2019' },
+  ],
+
+  // CoQ10 - reference dose: 200 mg
+  'coq10': [
+    { food: 'Pork heart', basis: '100g', amount: 12.6, unit: 'mg', percentNRV: 6.3, source: 'Antioxidants 2019' },
+    { food: 'Beef heart', basis: '100g', amount: 11.3, unit: 'mg', percentNRV: 5.65, source: 'Antioxidants 2019' },
+    { food: 'Beef liver', basis: '100g', amount: 3.9, unit: 'mg', percentNRV: 1.95, source: 'Antioxidants 2019' },
+    { food: 'Beef, semitendinosus muscle', basis: '100g', amount: 3.65, unit: 'mg', percentNRV: 1.83, source: 'Antioxidants 2019' },
+    { food: 'Chicken', basis: '100g', amount: 1.4, unit: 'mg', percentNRV: 0.7, source: 'Antioxidants 2019' },
+    { food: 'Eggs', basis: '100g', amount: 0.12, unit: 'mg', percentNRV: 0.06, source: 'Antioxidants 2019' },
+  ],
+
+  // Taurine - reference dose: 1 g
+  'taurine': [
+    { food: 'Oysters', basis: '100g', amount: 396, unit: 'mg', percentNRV: 39.6, source: 'Antioxidants 2019' },
+    { food: 'Atlantic salmon', basis: '100g', amount: 130, unit: 'mg', percentNRV: 13, source: 'Antioxidants 2019' },
+    { food: 'Pork liver', basis: '100g', amount: 89, unit: 'mg', percentNRV: 8.9, source: 'Antioxidants 2019' },
+    { food: 'Beef liver', basis: '100g', amount: 69, unit: 'mg', percentNRV: 6.9, source: 'Antioxidants 2019' },
+    { food: 'Pork', basis: '100g', amount: 61.2, unit: 'mg', percentNRV: 6.12, source: 'Antioxidants 2019' },
+    { food: 'Beef', basis: '100g', amount: 43.1, unit: 'mg', percentNRV: 4.31, source: 'Antioxidants 2019' },
+  ],
+
+  // L-Carnitine - reference dose: 2 g
+  'l-carnitine': [
+    { food: 'Beef ribs', basis: '100g', amount: 226, unit: 'mg', percentNRV: 11.3, source: 'Antioxidants 2019' },
+    { food: 'Lamb', basis: '100g', amount: 190, unit: 'mg', percentNRV: 9.5, source: 'Antioxidants 2019' },
+    { food: 'Steak tartare', basis: '100g', amount: 183, unit: 'mg', percentNRV: 9.15, source: 'Antioxidants 2019' },
+    { food: 'Duck fillet', basis: '100g', amount: 73.2, unit: 'mg', percentNRV: 3.66, source: 'Antioxidants 2019' },
+    { food: 'Cow milk', basis: '100g', amount: 40, unit: 'mg', percentNRV: 2, source: 'Antioxidants 2019' },
+    { food: 'Beef liver', basis: '100g', amount: 15.6, unit: 'mg', percentNRV: 0.78, source: 'Antioxidants 2019' },
+  ],
+
+  // L-Theanine - reference dose: 200 mg
+  'l-theanine': [
+    { food: 'Green tea leaves (low cultivar)', basis: '2g (dry leaves)', amount: 5.62, unit: 'mg', percentNRV: 2.81, source: 'Appl Biol Chem 2024' },
+    { food: 'Green tea leaves (high cultivar)', basis: '2g (dry leaves)', amount: 49.2, unit: 'mg', percentNRV: 24.6, source: 'Appl Biol Chem 2024' },
+  ],
+};
+
+export const getFoodSourcesForNutrient = (nutrientId: string): FoodSource[] => {
+  return nutrientFoodSources[nutrientId] || [];
+};
 
 // ============ FORM GUIDANCE DATA ============
 export const formGuidance: Record<string, {
@@ -3613,3 +4370,4 @@ export const getFormGuidance = (supplementId: string) => {
 export const getComparisons = () => supplementComparisons;
 
 export const getMisinformationAlerts = () => misinformationAlerts;
+

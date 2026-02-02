@@ -405,7 +405,6 @@ export function App() {
     setDirectSupplementIds([]);
     setRelatedSupplementIds([]);
     setSelectedSupplements([]);
-    setExpandedCard(null);
     setActiveTab('find');
     setFindMode('recommend');
     setTips([]);

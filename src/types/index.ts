@@ -52,6 +52,16 @@ export interface Supplement {
   formGuidance?: FormGuidance;
 }
 
+export interface FoodSource {
+  food: string;
+  basis: string;
+  amount: number;
+  unit: string;
+  percentNRV: number;
+  source: string;
+  sourceId?: string;
+}
+
 // ============================================
 // CURATED STACK TYPES
 // ============================================
