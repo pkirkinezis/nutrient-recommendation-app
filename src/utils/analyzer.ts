@@ -47,13 +47,37 @@ const INTIMACY_GOALS = new Set([
   'fertility',
   'hormones',
   'sexual-health',
+  'sexual-function',
+  'erectile-function',
+  'semen-volume',
+  'sperm-quality',
+  'sperm-motility',
+  'sperm-count',
+  'male-reproductive',
+  'female-reproductive',
   'reproductive',
   'women-health',
   'hormonal-balance',
   'testosterone',
+  'sex-drive',
   'intimacy',
   'sexual'
 ]);
+
+const STACK_GOAL_ALIASES: Record<string, string[]> = {
+  'sexual-health': ['libido', 'fertility', 'hormones'],
+  'sexual-function': ['libido', 'hormones'],
+  'erectile-function': ['libido', 'hormones'],
+  'semen-volume': ['fertility', 'hormones'],
+  'sperm-quality': ['fertility', 'hormones'],
+  'sperm-motility': ['fertility', 'hormones'],
+  'sperm-count': ['fertility', 'hormones'],
+  'male-reproductive': ['fertility', 'libido'],
+  'female-reproductive': ['fertility', 'hormones'],
+  'intimacy': ['libido', 'hormones'],
+  'sexual': ['libido', 'hormones'],
+  'sex-drive': ['libido', 'hormones']
+};
 
 export function getRecommendedStacks(profile?: UserProfile, goals: string[] = []): SupplementStack[] {
   const normalizedGoals = normalizeGoals(goals);
@@ -74,8 +98,15 @@ export function getRecommendedStacks(profile?: UserProfile, goals: string[] = []
     return availableStacks;
   }
 
+  const expandedGoalMatches = new Set(goalMatches);
+  goalMatches.forEach(goal => {
+    STACK_GOAL_ALIASES[goal]?.forEach(alias => expandedGoalMatches.add(alias));
+  });
+
   return availableStacks.filter(stack =>
-    goalMatches.some(goal => stack.primaryGoal === goal || (goal === 'hormones' && stack.primaryGoal === 'fertility'))
+    Array.from(expandedGoalMatches).some(goal =>
+      stack.primaryGoal === goal || (goal === 'hormones' && stack.primaryGoal === 'fertility')
+    )
   );
 }
 
