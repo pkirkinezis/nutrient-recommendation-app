@@ -62,6 +62,44 @@ export interface FoodSource {
   sourceId?: string;
 }
 
+export interface FoodSearchItem {
+  id: string;
+  name: string;
+  brand?: string;
+  servingSize?: string;
+  caloriesPer100g?: number;
+  proteinPer100g?: number;
+  carbsPer100g?: number;
+  fatPer100g?: number;
+  nutriments?: NutrimentEntry[];
+  source: 'open-food-facts' | 'offline';
+}
+
+export interface FoodSearchResponse {
+  items: FoodSearchItem[];
+  source: 'open-food-facts' | 'offline' | 'cache';
+}
+
+export interface NutrimentEntry {
+  key: string;
+  value: number;
+  unit?: string;
+  basis?: '100g' | 'serving';
+}
+
+export interface FoodSupplementMatch {
+  id: string;
+  name: string;
+  reasons: string[];
+}
+
+export interface IntentDatasetEntry {
+  id: string;
+  text: string;
+  goals: string[];
+  systems: string[];
+}
+
 // ============================================
 // CURATED STACK TYPES
 // ============================================
@@ -107,11 +145,13 @@ export interface UserProfile {
   ageRange?: 'under-30' | '30-45' | '45-60' | 'over-60';  // Deprecated, use 'age'
   sex?: 'male' | 'female' | 'other';
   weightKg?: number;
+  heightCm?: number;
   
   // Lifestyle
   diet?: 'omnivore' | 'vegetarian' | 'vegan' | 'pescatarian' | 'keto' | 'paleo';
   dietType?: 'omnivore' | 'vegetarian' | 'vegan' | 'keto' | 'other';  // Deprecated, use 'diet'
   trainingStyle?: 'none' | 'light' | 'moderate' | 'strength' | 'endurance' | 'mixed' | 'yoga';
+  activityLevel?: 'sedentary' | 'light' | 'moderate' | 'active' | 'athlete';
   
   // Health status
   sleepQuality?: 'poor' | 'fair' | 'good' | 'excellent';
@@ -252,6 +292,7 @@ export interface MisinformationAlert {
 // ============================================
 
 export interface DailyLog {
+  id?: string;
   date: string;
   sleepQuality: 1 | 2 | 3 | 4 | 5;
   energyLevel: 1 | 2 | 3 | 4 | 5;
@@ -261,12 +302,46 @@ export interface DailyLog {
   supplementsTaken: string[];
   notes?: string;
   sideEffects?: string[];
+  updatedAt?: number;
+}
+
+export interface ChartPoint {
+  date: string;
+  label: string;
+  value: number;
 }
 
 export interface TrackingData {
   logs: DailyLog[];
   startDate: string;
   supplements: string[];
+}
+
+export interface LocalSyncMeta {
+  profileUpdatedAt: number;
+  stackUpdatedAt: number;
+  trackingUpdatedAt: number;
+  labsUpdatedAt: number;
+}
+
+export interface CloudSettings {
+  schemaVersion: number;
+  updatedAt: number;
+  trackingStartDate: string;
+  trackingSupplements: string[];
+  labs: LabResult[];
+}
+
+export interface CloudProfile {
+  schemaVersion: number;
+  updatedAt: number;
+  profile: UserProfile;
+}
+
+export interface CloudStack {
+  schemaVersion: number;
+  updatedAt: number;
+  supplementIds: string[];
 }
 
 export interface SemanticAssociation {

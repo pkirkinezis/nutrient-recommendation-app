@@ -32,6 +32,7 @@ NutriCompass is a comprehensive, evidence-based nutrition and supplement recomme
   - [AWS S3 + CloudFront](#option-8-aws-s3--cloudfront)
   - [DigitalOcean App Platform](#option-9-digitalocean-app-platform)
 - [Environment Variables](#-environment-variables)
+- [Firebase Setup (Optional Cloud Sync)](#-firebase-setup-optional-cloud-sync)
 - [Customization](#-customization)
 - [API Integration (Future)](#-api-integration-future)
 - [Contributing](#-contributing)
@@ -83,6 +84,10 @@ NutriCompass is a comprehensive, evidence-based nutrition and supplement recomme
 - CIQUAL + EuroFIR food composition sources
 - Research-based reference doses for non‑NRV compounds (e.g., melatonin, creatine, CoQ10)
 
+### 🍽️ Food Lookup (Open Food Facts)
+- Search real-world packaged foods with offline fallback caching
+- Quick macro snapshots (calories, protein, carbs, fat)
+
 ### 🧪 Stack Builder
 - Build custom supplement stacks
 - Automatic interaction/conflict detection
@@ -100,6 +105,9 @@ NutriCompass is a comprehensive, evidence-based nutrition and supplement recomme
 - Optional user profile (age, diet, training style, health conditions)
 - Tailored recommendations
 - Lifestyle-aware suggestions
+
+### ⚖️ Metabolic Metrics
+- BMI, BMR, and TDEE estimates from profile inputs
 
 ### 📖 Learn Section
 - "Why This, Not That?" comparisons
@@ -862,29 +870,70 @@ aws s3 sync dist/ s3://nutricompass-app --delete
 
 ## 🔧 Environment Variables
 
-Currently, NutriCompass doesn't require environment variables. However, for future API integration:
+NutriCompass runs fully offline by default. Cloud sync is optional and requires Firebase env vars.
 
 ### Create `.env` file
 
 ```env
-# API Configuration (future use)
-VITE_API_URL=https://api.nutricompass.com
-VITE_API_KEY=your-api-key
-
-# Feature Flags
-VITE_ENABLE_TRACKING=false
-VITE_ENABLE_ANALYTICS=false
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
 ```
+
+You can copy from `.env.example` and fill in your project values.
 
 ### Access in Code
 
 ```typescript
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
 ```
 
 ### Production Environment
 
 For production deployments, set these in your hosting platform's environment settings.
+
+---
+
+## 🔥 Firebase Setup (Optional Cloud Sync)
+
+Cloud sync is optional and only activates when Firebase env vars are present. Local mode uses localStorage/IndexedDB and works fully offline. A “Sync to cloud” toggle appears only when Firebase is configured.
+
+### 1) Create Firebase project
+- Enable **Authentication** → providers: Email/Password + Google (optional).
+- Enable **Firestore** (in production mode).
+
+### 2) Authorized domains
+- Add your GitHub Pages domain: `YOUR_USERNAME.github.io`
+- Add local dev: `localhost`
+
+### 3) Firestore data model
+```
+users/{uid}/profile (doc)
+users/{uid}/settings (doc)
+users/{uid}/stacks/{stackId} (collection)
+users/{uid}/logs/{date} (collection, docId = YYYY-MM-DD)
+```
+
+### 4) Security rules
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
+```
+
+### 5) GitHub Pages + Firebase Auth redirect
+- Firebase Auth redirects must include the GitHub Pages base path.
+- Add `https://YOUR_USERNAME.github.io/nutrient-recommendation-app/` to **Authorized domains**.
+- Firebase CLI/Firebase Hosting is not required when deploying to GitHub Pages.
 
 ---
 

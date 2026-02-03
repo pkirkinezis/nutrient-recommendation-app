@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Recommendation, Supplement } from '../types';
 import { formGuidance } from '../data/supplements';
 import NutrientFoodSources from './NutrientFoodSources';
+import { SupplementFoodLookup } from './SupplementFoodLookup';
 
 interface SupplementDetailModalProps {
   supplement: Supplement | null;
@@ -198,6 +199,8 @@ export function SupplementDetailModal({
           )}
 
           <NutrientFoodSources supplement={supplement} />
+
+          <SupplementFoodLookup supplementName={supplement.name} />
 
           {supplement.synergies && supplement.synergies.length > 0 && (
             <section>
