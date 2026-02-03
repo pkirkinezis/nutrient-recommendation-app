@@ -149,7 +149,7 @@ export function App() {
   });
   const [activeTab, setActiveTab] = useState<'find' | 'stacks' | 'learn'>('find');
   const [findMode, setFindMode] = useState<'recommend' | 'browse'>('recommend');
-  const [learnMode, setLearnMode] = useState<'guide' | 'insights' | 'track'>('guide');
+  const [learnMode, setLearnMode] = useState<'guide' | 'insights' | 'track'>('insights');
   const [activeSupplement, setActiveSupplement] = useState<Supplement | null>(null);
   const [expandedStack, setExpandedStack] = useState<string | null>(null);
   const [tips, setTips] = useState<string[]>([]);
@@ -1659,6 +1659,16 @@ export function App() {
                   Track
                 </button>
               </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-purple-100 bg-purple-50 px-4 py-3 text-sm text-purple-800">
+              <span>Looking for Open Food Facts? Use the Insights tab to access Food Lookup.</span>
+              <button
+                type="button"
+                onClick={() => setLearnMode('insights')}
+                className="rounded-full border border-purple-200 bg-white px-3 py-1 text-xs font-semibold text-purple-700 hover:border-purple-300 hover:text-purple-800"
+              >
+                Go to Insights
+              </button>
             </div>
 
             {learnMode === 'guide' ? (
