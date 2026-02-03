@@ -227,6 +227,7 @@ export function App() {
   const profileInitialized = useRef(false);
   const selectedInitialized = useRef(false);
   const trackingInitialized = useRef(false);
+  const trackingSettingsInitialized = useRef(false);
   const labsInitialized = useRef(false);
   const [trackingLog, setTrackingLog] = useState<DailyLog>({
     id: `log-${Date.now()}`,
@@ -407,8 +408,15 @@ export function App() {
       trackingInitialized.current = true;
       return;
     }
-    setSyncMeta(prev => ({ ...prev, trackingUpdatedAt: Date.now() }));
   }, [trackingData]);
+
+  useEffect(() => {
+    if (!trackingSettingsInitialized.current) {
+      trackingSettingsInitialized.current = true;
+      return;
+    }
+    setSyncMeta(prev => ({ ...prev, trackingUpdatedAt: Date.now() }));
+  }, [trackingData.startDate, trackingData.supplements]);
 
   // Persist lab results
   useEffect(() => {
