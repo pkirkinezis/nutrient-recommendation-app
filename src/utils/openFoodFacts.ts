@@ -1,4 +1,4 @@
-import type { FoodSearchItem, FoodSearchResponse } from "../types";
+import type { FoodSearchItem, FoodSearchResponse, NutrimentEntry } from "../types";
 import { offlineFoods } from "../data/offlineFoods";
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 12; // 12 hours
@@ -43,6 +43,7 @@ const normalizeProducts = (products: Array<Record<string, unknown>>): FoodSearch
   return products
     .map((product) => {
       const nutriments = (product.nutriments ?? {}) as Record<string, unknown>;
+      const parsedNutriments = parseNutriments(nutriments);
       const item: FoodSearchItem = {
         id: String(product.code ?? product.id ?? product._id ?? ""),
         name: String(product.product_name ?? product.product_name_en ?? "Unknown item"),
@@ -52,11 +53,44 @@ const normalizeProducts = (products: Array<Record<string, unknown>>): FoodSearch
         proteinPer100g: safeNumber(nutriments["proteins_100g"]),
         carbsPer100g: safeNumber(nutriments["carbohydrates_100g"]),
         fatPer100g: safeNumber(nutriments["fat_100g"]),
+        nutriments: parsedNutriments.length > 0 ? parsedNutriments : undefined,
         source: "open-food-facts",
       };
       return item;
     })
     .filter((item) => item.id && item.name);
+};
+
+const parseNutriments = (nutriments: Record<string, unknown>): NutrimentEntry[] => {
+  const entries: NutrimentEntry[] = [];
+  const valueByKey = new Map<string, { value?: number; unit?: string; basis?: "100g" | "serving" }>();
+
+  Object.entries(nutriments).forEach(([key, rawValue]) => {
+    if (key.endsWith("_unit") || key.endsWith("_label")) return;
+    if (key.endsWith("_value") || key.endsWith("_value_computed")) return;
+
+    const basis = key.endsWith("_100g") ? "100g" : key.endsWith("_serving") ? "serving" : undefined;
+    const baseKey = key.replace(/_(100g|serving)$/u, "");
+    const value = safeNumber(rawValue as number | string);
+    if (value === undefined) return;
+
+    const unitKey = `${baseKey}_unit`;
+    const unit = typeof nutriments[unitKey] === "string" ? String(nutriments[unitKey]) : undefined;
+    valueByKey.set(`${baseKey}:${basis ?? "base"}`, { value, unit, basis });
+  });
+
+  valueByKey.forEach((data, compoundKey) => {
+    if (data.value === undefined) return;
+    const [key] = compoundKey.split(":");
+    entries.push({
+      key,
+      value: data.value,
+      unit: data.unit,
+      basis: data.basis,
+    });
+  });
+
+  return entries.sort((a, b) => a.key.localeCompare(b.key));
 };
 
 const fallbackOffline = (query: string): FoodSearchResponse => {

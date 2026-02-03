@@ -11,11 +11,16 @@ const formatNumber = (value?: number): string => {
   return Number.isFinite(value) ? value.toFixed(1) : "—";
 };
 
+const formatNutrimentName = (value: string): string => {
+  return value.replace(/-/g, " ");
+};
+
 export const SupplementFoodLookup = ({ supplementName }: SupplementFoodLookupProps) => {
   const [query, setQuery] = useState(supplementName);
   const [results, setResults] = useState<FoodSearchItem[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [source, setSource] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setQuery(supplementName);
@@ -84,6 +89,31 @@ export const SupplementFoodLookup = ({ supplementName }: SupplementFoodLookupPro
                 <span>Carbs: {formatNumber(item.carbsPer100g)}g</span>
                 <span>Fat: {formatNumber(item.fatPer100g)}g</span>
               </div>
+              {item.nutriments && item.nutriments.length > 0 && (
+                <div className="mt-2 rounded-md border border-emerald-100 bg-emerald-50 p-2">
+                  <div className="flex items-center justify-between text-[10px] text-emerald-700">
+                    <span className="font-semibold uppercase tracking-wide">All nutriments</span>
+                    <button
+                      type="button"
+                      onClick={() => setExpanded((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
+                      className="font-semibold text-emerald-600 hover:text-emerald-700"
+                    >
+                      {expanded[item.id] ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  {expanded[item.id] && (
+                    <div className="mt-2 grid grid-cols-1 gap-1 text-[10px] text-emerald-700">
+                      {item.nutriments.map((nutriment) => (
+                        <div key={`${item.id}-${nutriment.key}-${nutriment.basis ?? "base"}`}>
+                          <span className="font-semibold">{formatNutrimentName(nutriment.key)}</span>
+                          : {nutriment.value} {nutriment.unit ?? ""}
+                          {nutriment.basis ? ` per ${nutriment.basis}` : ""}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>

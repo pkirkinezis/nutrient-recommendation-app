@@ -71,12 +71,20 @@ export interface FoodSearchItem {
   proteinPer100g?: number;
   carbsPer100g?: number;
   fatPer100g?: number;
+  nutriments?: NutrimentEntry[];
   source: 'open-food-facts' | 'offline';
 }
 
 export interface FoodSearchResponse {
   items: FoodSearchItem[];
   source: 'open-food-facts' | 'offline' | 'cache';
+}
+
+export interface NutrimentEntry {
+  key: string;
+  value: number;
+  unit?: string;
+  basis?: '100g' | 'serving';
 }
 
 export interface FoodSupplementMatch {

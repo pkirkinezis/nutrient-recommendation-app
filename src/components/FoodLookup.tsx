@@ -8,6 +8,10 @@ const formatNumber = (value?: number): string => {
   return Number.isFinite(value) ? value.toFixed(1) : "—";
 };
 
+const formatNutrimentName = (value: string): string => {
+  return value.replace(/-/g, " ");
+};
+
 interface FoodLookupProps {
   supplements: Supplement[];
   onSelectSupplement: (supplementId: string) => void;
@@ -18,6 +22,7 @@ export const FoodLookup = ({ supplements, onSelectSupplement }: FoodLookupProps)
   const [results, setResults] = useState<FoodSearchItem[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [source, setSource] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const relatedSupplements = useMemo(() => {
     const map: Record<string, FoodSupplementMatch[]> = {};
@@ -81,6 +86,31 @@ export const FoodLookup = ({ supplements, onSelectSupplement }: FoodLookupProps)
                 <span>Carbs: {formatNumber(item.carbsPer100g)}g</span>
                 <span>Fat: {formatNumber(item.fatPer100g)}g</span>
               </div>
+              {item.nutriments && item.nutriments.length > 0 && (
+                <div className="mt-3 rounded-lg border border-slate-100 bg-slate-50 p-2">
+                  <div className="flex items-center justify-between text-[11px] text-slate-600">
+                    <span className="font-semibold uppercase tracking-wide">All nutriments</span>
+                    <button
+                      type="button"
+                      onClick={() => setExpanded((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
+                      className="font-semibold text-emerald-600 hover:text-emerald-700"
+                    >
+                      {expanded[item.id] ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  {expanded[item.id] && (
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-600">
+                      {item.nutriments.map((nutriment) => (
+                        <div key={`${item.id}-${nutriment.key}-${nutriment.basis ?? "base"}`}>
+                          <span className="font-semibold">{formatNutrimentName(nutriment.key)}</span>
+                          : {nutriment.value} {nutriment.unit ?? ""}
+                          {nutriment.basis ? ` per ${nutriment.basis}` : ""}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               {relatedSupplements[item.id]?.length ? (
                 <div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 p-2">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">Related supplements</p>
