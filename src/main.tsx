@@ -16,3 +16,11 @@ createRoot(rootElement).render(
     </AuthProvider>
   </StrictMode>
 );
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
+      // ignore registration errors in unsupported environments
+    });
+  });
+}

@@ -13,6 +13,7 @@ import { db } from './config/firebase';
 import { buildLocalSyncMeta, fetchCloudSnapshot, mergeCloudIntoLocal, uploadLocalSnapshot, type CloudSnapshot } from './utils/cloudSync';
 import { calculateMetabolicMetrics } from './utils/metabolism';
 import { buildTrackingChartData, buildTrackingCsv } from './utils/trackingExports';
+import { getTranslation, type Language } from './utils/i18n';
 
 const EducationalGuide = lazy(() => import('./components/EducationalGuide'));
 
@@ -152,6 +153,23 @@ export function App() {
   const [activeTab, setActiveTab] = useState<'find' | 'stacks' | 'learn'>('find');
   const [findMode, setFindMode] = useState<'recommend' | 'browse'>('recommend');
   const [learnMode, setLearnMode] = useState<'guide' | 'insights' | 'track'>('insights');
+  const [language, setLanguage] = useState<Language>(() => {
+    try {
+      const saved = localStorage.getItem('nutricompass_language') as Language | null;
+      return saved ?? 'en';
+    } catch {
+      return 'en';
+    }
+  });
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      const saved = localStorage.getItem('nutricompass_theme') as 'light' | 'dark' | null;
+      if (saved) return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch {
+      return 'light';
+    }
+  });
   const [activeSupplement, setActiveSupplement] = useState<Supplement | null>(null);
   const [expandedStack, setExpandedStack] = useState<string | null>(null);
   const [tips, setTips] = useState<string[]>([]);
@@ -248,6 +266,24 @@ export function App() {
     };
   }, [trackingData.logs]);
   const chartData = useMemo(() => buildTrackingChartData(trackingData.logs), [trackingData.logs]);
+  const t = useCallback((key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key), [language]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('nutricompass_language', language);
+    } catch {
+      // ignore persistence errors
+    }
+  }, [language]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('nutricompass_theme', theme);
+    } catch {
+      // ignore persistence errors
+    }
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
 
   const activeRecommendation = useMemo(() => {
     if (!activeSupplement) return undefined;
@@ -835,42 +871,61 @@ export function App() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-950 dark:to-emerald-900 dark:text-slate-100">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-lg border-b border-gray-100 shadow-sm">
+      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-lg border-b border-gray-100 shadow-sm dark:bg-slate-900/90 dark:border-slate-800">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <button onClick={handleReset} className="flex items-center gap-2 hover:opacity-80 transition">
               <span className="text-2xl">🌿</span>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">NutriCompass</h1>
-                <p className="text-xs text-gray-500 hidden sm:block">Smart Supplement Guide</p>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100">{t('appTitle')}</h1>
+                <p className="text-xs text-gray-500 hidden sm:block dark:text-slate-400">{t('appSubtitle')}</p>
               </div>
             </button>
             <div className="flex items-center gap-2">
               <div className="flex rounded-xl border border-gray-200 bg-white p-1">
                 <button
                   onClick={() => { setActiveTab('find'); setHasAnalyzed(false); }}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'find' ? 'bg-emerald-100 text-emerald-700' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'find' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
                 >
-                  Find Supplements
+                  {t('tabFind')}
                 </button>
                 <button
                   onClick={() => { setActiveTab('stacks'); setHasAnalyzed(false); }}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'stacks' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'stacks' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
                 >
-                  Pre-Made Stacks
+                  {t('tabStacks')}
                 </button>
                 <button
                   onClick={() => { setActiveTab('learn'); setHasAnalyzed(false); }}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'learn' ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'learn' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-200' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
                 >
-                  Learn
+                  {t('tabLearn')}
                 </button>
               </div>
+              <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <span className="hidden sm:inline">{t('languageLabel')}</span>
+                <select
+                  value={language}
+                  onChange={(event) => setLanguage(event.target.value as Language)}
+                  className="bg-transparent text-xs font-semibold text-gray-700 focus:outline-none dark:text-slate-100"
+                  aria-label={t('languageLabel')}
+                >
+                  <option value="en">EN</option>
+                  <option value="el">EL</option>
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              >
+                {theme === 'dark' ? t('themeDark') : t('themeLight')}
+              </button>
               <button
                 onClick={() => setShowProfile(!showProfile)}
-                className={`p-2 rounded-lg transition ${showProfile ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                className={`p-2 rounded-lg transition ${showProfile ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
                 aria-label="Toggle profile details"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
