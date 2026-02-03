@@ -1,1 +1,37 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  .dark .bg-white {
+    background-color: #0f172a;
+  }
+
+  .dark .border-gray-100 {
+    border-color: #1e293b;
+  }
+
+  .dark .border-gray-200 {
+    border-color: #334155;
+  }
+
+  .dark .text-gray-900 {
+    color: #f8fafc;
+  }
+
+  .dark .text-gray-700 {
+    color: #e2e8f0;
+  }
+
+  .dark .text-gray-600,
+  .dark .text-gray-500 {
+    color: #cbd5f5;
+  }
+}
