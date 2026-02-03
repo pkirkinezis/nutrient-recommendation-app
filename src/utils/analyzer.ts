@@ -18,6 +18,8 @@ import {
 import { normalizeGoals, normalizeSystems } from './normalization';
 import { buildNutrientTargets } from '../data/nutrientRequirements';
 import { premadeStacks } from '../data/stacks';
+import { semanticIntentDataset } from '../data/semanticIntents';
+import { rankByCosineSimilarity } from './similarity';
 
 // ============================================
 // TOKENIZATION & PARSING
@@ -406,6 +408,26 @@ function findSemanticMatches(supplements: Supplement[], tokens: Token[]): Semant
     supplements: matchedSupplements,
     inferredGoals: normalizeGoals(Array.from(matchedGoals)),
     inferredSystems: normalizeSystems(Array.from(matchedSystems))
+  };
+}
+
+function findIntentSimilarityMatches(input: string): { inferredGoals: string[]; inferredSystems: string[] } {
+  const ranked = rankByCosineSimilarity(input, semanticIntentDataset, 2);
+  if (ranked.length === 0 || ranked[0].score < 0.18) {
+    return { inferredGoals: [], inferredSystems: [] };
+  }
+
+  const inferredGoals = new Set<string>();
+  const inferredSystems = new Set<string>();
+  for (const match of ranked) {
+    if (match.score < 0.14) continue;
+    match.item.goals.forEach(goal => inferredGoals.add(goal));
+    match.item.systems.forEach(system => inferredSystems.add(system));
+  }
+
+  return {
+    inferredGoals: normalizeGoals(Array.from(inferredGoals)),
+    inferredSystems: normalizeSystems(Array.from(inferredSystems))
   };
 }
 
@@ -1376,6 +1398,17 @@ export function analyzeGoal(
       matchedGoals = buildMatchedGoals(inferredGoals);
       matchedSystems = buildMatchedSystems(inferredSystems);
       relatedMatchIds = findRelatedSupplements(semanticMatches.supplements, supplements).map(s => s.id);
+    }
+  }
+
+  if (matchType === 'none') {
+    const intentMatches = findIntentSimilarityMatches(input);
+    if (intentMatches.inferredGoals.length > 0 || intentMatches.inferredSystems.length > 0) {
+      matchType = 'semantic';
+      inferredGoals = intentMatches.inferredGoals;
+      inferredSystems = intentMatches.inferredSystems;
+      matchedGoals = buildMatchedGoals(inferredGoals);
+      matchedSystems = buildMatchedSystems(inferredSystems);
     }
   }
   

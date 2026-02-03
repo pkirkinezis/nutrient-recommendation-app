@@ -62,6 +62,30 @@ export interface FoodSource {
   sourceId?: string;
 }
 
+export interface FoodSearchItem {
+  id: string;
+  name: string;
+  brand?: string;
+  servingSize?: string;
+  caloriesPer100g?: number;
+  proteinPer100g?: number;
+  carbsPer100g?: number;
+  fatPer100g?: number;
+  source: 'open-food-facts' | 'offline';
+}
+
+export interface FoodSearchResponse {
+  items: FoodSearchItem[];
+  source: 'open-food-facts' | 'offline' | 'cache';
+}
+
+export interface IntentDatasetEntry {
+  id: string;
+  text: string;
+  goals: string[];
+  systems: string[];
+}
+
 // ============================================
 // CURATED STACK TYPES
 // ============================================
@@ -107,11 +131,13 @@ export interface UserProfile {
   ageRange?: 'under-30' | '30-45' | '45-60' | 'over-60';  // Deprecated, use 'age'
   sex?: 'male' | 'female' | 'other';
   weightKg?: number;
+  heightCm?: number;
   
   // Lifestyle
   diet?: 'omnivore' | 'vegetarian' | 'vegan' | 'pescatarian' | 'keto' | 'paleo';
   dietType?: 'omnivore' | 'vegetarian' | 'vegan' | 'keto' | 'other';  // Deprecated, use 'diet'
   trainingStyle?: 'none' | 'light' | 'moderate' | 'strength' | 'endurance' | 'mixed' | 'yoga';
+  activityLevel?: 'sedentary' | 'light' | 'moderate' | 'active' | 'athlete';
   
   // Health status
   sleepQuality?: 'poor' | 'fair' | 'good' | 'excellent';

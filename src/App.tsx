@@ -6,9 +6,11 @@ import { AdvancedBrowse } from './components/AdvancedBrowse';
 import { SupplementDetailModal } from './components/SupplementDetailModal';
 import { curatedStacks } from './data/curatedStacks';
 import { premadeStacks } from './data/stacks';
+import { FoodLookup } from './components/FoodLookup';
 import { useAuth } from './context/AuthContext';
 import { db } from './config/firebase';
 import { buildLocalSyncMeta, fetchCloudSnapshot, mergeCloudIntoLocal, uploadLocalSnapshot, type CloudSnapshot } from './utils/cloudSync';
+import { calculateMetabolicMetrics } from './utils/metabolism';
 
 const EducationalGuide = lazy(() => import('./components/EducationalGuide'));
 
@@ -211,6 +213,7 @@ export function App() {
     notes: '',
     updatedAt: Date.now()
   });
+  const metabolicMetrics = useMemo(() => calculateMetabolicMetrics(userProfile), [userProfile]);
   const trackingSummary = useMemo(() => {
     if (trackingData.logs.length === 0) {
       return { averageScore: null, mostUsed: null, latestDate: null };
@@ -940,6 +943,18 @@ export function App() {
                 />
               </div>
               <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Height (cm)</label>
+                <input
+                  type="number"
+                  min="120"
+                  max="220"
+                  value={userProfile.heightCm ?? ''}
+                  onChange={(e) => setUserProfile(p => ({ ...p, heightCm: e.target.value ? Number(e.target.value) : undefined }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="e.g., 175"
+                />
+              </div>
+              <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Diet Type</label>
                 <select
                   value={userProfile.diet || userProfile.dietType || ''}
@@ -970,6 +985,21 @@ export function App() {
                   <option value="strength">Strength</option>
                   <option value="mixed">Mixed</option>
                   <option value="yoga">Yoga/Movement</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Activity Level</label>
+                <select
+                  value={userProfile.activityLevel || ''}
+                  onChange={(e) => setUserProfile(p => ({ ...p, activityLevel: e.target.value as UserProfile['activityLevel'] }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  <option value="">Select...</option>
+                  <option value="sedentary">Sedentary</option>
+                  <option value="light">Lightly active</option>
+                  <option value="moderate">Moderately active</option>
+                  <option value="active">Very active</option>
+                  <option value="athlete">Athlete</option>
                 </select>
               </div>
               <div>
@@ -1087,6 +1117,26 @@ export function App() {
                 />
               </div>
             </div>
+            {(metabolicMetrics.bmi || metabolicMetrics.bmr || metabolicMetrics.tdee) && (
+              <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+                <h4 className="text-sm font-semibold text-emerald-800 mb-2">Metabolic Metrics</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-emerald-700">
+                  <div>
+                    <p className="text-xs uppercase text-emerald-500">BMI</p>
+                    <p className="font-semibold">{metabolicMetrics.bmi ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase text-emerald-500">BMR</p>
+                    <p className="font-semibold">{metabolicMetrics.bmr ? `${metabolicMetrics.bmr} kcal` : '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase text-emerald-500">TDEE</p>
+                    <p className="font-semibold">{metabolicMetrics.tdee ? `${metabolicMetrics.tdee} kcal` : '—'}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-emerald-600 mt-2">Add height and activity level for full metabolic estimates.</p>
+              </div>
+            )}
             <p className="text-xs text-gray-500 mt-3">This information is saved locally on your device and helps personalize recommendations.</p>
           </div>
         )}
@@ -1835,6 +1885,7 @@ export function App() {
               </div>
             ) : (
               <div className="space-y-8">
+                <FoodLookup />
                 {/* Comparisons Section */}
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">Why This, Not That?</h2>

@@ -84,6 +84,10 @@ NutriCompass is a comprehensive, evidence-based nutrition and supplement recomme
 - CIQUAL + EuroFIR food composition sources
 - Research-based reference doses for non‑NRV compounds (e.g., melatonin, creatine, CoQ10)
 
+### 🍽️ Food Lookup (Open Food Facts)
+- Search real-world packaged foods with offline fallback caching
+- Quick macro snapshots (calories, protein, carbs, fat)
+
 ### 🧪 Stack Builder
 - Build custom supplement stacks
 - Automatic interaction/conflict detection
@@ -101,6 +105,9 @@ NutriCompass is a comprehensive, evidence-based nutrition and supplement recomme
 - Optional user profile (age, diet, training style, health conditions)
 - Tailored recommendations
 - Lifestyle-aware suggestions
+
+### ⚖️ Metabolic Metrics
+- BMI, BMR, and TDEE estimates from profile inputs
 
 ### 📖 Learn Section
 - "Why This, Not That?" comparisons
