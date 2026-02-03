@@ -252,6 +252,7 @@ export interface MisinformationAlert {
 // ============================================
 
 export interface DailyLog {
+  id?: string;
   date: string;
   sleepQuality: 1 | 2 | 3 | 4 | 5;
   energyLevel: 1 | 2 | 3 | 4 | 5;
@@ -261,12 +262,40 @@ export interface DailyLog {
   supplementsTaken: string[];
   notes?: string;
   sideEffects?: string[];
+  updatedAt?: number;
 }
 
 export interface TrackingData {
   logs: DailyLog[];
   startDate: string;
   supplements: string[];
+}
+
+export interface LocalSyncMeta {
+  profileUpdatedAt: number;
+  stackUpdatedAt: number;
+  trackingUpdatedAt: number;
+  labsUpdatedAt: number;
+}
+
+export interface CloudSettings {
+  schemaVersion: number;
+  updatedAt: number;
+  trackingStartDate: string;
+  trackingSupplements: string[];
+  labs: LabResult[];
+}
+
+export interface CloudProfile {
+  schemaVersion: number;
+  updatedAt: number;
+  profile: UserProfile;
+}
+
+export interface CloudStack {
+  schemaVersion: number;
+  updatedAt: number;
+  supplementIds: string[];
 }
 
 export interface SemanticAssociation {

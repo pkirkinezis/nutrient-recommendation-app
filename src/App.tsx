@@ -1,11 +1,14 @@
-import { Suspense, lazy, useMemo, useEffect, useState } from 'react';
-import { CuratedStack, Supplement, SupplementStack, UserProfile, Recommendation, InteractionWarning, TrackingData, DailyLog, LabResult } from './types/index';
+import { Suspense, lazy, useMemo, useEffect, useRef, useState, useCallback } from 'react';
+import { CuratedStack, Supplement, SupplementStack, UserProfile, Recommendation, InteractionWarning, TrackingData, DailyLog, LabResult, LocalSyncMeta } from './types/index';
 import { supplements, formGuidance, supplementComparisons, misinformationAlerts } from './data/supplements';
 import { checkInteractions, generateTimingSchedule, useGoalAnalysis } from './utils/analyzer';
 import { AdvancedBrowse } from './components/AdvancedBrowse';
 import { SupplementDetailModal } from './components/SupplementDetailModal';
 import { curatedStacks } from './data/curatedStacks';
 import { premadeStacks } from './data/stacks';
+import { useAuth } from './context/AuthContext';
+import { db } from './config/firebase';
+import { buildLocalSyncMeta, fetchCloudSnapshot, mergeCloudIntoLocal, uploadLocalSnapshot, type CloudSnapshot } from './utils/cloudSync';
 
 const EducationalGuide = lazy(() => import('./components/EducationalGuide'));
 
@@ -15,7 +18,9 @@ const STORAGE_KEYS = {
   selectedSupplements: 'nutricompass_selected',
   lastQuery: 'nutricompass_query',
   tracking: 'nutricompass_tracking',
-  labs: 'nutricompass_labs'
+  labs: 'nutricompass_labs',
+  cloudSyncEnabled: 'nutricompass_cloud_sync_enabled',
+  cloudSyncMeta: 'nutricompass_cloud_sync_meta'
 };
 
 // Helper functions for display
@@ -102,6 +107,8 @@ const examplePrompts = [
 ];
 
 export function App() {
+  const { user, status: authStatus, error: authError, isConfigured: firebaseConfigured, signInWithEmail, registerWithEmail, signInWithGoogle, signOutUser } = useAuth();
+
   // Load persisted state from localStorage
   const [query, setQuery] = useState(() => {
     try {
@@ -165,7 +172,35 @@ export function App() {
     note: '',
     date: new Date().toISOString().split('T')[0]
   });
+  const [syncEnabled, setSyncEnabled] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.cloudSyncEnabled) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [syncMeta, setSyncMeta] = useState<LocalSyncMeta>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.cloudSyncMeta);
+      return saved ? buildLocalSyncMeta(JSON.parse(saved) as Partial<LocalSyncMeta>) : buildLocalSyncMeta();
+    } catch {
+      return buildLocalSyncMeta();
+    }
+  });
+  const [cloudReady, setCloudReady] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [showUploadPrompt, setShowUploadPrompt] = useState(false);
+  const [pendingCloudSync, setPendingCloudSync] = useState(false);
+  const pendingSnapshot = useRef<Awaited<ReturnType<typeof fetchCloudSnapshot>> | null>(null);
+  const profileInitialized = useRef(false);
+  const selectedInitialized = useRef(false);
+  const trackingInitialized = useRef(false);
+  const labsInitialized = useRef(false);
   const [trackingLog, setTrackingLog] = useState<DailyLog>({
+    id: `log-${Date.now()}`,
     date: new Date().toISOString().split('T')[0],
     sleepQuality: 3,
     energyLevel: 3,
@@ -173,7 +208,8 @@ export function App() {
     focus: 3,
     recovery: 3,
     supplementsTaken: [],
-    notes: ''
+    notes: '',
+    updatedAt: Date.now()
   });
   const trackingSummary = useMemo(() => {
     if (trackingData.logs.length === 0) {
@@ -287,6 +323,11 @@ export function App() {
     try {
       localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(userProfile));
     } catch { /* ignore */ }
+    if (!profileInitialized.current) {
+      profileInitialized.current = true;
+      return;
+    }
+    setSyncMeta(prev => ({ ...prev, profileUpdatedAt: Date.now() }));
   }, [userProfile]);
 
   // Persist selected supplements
@@ -294,6 +335,11 @@ export function App() {
     try {
       localStorage.setItem(STORAGE_KEYS.selectedSupplements, JSON.stringify(selectedSupplements.map(s => s.id)));
     } catch { /* ignore */ }
+    if (!selectedInitialized.current) {
+      selectedInitialized.current = true;
+      return;
+    }
+    setSyncMeta(prev => ({ ...prev, stackUpdatedAt: Date.now() }));
   }, [selectedSupplements]);
 
   // Persist last query
@@ -308,6 +354,11 @@ export function App() {
     try {
       localStorage.setItem(STORAGE_KEYS.tracking, JSON.stringify(trackingData));
     } catch { /* ignore */ }
+    if (!trackingInitialized.current) {
+      trackingInitialized.current = true;
+      return;
+    }
+    setSyncMeta(prev => ({ ...prev, trackingUpdatedAt: Date.now() }));
   }, [trackingData]);
 
   // Persist lab results
@@ -315,7 +366,136 @@ export function App() {
     try {
       localStorage.setItem(STORAGE_KEYS.labs, JSON.stringify(labResults));
     } catch { /* ignore */ }
+    if (!labsInitialized.current) {
+      labsInitialized.current = true;
+      return;
+    }
+    setSyncMeta(prev => ({ ...prev, labsUpdatedAt: Date.now() }));
   }, [labResults]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.cloudSyncEnabled, String(syncEnabled));
+    } catch { /* ignore */ }
+  }, [syncEnabled]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.cloudSyncMeta, JSON.stringify(syncMeta));
+    } catch { /* ignore */ }
+  }, [syncMeta]);
+
+  useEffect(() => {
+    if (!user) {
+      setCloudReady(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user && authModalOpen) {
+      setAuthModalOpen(false);
+    }
+  }, [user, authModalOpen]);
+
+  useEffect(() => {
+    if (!firebaseConfigured && syncEnabled) {
+      setSyncEnabled(false);
+    }
+  }, [firebaseConfigured, syncEnabled]);
+
+  const hasLocalData = useMemo(() => {
+    return (
+      Object.keys(userProfile).length > 0 ||
+      selectedSupplements.length > 0 ||
+      trackingData.logs.length > 0 ||
+      labResults.length > 0
+    );
+  }, [userProfile, selectedSupplements, trackingData.logs, labResults]);
+
+  const applyCloudSnapshot = useCallback((snapshot: CloudSnapshot): void => {
+    const mergeResult = mergeCloudIntoLocal(
+      {
+        profile: userProfile,
+        tracking: trackingData,
+        selectedSupplementIds: selectedSupplements.map(s => s.id),
+        labs: labResults,
+        meta: syncMeta
+      },
+      snapshot
+    );
+
+    setUserProfile(mergeResult.profile);
+    setTrackingData(mergeResult.tracking);
+    setLabResults(mergeResult.labs);
+    setSelectedSupplements(
+      mergeResult.selectedSupplementIds
+        .map(id => supplements.find(s => s.id === id))
+        .filter((supplement): supplement is Supplement => Boolean(supplement))
+    );
+    setSyncMeta(mergeResult.meta);
+    setCloudReady(true);
+  }, [labResults, selectedSupplements, syncMeta, trackingData, userProfile]);
+
+  useEffect(() => {
+    const runInitialSync = async () => {
+      if (!syncEnabled || !firebaseConfigured || !user || !db || cloudReady) return;
+      if (pendingCloudSync) return;
+      setPendingCloudSync(true);
+      try {
+        const snapshot = await fetchCloudSnapshot(db, user.uid);
+        const initKey = `nutricompass_cloud_init_${user.uid}`;
+        const initialized = localStorage.getItem(initKey) === 'true';
+
+        if (!initialized && hasLocalData) {
+          pendingSnapshot.current = snapshot;
+          setShowUploadPrompt(true);
+          return;
+        }
+
+        applyCloudSnapshot(snapshot);
+        localStorage.setItem(initKey, 'true');
+      } finally {
+        setPendingCloudSync(false);
+      }
+    };
+
+    void runInitialSync();
+  }, [
+    syncEnabled,
+    firebaseConfigured,
+    user,
+    cloudReady,
+    hasLocalData,
+    userProfile,
+    trackingData,
+    selectedSupplements,
+    labResults,
+    syncMeta,
+    pendingCloudSync,
+    applyCloudSnapshot
+  ]);
+
+  useEffect(() => {
+    if (!syncEnabled || !firebaseConfigured || !user || !db || !cloudReady) return;
+    const timeout = window.setTimeout(() => {
+      void uploadLocalSnapshot(db, user.uid, {
+        profile: userProfile,
+        tracking: trackingData,
+        selectedSupplementIds: selectedSupplements.map(s => s.id),
+        labs: labResults
+      });
+    }, 600);
+    return () => window.clearTimeout(timeout);
+  }, [
+    syncEnabled,
+    firebaseConfigured,
+    user,
+    cloudReady,
+    userProfile,
+    trackingData,
+    selectedSupplements,
+    labResults
+  ]);
 
   const goalAnalysis = useGoalAnalysis(query, supplements, userProfile, trackingData);
 
@@ -410,15 +590,65 @@ export function App() {
     setTips([]);
   };
 
+  const handleToggleCloudSync = () => {
+    if (!firebaseConfigured) return;
+    const next = !syncEnabled;
+    setSyncEnabled(next);
+    if (next && !user) {
+      setAuthModalOpen(true);
+    }
+  };
+
+  const handleAuthSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!authEmail || !authPassword) return;
+    if (authMode === 'login') {
+      void signInWithEmail(authEmail, authPassword);
+    } else {
+      void registerWithEmail(authEmail, authPassword);
+    }
+  };
+
+  const handleUploadPromptYes = async () => {
+    if (!user || !db) return;
+    await uploadLocalSnapshot(db, user.uid, {
+      profile: userProfile,
+      tracking: trackingData,
+      selectedSupplementIds: selectedSupplements.map(s => s.id),
+      labs: labResults
+    });
+    localStorage.setItem(`nutricompass_cloud_init_${user.uid}`, 'true');
+    setShowUploadPrompt(false);
+    pendingSnapshot.current = null;
+    setCloudReady(true);
+  };
+
+  const handleUploadPromptNo = () => {
+    if (pendingSnapshot.current) {
+      applyCloudSnapshot(pendingSnapshot.current);
+    }
+    if (user) {
+      localStorage.setItem(`nutricompass_cloud_init_${user.uid}`, 'true');
+    }
+    setShowUploadPrompt(false);
+    pendingSnapshot.current = null;
+  };
+
   const handleTrackingSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setTrackingData(prev => {
       const existingIndex = prev.logs.findIndex(log => log.date === trackingLog.date);
+      const existingLog = existingIndex >= 0 ? prev.logs[existingIndex] : null;
+      const updatedLog: DailyLog = {
+        ...trackingLog,
+        id: existingLog?.id ?? trackingLog.id ?? `log-${trackingLog.date}-${Date.now()}`,
+        updatedAt: Date.now()
+      };
       const updatedLogs = [...prev.logs];
       if (existingIndex >= 0) {
-        updatedLogs[existingIndex] = trackingLog;
+        updatedLogs[existingIndex] = updatedLog;
       } else {
-        updatedLogs.unshift(trackingLog);
+        updatedLogs.unshift(updatedLog);
       }
 
       const mergedSupplements = Array.from(new Set([
@@ -435,7 +665,9 @@ export function App() {
     setTrackingLog(prev => ({
       ...prev,
       notes: '',
-      supplementsTaken: []
+      supplementsTaken: [],
+      id: `log-${Date.now()}`,
+      updatedAt: Date.now()
     }));
   };
 
@@ -623,6 +855,57 @@ export function App() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6">
+        {firebaseConfigured && (
+          <div className="mb-6 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-gray-900">Cloud Sync</h3>
+                <p className="text-sm text-gray-600">Optional cross-device sync with Firebase. Local mode stays fully offline.</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Status: {syncEnabled ? (user ? 'Connected' : 'Sign in required') : 'Local only'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleCloudSync}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${syncEnabled ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              >
+                Sync to cloud: {syncEnabled ? 'On' : 'Off'}
+              </button>
+            </div>
+            {syncEnabled && (
+              <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                {user ? (
+                  <>
+                    <p className="text-xs text-gray-500">Signed in as <span className="font-medium text-gray-700">{user.email || 'Firebase user'}</span></p>
+                    <button
+                      type="button"
+                      onClick={() => void signOutUser()}
+                      className="text-xs text-gray-500 hover:text-gray-700"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setAuthModalOpen(true)}
+                    className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Sign in to enable sync
+                  </button>
+                )}
+                {authStatus === 'loading' && (
+                  <span className="text-xs text-gray-400">Checking sign-in status…</span>
+                )}
+                {authError && (
+                  <span className="text-xs text-red-600">{authError}</span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Profile Panel */}
         {showProfile && (
           <div className="mb-6 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
@@ -1533,7 +1816,7 @@ export function App() {
                     <h3 className="font-bold text-gray-900 mb-3">Recent Logs</h3>
                     <div className="space-y-3">
                       {trackingData.logs.slice(0, 5).map((log) => (
-                        <div key={log.date} className="border border-gray-100 rounded-xl p-3">
+                        <div key={log.id ?? log.date} className="border border-gray-100 rounded-xl p-3">
                           <div className="flex items-center justify-between">
                             <p className="text-sm font-semibold text-gray-800">{log.date}</p>
                             <span className="text-xs text-gray-500">
@@ -1669,6 +1952,114 @@ export function App() {
           </div>
         )}
       </main>
+
+      {authModalOpen && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">
+                {authMode === 'login' ? 'Sign in to sync' : 'Create an account'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setAuthModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="Close auth modal"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleAuthSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Password</label>
+                <input
+                  type="password"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              {authError && (
+                <p className="text-xs text-red-600">{authError}</p>
+              )}
+              <button
+                type="submit"
+                className="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition"
+              >
+                {authMode === 'login' ? 'Sign in' : 'Create account'}
+              </button>
+            </form>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => void signInWithGoogle()}
+                className="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Continue with Google
+              </button>
+            </div>
+            <div className="mt-4 text-center text-xs text-gray-500">
+              {authMode === 'login' ? (
+                <button
+                  type="button"
+                  onClick={() => setAuthMode('register')}
+                  className="text-emerald-600 hover:text-emerald-700"
+                >
+                  Need an account? Register
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setAuthMode('login')}
+                  className="text-emerald-600 hover:text-emerald-700"
+                >
+                  Already have an account? Sign in
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showUploadPrompt && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Upload local data to cloud?</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              We found existing local data. Would you like to upload it to your cloud account?
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleUploadPromptNo}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                No, use cloud data
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleUploadPromptYes()}
+                className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700"
+              >
+                Yes, upload local
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <SupplementDetailModal
         supplement={activeSupplement}
