@@ -72,5 +72,5 @@ export const buildFoodSupplementMatches = (
   return matches
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
-    .map(({ score, ...rest }) => rest);
+    .map(({ score: _score, ...rest }) => rest);
 };
