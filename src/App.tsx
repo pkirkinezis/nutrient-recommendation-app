@@ -174,6 +174,13 @@ export function App() {
     note: '',
     date: new Date().toISOString().split('T')[0]
   });
+  const handleFoodLookupSupplement = (supplementId: string): void => {
+    const supplement = supplements.find((item) => item.id === supplementId);
+    if (!supplement) return;
+    setActiveSupplement(supplement);
+    setActiveTab('find');
+    setFindMode('browse');
+  };
   const [syncEnabled, setSyncEnabled] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEYS.cloudSyncEnabled) === 'true';
@@ -1895,7 +1902,10 @@ export function App() {
               </div>
             ) : (
               <div className="space-y-8">
-                <FoodLookup />
+                <FoodLookup
+                  supplements={supplements}
+                  onSelectSupplement={handleFoodLookupSupplement}
+                />
                 {/* Comparisons Section */}
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">Why This, Not That?</h2>

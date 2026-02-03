@@ -1,17 +1,31 @@
-import { useState } from "react";
-import type { FoodSearchItem } from "../types";
+import { useMemo, useState } from "react";
+import type { FoodSearchItem, FoodSupplementMatch, Supplement } from "../types";
 import { searchOpenFoodFacts } from "../utils/openFoodFacts";
+import { buildFoodSupplementMatches } from "../utils/foodLookupConnections";
 
 const formatNumber = (value?: number): string => {
   if (value === undefined) return "—";
   return Number.isFinite(value) ? value.toFixed(1) : "—";
 };
 
-export const FoodLookup = () => {
+interface FoodLookupProps {
+  supplements: Supplement[];
+  onSelectSupplement: (supplementId: string) => void;
+}
+
+export const FoodLookup = ({ supplements, onSelectSupplement }: FoodLookupProps) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FoodSearchItem[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [source, setSource] = useState<string | null>(null);
+
+  const relatedSupplements = useMemo(() => {
+    const map: Record<string, FoodSupplementMatch[]> = {};
+    results.forEach((item) => {
+      map[item.id] = buildFoodSupplementMatches(query, item.name, supplements);
+    });
+    return map;
+  }, [query, results, supplements]);
 
   const handleSearch = async (): Promise<void> => {
     if (!query.trim()) return;
@@ -67,6 +81,28 @@ export const FoodLookup = () => {
                 <span>Carbs: {formatNumber(item.carbsPer100g)}g</span>
                 <span>Fat: {formatNumber(item.fatPer100g)}g</span>
               </div>
+              {relatedSupplements[item.id]?.length ? (
+                <div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 p-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">Related supplements</p>
+                  <div className="mt-2 space-y-2">
+                    {relatedSupplements[item.id].map((match) => (
+                      <div key={match.id} className="flex items-start justify-between gap-2 text-xs text-emerald-800">
+                        <div>
+                          <p className="font-semibold text-emerald-900">{match.name}</p>
+                          <p className="text-[11px] text-emerald-700">{match.reasons.join(" • ")}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => onSelectSupplement(match.id)}
+                          className="shrink-0 rounded-full border border-emerald-200 bg-white px-3 py-1 text-[11px] font-semibold text-emerald-700 hover:border-emerald-300 hover:text-emerald-800"
+                        >
+                          View details
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ))}
         </div>

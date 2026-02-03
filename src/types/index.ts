@@ -79,6 +79,12 @@ export interface FoodSearchResponse {
   source: 'open-food-facts' | 'offline' | 'cache';
 }
 
+export interface FoodSupplementMatch {
+  id: string;
+  name: string;
+  reasons: string[];
+}
+
 export interface IntentDatasetEntry {
   id: string;
   text: string;
