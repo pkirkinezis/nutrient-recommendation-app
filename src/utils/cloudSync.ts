@@ -1,5 +1,4 @@
-import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
-import type { Firestore } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc, type Firestore } from "firebase/firestore";
 import type { CloudProfile, CloudSettings, CloudStack, DailyLog, LabResult, LocalSyncMeta, TrackingData, UserProfile } from "../types";
 
 const SCHEMA_VERSION = 1;
@@ -40,7 +39,7 @@ const mergeLogs = (localLogs: DailyLog[], cloudLogs: DailyLog[]): DailyLog[] => 
   }
 
   const resolved: DailyLog[] = [];
-  for (const [date, logs] of dateBuckets.entries()) {
+  for (const [_date, logs] of dateBuckets.entries()) {
     if (logs.length === 1) {
       resolved.push(logs[0]);
       continue;

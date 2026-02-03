@@ -23,7 +23,10 @@ export const SupplementFoodLookup = ({ supplementName }: SupplementFoodLookupPro
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    setQuery(supplementName);
+    const syncQuery = (): void => {
+      setQuery(supplementName);
+    };
+    syncQuery();
     if (!supplementName.trim()) return;
     const runSearch = async (): Promise<void> => {
       setStatus("loading");
