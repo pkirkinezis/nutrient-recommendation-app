@@ -7,10 +7,12 @@ import { SupplementDetailModal } from './components/SupplementDetailModal';
 import { curatedStacks } from './data/curatedStacks';
 import { premadeStacks } from './data/stacks';
 import { FoodLookup } from './components/FoodLookup';
+import { TrackingChart } from './components/TrackingChart';
 import { useAuth } from './context/AuthContext';
 import { db } from './config/firebase';
 import { buildLocalSyncMeta, fetchCloudSnapshot, mergeCloudIntoLocal, uploadLocalSnapshot, type CloudSnapshot } from './utils/cloudSync';
 import { calculateMetabolicMetrics } from './utils/metabolism';
+import { buildTrackingChartData, buildTrackingCsv } from './utils/trackingExports';
 
 const EducationalGuide = lazy(() => import('./components/EducationalGuide'));
 
@@ -245,6 +247,7 @@ export function App() {
       latestDate: trackingData.logs[0]?.date || null
     };
   }, [trackingData.logs]);
+  const chartData = useMemo(() => buildTrackingChartData(trackingData.logs), [trackingData.logs]);
 
   const activeRecommendation = useMemo(() => {
     if (!activeSupplement) return undefined;
@@ -679,6 +682,21 @@ export function App() {
       id: `log-${Date.now()}`,
       updatedAt: Date.now()
     }));
+  };
+
+  const handleTrackingExport = (): void => {
+    if (trackingData.logs.length === 0) return;
+    const csv = buildTrackingCsv(trackingData.logs);
+    if (!csv) return;
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'nutricompass-tracking.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleLabSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -1848,6 +1866,24 @@ export function App() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Progress Snapshot</h3>
+                      <p className="text-sm text-gray-500">Visualize your average daily score.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleTrackingExport}
+                      disabled={trackingData.logs.length === 0}
+                      className="rounded-full border border-emerald-200 bg-white px-4 py-2 text-xs font-semibold text-emerald-700 hover:border-emerald-300 hover:text-emerald-800 disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-400"
+                    >
+                      Export CSV
+                    </button>
+                  </div>
+                  <TrackingChart data={chartData} />
                 </div>
 
                 <div className="bg-gradient-to-r from-amber-50 to-emerald-50 rounded-2xl p-5 border border-amber-100">

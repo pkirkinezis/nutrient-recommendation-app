@@ -305,6 +305,12 @@ export interface DailyLog {
   updatedAt?: number;
 }
 
+export interface ChartPoint {
+  date: string;
+  label: string;
+  value: number;
+}
+
 export interface TrackingData {
   logs: DailyLog[];
   startDate: string;
