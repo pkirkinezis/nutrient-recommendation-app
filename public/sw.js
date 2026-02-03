@@ -1,5 +1,11 @@
 const CACHE_NAME = "nutricompass-cache-v1";
-const CORE_ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon.svg"];
+const BASE_PATH = "/nutrient-recommendation-app/";
+const CORE_ASSETS = [
+  BASE_PATH,
+  `${BASE_PATH}index.html`,
+  `${BASE_PATH}manifest.webmanifest`,
+  `${BASE_PATH}icons/icon.svg`,
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -27,7 +33,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
           return response;
         })
-        .catch(() => caches.match("./"));
+        .catch(() => caches.match(BASE_PATH));
     })
   );
 });

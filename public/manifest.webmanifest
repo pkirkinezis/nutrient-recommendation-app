@@ -1,8 +1,8 @@
 {
   "name": "NutriCompass",
   "short_name": "NutriCompass",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/nutrient-recommendation-app/",
+  "scope": "/nutrient-recommendation-app/",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#10b981",
