@@ -1749,7 +1749,7 @@ export function App() {
               </div>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-purple-100 bg-purple-50 px-4 py-3 text-sm text-purple-800">
-              <span>Looking for Open Food Facts? Use the Insights tab to access Food Lookup.</span>
+              <span>Looking for USDA FoodData Central or Open Food Facts? Use the Insights tab to access Food Lookup.</span>
               <button
                 type="button"
                 onClick={() => setLearnMode('insights')}

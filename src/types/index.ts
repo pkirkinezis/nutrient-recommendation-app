@@ -72,12 +72,12 @@ export interface FoodSearchItem {
   carbsPer100g?: number;
   fatPer100g?: number;
   nutriments?: NutrimentEntry[];
-  source: 'open-food-facts' | 'offline';
+  source: 'open-food-facts' | 'usda-fooddata-central' | 'offline';
 }
 
 export interface FoodSearchResponse {
   items: FoodSearchItem[];
-  source: 'open-food-facts' | 'offline' | 'cache';
+  source: 'open-food-facts' | 'usda-fooddata-central' | 'offline' | 'cache';
 }
 
 export interface NutrimentEntry {

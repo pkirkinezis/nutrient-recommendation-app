@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FoodSearchItem } from "../types";
-import { searchOpenFoodFacts } from "../utils/openFoodFacts";
+import { searchFoodLookup } from "../utils/foodSearch";
 
 interface SupplementFoodLookupProps {
   supplementName: string;
@@ -30,7 +30,7 @@ export const SupplementFoodLookup = ({ supplementName }: SupplementFoodLookupPro
     if (!supplementName.trim()) return;
     const runSearch = async (): Promise<void> => {
       setStatus("loading");
-      const response = await searchOpenFoodFacts(supplementName);
+      const response = await searchFoodLookup(supplementName);
       setResults(response.items.slice(0, 4));
       setSource(response.source);
       setStatus("done");
@@ -41,7 +41,7 @@ export const SupplementFoodLookup = ({ supplementName }: SupplementFoodLookupPro
   const handleSearch = async (): Promise<void> => {
     if (!query.trim()) return;
     setStatus("loading");
-    const response = await searchOpenFoodFacts(query);
+    const response = await searchFoodLookup(query);
     setResults(response.items.slice(0, 4));
     setSource(response.source);
     setStatus("done");
@@ -51,7 +51,7 @@ export const SupplementFoodLookup = ({ supplementName }: SupplementFoodLookupPro
     <section className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-emerald-800">Food Lookup (Open Food Facts)</h3>
+          <h3 className="text-sm font-semibold text-emerald-800">Food Lookup (USDA + Open Food Facts)</h3>
           <p className="text-xs text-emerald-600">Find real foods that reference this nutrient.</p>
         </div>
         {source && (
