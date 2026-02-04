@@ -20,6 +20,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const USDA_BASE_URL = 'https://api.nal.usda.gov/fdc/v1/foods/search';
+const USDA_DEFAULT_TYPES = ['Foundation', 'SR Legacy'];
 
 // Enable gzip compression
 app.use(compression({
@@ -69,6 +71,64 @@ app.use((req, res, next) => {
   // Modern browsers use CSP instead, so we don't set X-XSS-Protection
   
   next();
+});
+
+// USDA FoodData Central proxy (keeps API key server-side)
+app.get('/api/usda/foods/search', async (req, res) => {
+  const apiKey = process.env.USDA_FDC_API_KEY;
+  if (!apiKey) {
+    return res.status(503).json({ error: 'USDA API key not configured on server.' });
+  }
+
+  const query = String(req.query.query || '').trim();
+  if (!query) {
+    return res.status(400).json({ error: 'Missing required query parameter.' });
+  }
+
+  const pageSize = Math.min(Number(req.query.pageSize) || 10, 25);
+  const pageNumber = Math.max(Number(req.query.pageNumber) || 1, 1);
+
+  const params = new URLSearchParams({
+    query,
+    pageSize: String(pageSize),
+    pageNumber: String(pageNumber),
+    api_key: apiKey,
+  });
+
+  const dataTypeParam = req.query.dataType;
+  if (dataTypeParam) {
+    if (Array.isArray(dataTypeParam)) {
+      dataTypeParam.forEach((value) => params.append('dataType', String(value)));
+    } else {
+      params.append('dataType', String(dataTypeParam));
+    }
+  } else {
+    USDA_DEFAULT_TYPES.forEach((value) => params.append('dataType', value));
+  }
+
+  try {
+    const response = await fetch(`${USDA_BASE_URL}?${params.toString()}`);
+    const contentType = response.headers.get('content-type') || '';
+    res.setHeader('Cache-Control', 'no-store');
+
+    if (!response.ok) {
+      const details = contentType.includes('application/json')
+        ? await response.json()
+        : await response.text();
+      return res.status(response.status).json({ error: 'USDA request failed.', details });
+    }
+
+    if (contentType.includes('application/json')) {
+      const data = await response.json();
+      return res.status(200).json(data);
+    }
+
+    const text = await response.text();
+    return res.status(200).send(text);
+  } catch (error) {
+    console.error('USDA proxy error:', error);
+    return res.status(502).json({ error: 'Failed to reach USDA FoodData Central.' });
+  }
 });
 
 // Serve static files with caching

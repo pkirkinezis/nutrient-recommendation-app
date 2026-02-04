@@ -84,8 +84,8 @@ NutriCompass is a comprehensive, evidence-based nutrition and supplement recomme
 - CIQUAL + EuroFIR food composition sources
 - Research-based reference doses for non‑NRV compounds (e.g., melatonin, creatine, CoQ10)
 
-### 🍽️ Food Lookup (Open Food Facts)
-- Search real-world packaged foods with offline fallback caching
+### 🍽️ Food Lookup (USDA FoodData Central + Open Food Facts)
+- Search USDA FoodData Central and Open Food Facts with offline fallback caching
 - Quick macro snapshots (calories, protein, carbs, fat)
 
 ### 🧪 Stack Builder
@@ -782,6 +782,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_USDA_FDC_API_KEY: ${{ secrets.VITE_USDA_FDC_API_KEY }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -802,6 +804,8 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 ```
+
+Add a repository secret named `VITE_USDA_FDC_API_KEY` (Settings → Secrets and variables → Actions). Note: any `VITE_` variable is bundled into client-side code and is publicly visible.
 
 #### Enable GitHub Pages
 
@@ -870,7 +874,7 @@ aws s3 sync dist/ s3://nutricompass-app --delete
 
 ## 🔧 Environment Variables
 
-NutriCompass runs fully offline by default. Cloud sync is optional and requires Firebase env vars.
+NutriCompass runs fully offline by default. Cloud sync is optional and requires Firebase env vars. USDA FoodData Central search is optional. For GitHub Pages (static hosting), you can set VITE_USDA_FDC_API_KEY at build time (this makes the key public). To keep the key private, use a server proxy with USDA_FDC_API_KEY and set VITE_USDA_FDC_PROXY_URL.
 
 ### Create `.env` file
 
@@ -882,9 +886,22 @@ VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+VITE_USDA_FDC_API_KEY=your_usda_api_key
+VITE_USDA_FDC_PROXY_URL=
 ```
 
 You can copy from `.env.example` and fill in your project values.
+
+### Server Environment (USDA Proxy)
+
+Set this on the server that runs `server.js` (never in client-side `VITE_` vars). GitHub Pages cannot run `server.js`, so only use this if you deploy a separate backend/proxy.
+
+```env
+USDA_FDC_API_KEY=your_usda_api_key
+```
+
+For local development, you can run `server.js` with that variable set and add
+`VITE_USDA_FDC_PROXY_URL=http://localhost:3000` to your `.env` so the Vite app can reach the proxy.
 
 ### Access in Code
 

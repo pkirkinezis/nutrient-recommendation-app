@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { FoodSearchItem, FoodSupplementMatch, Supplement } from "../types";
-import { searchOpenFoodFacts } from "../utils/openFoodFacts";
+import { searchFoodLookup } from "../utils/foodSearch";
 import { buildFoodSupplementMatches } from "../utils/foodLookupConnections";
 
 const formatNumber = (value?: number): string => {
@@ -35,7 +35,7 @@ export const FoodLookup = ({ supplements, onSelectSupplement }: FoodLookupProps)
   const handleSearch = async (): Promise<void> => {
     if (!query.trim()) return;
     setStatus("loading");
-    const response = await searchOpenFoodFacts(query);
+    const response = await searchFoodLookup(query);
     setResults(response.items);
     setSource(response.source);
     setStatus("done");
@@ -46,7 +46,7 @@ export const FoodLookup = ({ supplements, onSelectSupplement }: FoodLookupProps)
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h3 className="text-lg font-bold text-gray-900">Food Lookup</h3>
-          <p className="text-sm text-gray-500">Search Open Food Facts with offline fallback data.</p>
+          <p className="text-sm text-gray-500">Search USDA FoodData Central and Open Food Facts with offline fallback.</p>
         </div>
         {source && (
           <span className="text-xs text-gray-400 uppercase tracking-wide">Source: {source}</span>
