@@ -195,11 +195,12 @@ export function searchSupplementsWithScores(
   const queryGoalIds = normalizeGoals([...queryTokens, normalizedQuery].filter(Boolean));
   const querySystemIds = normalizeSystems([...queryTokens, normalizedQuery].filter(Boolean));
   const normalizedGoal = normalizeGoals(options.goal ? [options.goal] : [])[0];
+  const rawGoalTokens = options.goal ? tokenize(options.goal) : [];
   const hasQuery = normalizedQuery.length > 0;
   const hasGoal = Boolean(normalizedGoal);
   const safetyIntent = isSafetyIntentQuery(query);
 
-  const fertilitySignal = [...queryTokens, normalizedGoal || ''].some((token) => FERTILITY_TOKENS.has(token));
+  const fertilitySignal = [...queryTokens, ...rawGoalTokens].some((token) => FERTILITY_TOKENS.has(token));
 
   const results: ScoredSupplementMatch[] = [];
 
@@ -326,7 +327,7 @@ export function searchSupplementsWithScores(
       }
     }
 
-    if (hasGoal && !matchedGoal && !hasQuery) {
+    if (hasGoal && !matchedGoal) {
       continue;
     }
 
