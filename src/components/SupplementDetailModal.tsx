@@ -34,17 +34,17 @@ const evidenceInfo: Record<Supplement['evidence'], { label: string; color: strin
   strong: {
     label: 'Strong Evidence',
     color: 'bg-emerald-100 text-emerald-700',
-    description: 'Multiple human clinical trials support this',
+    description: 'Multiple human studies support this indication, but response still varies by dose and person.',
   },
   moderate: {
     label: 'Moderate Evidence',
     color: 'bg-yellow-100 text-yellow-700',
-    description: 'Some clinical research supports this',
+    description: 'Human studies exist, but outcomes are mixed or dependent on extract, dose, and population.',
   },
   limited: {
     label: 'Traditional/Limited',
     color: 'bg-gray-100 text-gray-600',
-    description: 'Primarily traditional use or early research',
+    description: 'Traditional context or preliminary evidence only; clinical benefit is not established.',
   },
 };
 
@@ -265,7 +265,7 @@ export function SupplementDetailModal({
             )}
             {supplement.traditionalUse && (
               <div className="rounded-2xl bg-orange-50 p-4 text-sm text-orange-800">
-                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-orange-600">Traditional use</p>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-orange-600">Historical context (not proof)</p>
                 {supplement.traditionalUse}
               </div>
             )}

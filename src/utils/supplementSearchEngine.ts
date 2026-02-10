@@ -248,7 +248,7 @@ export function searchSupplementsWithScores(
     const normalizedSystems = normalizeSystems(supplement.systems);
     const normalizedKnowledgeGoals = normalizeGoals(knowledge?.typicalUseCases || []);
     const benefitTerms = knowledge ? getKnowledgeBenefitSearchTerms(knowledge).map(normalizeSearchText) : [];
-    const safetyTerms = safetyIntent && knowledge
+    const safetyTerms = knowledge
       ? getKnowledgeSafetySearchTerms(knowledge).map(normalizeSearchText)
       : [];
 
@@ -268,9 +268,11 @@ export function searchSupplementsWithScores(
         textScore += 8;
       }
 
-      if (safetyIntent && containsToken(safetyTerms, token)) {
-        textScore += 8;
-        addReason(reasons, seenReasons, `safety-${token}`, `Safety: ${token}`);
+      if (containsToken(safetyTerms, token)) {
+        textScore += safetyIntent ? 8 : 4;
+        if (safetyIntent) {
+          addReason(reasons, seenReasons, `safety-${token}`, `Safety: ${token}`);
+        }
       }
     }
 

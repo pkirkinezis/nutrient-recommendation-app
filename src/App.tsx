@@ -74,17 +74,17 @@ const getEvidenceInfo = (evidence: Supplement['evidence']): { color: string; lab
     'strong': { 
       color: 'bg-emerald-100 text-emerald-700', 
       label: 'Strong Evidence',
-      description: 'Multiple human clinical trials support this'
+      description: 'Multiple human trials support this indication'
     },
     'moderate': { 
       color: 'bg-yellow-100 text-yellow-700', 
       label: 'Moderate Evidence',
-      description: 'Some clinical research supports this'
+      description: 'Human evidence exists, but findings are mixed or limited'
     },
     'limited': { 
       color: 'bg-gray-100 text-gray-600', 
       label: 'Traditional/Limited',
-      description: 'Primarily traditional use or early research'
+      description: 'Traditional context or early evidence only; benefit remains uncertain'
     },
   };
   return info[evidence];
@@ -97,6 +97,26 @@ const getPriorityColor = (priority: Recommendation['priority']): string => {
     'optional': 'border-gray-200 bg-white',
   };
   return colors[priority];
+};
+
+const getCautionInfo = (cautionLevel?: Recommendation['cautionLevel']): { label: string; className: string } | null => {
+  if (!cautionLevel) return null;
+  const info: Record<NonNullable<Recommendation['cautionLevel']>, { label: string; className: string }> = {
+    high: { label: 'High caution', className: 'bg-red-100 text-red-700' },
+    moderate: { label: 'Moderate caution', className: 'bg-amber-100 text-amber-700' },
+    low: { label: 'Low caution', className: 'bg-yellow-100 text-yellow-700' }
+  };
+  return info[cautionLevel];
+};
+
+const getMatchQualityLabel = (
+  matchType: 'keyword' | 'direct' | 'semantic' | 'none',
+  confidence: number
+): 'High' | 'Moderate' | 'Low' => {
+  if (matchType === 'direct') return 'High';
+  if (matchType === 'keyword') return confidence >= 0.75 ? 'High' : 'Moderate';
+  if (matchType === 'semantic') return 'Moderate';
+  return 'Low';
 };
 
 // Example prompts for inspiration
@@ -534,8 +554,9 @@ export function App() {
 
   useEffect(() => {
     if (!syncEnabled || !firebaseConfigured || !user || !db || !cloudReady) return;
+    const activeDb = db;
     const timeout = window.setTimeout(() => {
-      void uploadLocalSnapshot(db, user.uid, {
+      void uploadLocalSnapshot(activeDb, user.uid, {
         profile: userProfile,
         tracking: trackingData,
         selectedSupplementIds: selectedSupplements.map(s => s.id),
@@ -555,10 +576,32 @@ export function App() {
   ]);
 
   const goalAnalysis = useGoalAnalysis(query, supplements, userProfile, trackingData);
+  const reproductiveSafetyComplete =
+    (userProfile.pregnancyStatus ?? 'unknown') !== 'unknown' &&
+    (userProfile.breastfeedingStatus ?? 'unknown') !== 'unknown' &&
+    (userProfile.tryingToConceiveStatus ?? 'unknown') !== 'unknown';
+  const medicationStatus = userProfile.medicationStatus ?? ((userProfile.medications?.length || 0) > 0 ? 'taking' : 'unknown');
+  const medicationListRequired = medicationStatus === 'taking';
+  const medicationListProvided = !medicationListRequired || (userProfile.medications?.length || 0) > 0;
+  const medicationSafetyIncomplete = medicationStatus === 'unknown' || !medicationListProvided;
+  const educationOnlyMode = medicationSafetyIncomplete;
+  const safetyIntakeMessage = !reproductiveSafetyComplete
+    ? 'Complete pregnancy, breastfeeding, and trying-to-conceive safety intake to unlock personalized recommendations.'
+    : null;
+  const medicationSafetyMessage = medicationStatus === 'unknown'
+    ? 'Medication status is unknown. Results are educational only until medication screening is completed.'
+    : medicationListRequired && !medicationListProvided
+      ? 'You marked that you take medications but the list is empty. Results are educational only until medications are listed.'
+      : null;
+  const matchQuality = getMatchQualityLabel(matchType, matchConfidence);
 
   // Analyze the user's goal
   const handleAnalyze = () => {
     if (!query.trim()) return;
+    if (!reproductiveSafetyComplete) {
+      setShowProfile(true);
+      return;
+    }
     const result = goalAnalysis;
     // Convert to Recommendation type
     const recs: Recommendation[] = result.recommendations.map(r => ({
@@ -584,6 +627,7 @@ export function App() {
 
   // Toggle supplement selection for stacking
   const toggleSupplementSelection = (supplement: Supplement) => {
+    if (educationOnlyMode) return;
     setSelectedSupplements(prev => {
       if (prev.find(s => s.id === supplement.id)) {
         return prev.filter(s => s.id !== supplement.id);
@@ -593,6 +637,7 @@ export function App() {
   };
 
   const handleAddStack = (stack: CuratedStack) => {
+    if (educationOnlyMode) return;
     const stackSupplements = stack.supplementIds
       .map(id => supplements.find(supplement => supplement.id === id))
       .filter((supplement): supplement is Supplement => Boolean(supplement));
@@ -600,6 +645,7 @@ export function App() {
   };
 
   const handleAddPremadeStack = (stack: SupplementStack) => {
+    if (educationOnlyMode) return;
     const stackSupplements = stack.ingredients
       .map(ingredient => supplements.find(supplement => supplement.id === ingredient.supplementId))
       .filter((supplement): supplement is Supplement => Boolean(supplement));
@@ -608,8 +654,14 @@ export function App() {
 
   // Get interaction warnings
   const interactionWarnings = useMemo(() => {
-    return checkInteractions(selectedSupplements);
-  }, [selectedSupplements]);
+    return checkInteractions(selectedSupplements, userProfile);
+  }, [selectedSupplements, userProfile]);
+
+  useEffect(() => {
+    if (!educationOnlyMode) return;
+    if (selectedSupplements.length === 0) return;
+    setSelectedSupplements([]);
+  }, [educationOnlyMode, selectedSupplements.length]);
 
   const directSupplements = useMemo(() => {
     return directSupplementIds
@@ -1001,8 +1053,11 @@ export function App() {
         {showProfile && (
           <div className="mb-6 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <span>👤</span> Optional Profile (improves recommendations)
+              <span>👤</span> Safety Intake & Profile
             </h3>
+            <p className="mb-4 text-xs text-gray-600">
+              Safety intake is required before recommendations: pregnancy, breastfeeding, and trying-to-conceive status must be set.
+            </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Age Range</label>
@@ -1132,6 +1187,51 @@ export function App() {
                 </select>
               </div>
               <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Pregnancy Status</label>
+                <select
+                  value={userProfile.pregnancyStatus || 'unknown'}
+                  onChange={(e) => setUserProfile(p => ({ ...p, pregnancyStatus: e.target.value as UserProfile['pregnancyStatus'] }))}
+                  className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                    (userProfile.pregnancyStatus ?? 'unknown') === 'unknown' ? 'border-rose-300' : 'border-gray-200'
+                  }`}
+                >
+                  <option value="unknown">Select...</option>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                  <option value="not-applicable">Not applicable</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Breastfeeding Status</label>
+                <select
+                  value={userProfile.breastfeedingStatus || 'unknown'}
+                  onChange={(e) => setUserProfile(p => ({ ...p, breastfeedingStatus: e.target.value as UserProfile['breastfeedingStatus'] }))}
+                  className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                    (userProfile.breastfeedingStatus ?? 'unknown') === 'unknown' ? 'border-rose-300' : 'border-gray-200'
+                  }`}
+                >
+                  <option value="unknown">Select...</option>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                  <option value="not-applicable">Not applicable</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Trying to Conceive</label>
+                <select
+                  value={userProfile.tryingToConceiveStatus || 'unknown'}
+                  onChange={(e) => setUserProfile(p => ({ ...p, tryingToConceiveStatus: e.target.value as UserProfile['tryingToConceiveStatus'] }))}
+                  className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                    (userProfile.tryingToConceiveStatus ?? 'unknown') === 'unknown' ? 'border-rose-300' : 'border-gray-200'
+                  }`}
+                >
+                  <option value="unknown">Select...</option>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                  <option value="not-applicable">Not applicable</option>
+                </select>
+              </div>
+              <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Caffeine Intake</label>
                 <select
                   value={userProfile.caffeineIntake || ''}
@@ -1195,13 +1295,39 @@ export function App() {
                 />
               </div>
               <div className="col-span-2 sm:col-span-3">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Medication Status</label>
+                <select
+                  value={medicationStatus}
+                  onChange={(e) => {
+                    const nextStatus = e.target.value as UserProfile['medicationStatus'];
+                    setUserProfile((previous) => ({
+                      ...previous,
+                      medicationStatus: nextStatus,
+                      medications: nextStatus === 'taking' ? previous.medications : []
+                    }));
+                  }}
+                  className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                    medicationStatus === 'unknown' ? 'border-amber-300' : 'border-gray-200'
+                  }`}
+                >
+                  <option value="unknown">Select...</option>
+                  <option value="none">No current medications</option>
+                  <option value="taking">I currently take medications</option>
+                </select>
+              </div>
+              <div className="col-span-2 sm:col-span-3">
                 <label className="block text-xs font-medium text-gray-600 mb-1">Medications (comma separated)</label>
                 <input
                   type="text"
                   value={(userProfile.medications || []).join(', ')}
                   onChange={(e) => setUserProfile(p => ({ ...p, medications: parseListInput(e.target.value) }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  placeholder="e.g., sertraline, metformin"
+                  disabled={medicationStatus !== 'taking'}
+                  className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100 disabled:text-gray-500 ${
+                    medicationStatus === 'taking' && (userProfile.medications || []).length === 0
+                      ? 'border-amber-300'
+                      : 'border-gray-200'
+                  }`}
+                  placeholder={medicationStatus === 'taking' ? 'e.g., sertraline, metformin' : 'Set medication status to "I currently take medications"'}
                 />
               </div>
             </div>
@@ -1225,7 +1351,32 @@ export function App() {
                 <p className="text-xs text-emerald-600 mt-2">Add height and activity level for full metabolic estimates.</p>
               </div>
             )}
-            <p className="text-xs text-gray-500 mt-3">This information is saved locally on your device and helps personalize recommendations.</p>
+            <p className="text-xs text-gray-500 mt-3">This information is saved locally on your device and powers safety screening plus personalization.</p>
+          </div>
+        )}
+
+        {safetyIntakeMessage && (
+          <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-rose-800">Safety intake required</p>
+                <p className="text-xs text-rose-700 mt-1">{safetyIntakeMessage}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProfile(true)}
+                className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700"
+              >
+                Complete Now
+              </button>
+            </div>
+          </div>
+        )}
+
+        {medicationSafetyMessage && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm font-semibold text-amber-800">Safety incomplete</p>
+            <p className="text-xs text-amber-700 mt-1">{medicationSafetyMessage}</p>
           </div>
         )}
 
@@ -1261,6 +1412,11 @@ export function App() {
 
             {findMode === 'browse' && (
               <div className="space-y-6">
+                {educationOnlyMode && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                    Catalog browsing is available, but stack selection is disabled until medication safety intake is complete.
+                  </div>
+                )}
                 <AdvancedBrowse
                   userProfile={userProfile}
                   onSelectSupplement={toggleSupplementSelection}
@@ -1311,7 +1467,7 @@ export function App() {
                     )}
                     <button
                       onClick={handleAnalyze}
-                      disabled={!query.trim()}
+                      disabled={!query.trim() || !reproductiveSafetyComplete}
                       className="mt-3 w-full px-5 py-2.5 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-emerald-200 sm:absolute sm:bottom-4 sm:right-4 sm:mt-0 sm:w-auto"
                     >
                       Get Recommendations
@@ -1431,7 +1587,7 @@ export function App() {
                     <button
                       type="button"
                       onClick={handleAnalyze}
-                      disabled={!query.trim()}
+                      disabled={!query.trim() || !reproductiveSafetyComplete}
                       className="px-5 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                       Update Recommendations
@@ -1464,11 +1620,9 @@ export function App() {
                           <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full font-medium capitalize">
                             Matched via: {matchType.replace('-', ' ')}
                           </span>
-                          {matchConfidence > 0 && (
-                            <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full font-medium">
-                              {Math.round(matchConfidence * 100)}% confidence
-                            </span>
-                          )}
+                          <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full font-medium">
+                            Match quality: {matchQuality}
+                          </span>
                         </div>
                       )}
                       {directSupplements.length > 0 && (
@@ -1539,6 +1693,14 @@ export function App() {
                     <h2 className="text-xl font-bold text-gray-900">Recommended Supplements</h2>
                     <span className="text-sm text-gray-500">{recommendations.length} suggestions</span>
                   </div>
+                  {educationOnlyMode && (
+                    <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                      Educational mode is active. Complete medication safety intake to enable stack building and interaction-aware stack actions.
+                    </div>
+                  )}
+                  <p className="mb-3 text-xs text-gray-500">
+                    Educational guidance only. This app does not diagnose or replace care from a licensed clinician.
+                  </p>
                   
                   {recommendations.length === 0 ? (
                     <div className="bg-white rounded-2xl p-8 text-center border border-gray-100">
@@ -1554,7 +1716,7 @@ export function App() {
                             supplement={rec.supplement}
                             isSelected={selectedSupplements.some(s => s.id === rec.supplement.id)}
                             onSelect={() => toggleSupplementSelection(rec.supplement)}
-                            showSelection={true}
+                            showSelection={!educationOnlyMode}
                             recommendation={rec}
                             onViewDetails={() => setActiveSupplement(rec.supplement)}
                           />
@@ -1617,6 +1779,11 @@ export function App() {
                 <span className="text-sm text-emerald-600 font-medium">{selectedSupplements.length} selected</span>
               )}
             </div>
+            {educationOnlyMode && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                Stack builder is disabled until medication safety intake is complete.
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {curatedStacks.map(stack => (
@@ -1632,7 +1799,8 @@ export function App() {
                     <button
                       type="button"
                       onClick={() => handleAddStack(stack)}
-                      className="rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      disabled={educationOnlyMode}
+                      className="rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Add Stack
                     </button>
@@ -1672,7 +1840,8 @@ export function App() {
                       <button
                         type="button"
                         onClick={() => handleAddPremadeStack(stack)}
-                        className="rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        disabled={educationOnlyMode}
+                        className="rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Add Stack to Builder
                       </button>
@@ -2267,6 +2436,7 @@ function SupplementCard({
   onViewDetails: () => void;
 }) {
   const evidenceInfo = getEvidenceInfo(supplement.evidence);
+  const cautionInfo = recommendation ? getCautionInfo(recommendation.cautionLevel) : null;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 p-4">
@@ -2306,6 +2476,11 @@ function SupplementCard({
                 {recommendation.priority}
               </span>
             )}
+            {cautionInfo && (
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cautionInfo.className}`}>
+                {cautionInfo.label}
+              </span>
+            )}
           </div>
           <p className="text-sm text-gray-600 line-clamp-2">{supplement.description}</p>
           {recommendation && (
@@ -2313,7 +2488,7 @@ function SupplementCard({
               <p className="text-xs text-emerald-600 font-medium">{recommendation.reason}</p>
               {recommendation.safetyFlags && recommendation.safetyFlags.length > 0 && (
                 <ul className="text-xs text-amber-700 space-y-0.5">
-                  {recommendation.safetyFlags.slice(0, 2).map((flag, index) => (
+                  {recommendation.safetyFlags.map((flag, index) => (
                     <li key={index}>⚠️ {flag}</li>
                   ))}
                 </ul>

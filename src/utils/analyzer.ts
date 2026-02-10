@@ -859,63 +859,290 @@ interface SafetyAssessment {
 }
 
 const MEDICATION_CLASS_MATCHES: Record<string, string[]> = {
-  'blood thinner': ['warfarin', 'coumadin', 'heparin', 'anticoagulant', 'apixaban', 'rivaroxaban'],
-  'ssri': ['sertraline', 'fluoxetine', 'citalopram', 'escitalopram', 'paroxetine'],
-  'sedative': ['benzodiazepine', 'diazepam', 'lorazepam', 'clonazepam', 'zolpidem'],
-  'thyroid': ['levothyroxine', 'liothyronine'],
-  'diabetes': ['metformin', 'insulin', 'glipizide']
+  'blood thinner': ['warfarin', 'coumadin', 'heparin', 'apixaban', 'rivaroxaban', 'dabigatran', 'edoxaban'],
+  anticoagulant: ['anticoagulant', 'blood thinner'],
+  antiplatelet: ['clopidogrel', 'prasugrel', 'ticagrelor', 'aspirin', 'antiplatelet'],
+  ssri: ['sertraline', 'fluoxetine', 'citalopram', 'escitalopram', 'paroxetine', 'fluvoxamine'],
+  snri: ['venlafaxine', 'desvenlafaxine', 'duloxetine', 'levomilnacipran'],
+  maoi: ['maoi', 'phenelzine', 'tranylcypromine', 'isocarboxazid', 'selegiline'],
+  triptan: ['sumatriptan', 'rizatriptan', 'zolmitriptan', 'eletriptan', 'triptan'],
+  lithium: ['lithium'],
+  linezolid: ['linezolid'],
+  antidepressant: ['antidepressant', 'ssri', 'snri', 'maoi', 'bupropion'],
+  sedative: ['benzodiazepine', 'diazepam', 'lorazepam', 'clonazepam', 'zolpidem', 'zopiclone'],
+  'thyroid medication': ['levothyroxine', 'liothyronine', 'thyroid medication', 'thyroxine', 'synthroid'],
+  'diabetes medication': ['metformin', 'insulin', 'glipizide', 'glyburide', 'semaglutide'],
+  metformin: ['metformin'],
+  "parkinson's medication": ['levodopa', 'carbidopa', 'pramipexole', 'ropinirole', 'parkinson']
 };
+
+const CONDITION_CLASS_MATCHES: Record<string, string[]> = {
+  kidney: ['kidney', 'renal', 'ckd', 'dialysis'],
+  liver: ['liver', 'hepatic', 'cirrhosis', 'hepatitis'],
+  thyroid: ['thyroid', 'hypothyroid', 'hyperthyroid', 'hashimoto', 'graves'],
+  bipolar: ['bipolar', 'mania', 'manic'],
+  surgery: ['surgery', 'operation', 'pre-op', 'pre op', 'post-op', 'post op'],
+  'bleeding-disorder': ['bleeding disorder', 'hemophilia'],
+  autoimmune: ['autoimmune', 'lupus', 'rheumatoid', 'multiple sclerosis', 'ms']
+};
+
+const HIGH_RISK_MEDICATION_CLASSES = new Set([
+  'blood thinner',
+  'anticoagulant',
+  'antiplatelet',
+  'maoi',
+  'lithium',
+  'linezolid',
+  "parkinson's medication"
+]);
+
+const SEROTONERGIC_MEDICATION_CLASSES = new Set([
+  'ssri',
+  'snri',
+  'maoi',
+  'triptan',
+  'lithium',
+  'linezolid',
+  'antidepressant'
+]);
+
+const REPRODUCTIVE_GOAL_IDS = new Set([
+  'hormones',
+  'fertility',
+  'sexual-health',
+  'sexual-function',
+  'libido',
+  'reproductive'
+]);
+
+const BOTANICAL_TYPES = new Set<Supplement['type']>(['herb', 'ayurvedic', 'mushroom']);
+const PRENATAL_ESSENTIAL_SUPPLEMENT_IDS = new Set(['folate', 'iodine', 'iron', 'choline', 'alpha-gpc', 'omega-3', 'vitamin-d3', 'vitamin-b12']);
+const SEROTONERGIC_SUPPLEMENT_IDS = new Set(['5-htp', 'same', 'st-johns-wort', 'tryptophan']);
+const THYROID_SPACING_SUPPLEMENT_IDS = new Set(['iron', 'calcium', 'magnesium']);
+const KIDNEY_HIGH_RISK_SUPPLEMENT_IDS = new Set(['potassium', 'magnesium', 'calcium', 'creatine', 'iron']);
+const LIVER_HIGH_RISK_SUPPLEMENT_IDS = new Set(['kava', 'green-tea-matcha', 'green-tea-sencha', 'black-tea-assam']);
+const BIPOLAR_HIGH_RISK_SUPPLEMENT_IDS = new Set(['st-johns-wort', '5-htp', 'same', 'rhodiola', 'caffeine', 'mucuna']);
+
+const BLEEDING_RISK_PATTERN = /bleed|blood thinner|anticoagul|antiplatelet/;
+const SEROTONERGIC_PATTERN = /serotonin|ssri|snri|maoi|triptan|lithium|linezolid/;
+const THYROID_PATTERN = /thyroid|levothyroxine|liothyronine|thyroxine/;
+
+const CAUTION_LEVEL_ORDER: Record<NonNullable<SafetyAssessment['cautionLevel']>, number> = {
+  low: 1,
+  moderate: 2,
+  high: 3
+};
+
+function normalizeSafetyText(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function normalizedIncludes(a: string, b: string): boolean {
+  const normalizedA = normalizeSafetyText(a);
+  const normalizedB = normalizeSafetyText(b);
+  if (!normalizedA || !normalizedB) return false;
+  return normalizedA.includes(normalizedB) || normalizedB.includes(normalizedA);
+}
+
+function elevateCautionLevel(
+  current: SafetyAssessment['cautionLevel'],
+  candidate: NonNullable<SafetyAssessment['cautionLevel']>
+): NonNullable<SafetyAssessment['cautionLevel']> {
+  if (!current) return candidate;
+  return CAUTION_LEVEL_ORDER[candidate] > CAUTION_LEVEL_ORDER[current] ? candidate : current;
+}
+
+function collectMatchedClasses(values: string[], classMap: Record<string, string[]>): Set<string> {
+  const classes = new Set<string>();
+  for (const value of values) {
+    const normalizedValue = normalizeSafetyText(value);
+    for (const [className, patterns] of Object.entries(classMap)) {
+      if (patterns.some(pattern => normalizedValue.includes(pattern))) {
+        classes.add(className);
+      }
+    }
+  }
+  return classes;
+}
+
+function conditionMatchesText(conditions: string[], conditionClasses: Set<string>, text: string): boolean {
+  const normalizedText = normalizeSafetyText(text);
+  if (!normalizedText) return false;
+  if (conditions.some(condition => normalizedIncludes(normalizedText, condition))) {
+    return true;
+  }
+  for (const className of conditionClasses) {
+    if ((CONDITION_CLASS_MATCHES[className] || []).some(pattern => normalizedText.includes(pattern))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function getMatchedMedicationClasses(text: string, medicationClasses: Set<string>): string[] {
+  const normalizedText = normalizeSafetyText(text);
+  if (!normalizedText) return [];
+  return Array.from(medicationClasses).filter(className =>
+    normalizedText.includes(className) ||
+    (MEDICATION_CLASS_MATCHES[className] || []).some(pattern => normalizedText.includes(pattern))
+  );
+}
 
 function buildSafetyAssessment(supplement: Supplement, profile?: UserProfile): SafetyAssessment {
   if (!profile) {
     return { flags: [], scorePenalty: 0, exclude: false };
   }
 
+  const knowledge = getSupplementKnowledgeById(supplement.id);
   const flags: string[] = [];
   let cautionLevel: SafetyAssessment['cautionLevel'];
   let scorePenalty = 0;
   let exclude = false;
 
-  const conditions = (profile.healthConditions || []).map(condition => condition.toLowerCase());
-  const meds = (profile.medications || []).map(med => med.toLowerCase());
+  const conditions = (profile.healthConditions || []).map(condition => normalizeSafetyText(condition)).filter(Boolean);
+  const meds = (profile.medications || []).map(med => normalizeSafetyText(med)).filter(Boolean);
+  const conditionClasses = collectMatchedClasses(conditions, CONDITION_CLASS_MATCHES);
+  const medicationClasses = collectMatchedClasses(meds, MEDICATION_CLASS_MATCHES);
+  const combinedSafetyText = normalizeSafetyText([
+    ...(supplement.avoidIf || []),
+    ...(supplement.cautions || []),
+    ...(supplement.drugInteractions || [])
+  ].join(' '));
+  const knowledgeFlags = new Set(knowledge?.safetyFlags || []);
+  const normalizedGoals = normalizeGoals(supplement.goals || []);
+  const hasReproductiveUnknown =
+    (profile.pregnancyStatus ?? 'unknown') === 'unknown' ||
+    (profile.breastfeedingStatus ?? 'unknown') === 'unknown' ||
+    (profile.tryingToConceiveStatus ?? 'unknown') === 'unknown';
+  const isBotanical = BOTANICAL_TYPES.has(supplement.type);
+  const addressesReproductiveGoals = normalizedGoals.some(goal => REPRODUCTIVE_GOAL_IDS.has(goal));
+  const hasBleedingRisk = knowledgeFlags.has('bleeding-risk') || BLEEDING_RISK_PATTERN.test(combinedSafetyText);
+  const hasSerotonergicSignal = SEROTONERGIC_SUPPLEMENT_IDS.has(supplement.id) || SEROTONERGIC_PATTERN.test(combinedSafetyText);
+  const hasThyroidSignal = knowledgeFlags.has('thyroid') || THYROID_PATTERN.test(combinedSafetyText);
+
+  if (hasReproductiveUnknown && (isBotanical || addressesReproductiveGoals)) {
+    flags.push('Safety intake incomplete: set pregnancy, breastfeeding, and trying-to-conceive status before using botanical/hormonal recommendations.');
+    cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+    scorePenalty += 1;
+    exclude = true;
+  }
+
+  if ((profile.pregnancyStatus ?? 'unknown') === 'yes') {
+    const isPrenatalEssential = PRENATAL_ESSENTIAL_SUPPLEMENT_IDS.has(supplement.id);
+    if (!isPrenatalEssential || isBotanical || supplement.type === 'performance') {
+      flags.push('Pregnancy: this supplement is not in the default prenatal-safe essentials list. Use clinician guidance.');
+      cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+      scorePenalty += 1;
+      exclude = true;
+    } else {
+      flags.push('Pregnancy: keep dosing clinician-guided and avoid combining overlapping products.');
+      cautionLevel = elevateCautionLevel(cautionLevel, 'moderate');
+      scorePenalty += 0.2;
+    }
+  }
+
+  if ((profile.breastfeedingStatus ?? 'unknown') === 'yes' && isBotanical && supplement.evidence !== 'strong') {
+    flags.push('Breastfeeding: limited-evidence botanicals are suppressed unless reviewed by a clinician.');
+    cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+    scorePenalty += 0.8;
+    exclude = true;
+  }
 
   for (const avoid of supplement.avoidIf || []) {
-    const avoidLower = avoid.toLowerCase();
-    if (conditions.some(condition => avoidLower.includes(condition) || condition.includes(avoidLower))) {
+    if (conditionMatchesText(conditions, conditionClasses, avoid)) {
       flags.push(`Avoid if ${avoid}`);
-      cautionLevel = 'high';
+      cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+      scorePenalty += 1;
       exclude = true;
     }
   }
 
   for (const interaction of supplement.drugInteractions || []) {
-    const interactionLower = interaction.toLowerCase();
-    if (meds.some(med => interactionLower.includes(med) || med.includes(interactionLower))) {
+    if (meds.some(med => normalizedIncludes(interaction, med))) {
       flags.push(`Drug interaction: ${interaction}`);
-      cautionLevel = cautionLevel || 'moderate';
-      scorePenalty += 0.3;
+      cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+      scorePenalty += 0.6;
     }
 
-    const matchedClass = Object.keys(MEDICATION_CLASS_MATCHES).find(className =>
-      interactionLower.includes(className) && MEDICATION_CLASS_MATCHES[className].some(med => meds.some(userMed => userMed.includes(med)))
-    );
-    if (matchedClass) {
-      flags.push(`Drug interaction (${matchedClass}): ${interaction}`);
-      cautionLevel = cautionLevel || 'moderate';
-      scorePenalty += 0.3;
+    const matchedClasses = getMatchedMedicationClasses(interaction, medicationClasses);
+    if (matchedClasses.length > 0) {
+      for (const matchedClass of matchedClasses) {
+        flags.push(`Drug interaction (${matchedClass}): ${interaction}`);
+        cautionLevel = elevateCautionLevel(cautionLevel, HIGH_RISK_MEDICATION_CLASSES.has(matchedClass) ? 'high' : 'moderate');
+        scorePenalty += HIGH_RISK_MEDICATION_CLASSES.has(matchedClass) ? 0.7 : 0.35;
+      }
     }
   }
 
   for (const caution of supplement.cautions || []) {
-    const cautionLower = caution.toLowerCase();
-    if (conditions.some(condition => cautionLower.includes(condition))) {
+    if (conditionMatchesText(conditions, conditionClasses, caution)) {
       flags.push(`Caution: ${caution}`);
-      cautionLevel = cautionLevel || 'low';
-      scorePenalty += 0.1;
+      cautionLevel = elevateCautionLevel(cautionLevel, 'moderate');
+      scorePenalty += 0.25;
     }
   }
 
-  return { flags, cautionLevel, scorePenalty, exclude };
+  if (Array.from(medicationClasses).some(className => ['blood thinner', 'anticoagulant', 'antiplatelet'].includes(className)) && hasBleedingRisk) {
+    flags.push('High-risk interaction: bleeding risk with anticoagulant/antiplatelet medication.');
+    cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+    scorePenalty += 1;
+    exclude = true;
+  }
+
+  if (Array.from(medicationClasses).some(className => SEROTONERGIC_MEDICATION_CLASSES.has(className)) && hasSerotonergicSignal) {
+    flags.push('High-risk interaction: serotonergic medication overlap (risk of serotonin toxicity).');
+    cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+    scorePenalty += 1;
+    exclude = true;
+  }
+
+  if (medicationClasses.has('thyroid medication')) {
+    if (THYROID_SPACING_SUPPLEMENT_IDS.has(supplement.id)) {
+      flags.push('Thyroid medication: separate this supplement by at least 4 hours.');
+      cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+      scorePenalty += 0.45;
+    }
+    if (hasThyroidSignal) {
+      flags.push('Thyroid-active supplement: use clinician supervision with thyroid medication.');
+      cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+      scorePenalty += 0.65;
+    }
+  }
+
+  if (conditionClasses.has('kidney') && (KIDNEY_HIGH_RISK_SUPPLEMENT_IDS.has(supplement.id) || knowledgeFlags.has('kidney'))) {
+    flags.push('Kidney condition: this supplement requires clinician review before use.');
+    cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+    scorePenalty += 1;
+    exclude = true;
+  }
+
+  if (conditionClasses.has('liver') && (LIVER_HIGH_RISK_SUPPLEMENT_IDS.has(supplement.id) || knowledgeFlags.has('liver'))) {
+    flags.push('Liver condition: avoid hepatotoxic-risk supplements without medical sign-off.');
+    cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+    scorePenalty += 1;
+    exclude = true;
+  }
+
+  if (conditionClasses.has('bipolar') && (BIPOLAR_HIGH_RISK_SUPPLEMENT_IDS.has(supplement.id) || hasSerotonergicSignal || isStimulatingSupplement(supplement))) {
+    flags.push('Bipolar/mania history: avoid stimulating or serotonergic supplements unless clinician-guided.');
+    cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+    scorePenalty += 1;
+    exclude = true;
+  }
+
+  if (conditionClasses.has('surgery') && (hasBleedingRisk || isSedatingSupplement(supplement))) {
+    flags.push('Planned surgery: hold bleeding-risk or sedating supplements unless surgeon approves.');
+    cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+    scorePenalty += 0.8;
+    exclude = true;
+  }
+
+  return {
+    flags: Array.from(new Set(flags)),
+    cautionLevel,
+    scorePenalty: Math.min(1, scorePenalty),
+    exclude
+  };
 }
 
 function applySafetyScreening(
@@ -1021,6 +1248,10 @@ function selectDiverseRecommendations(
 // PERSONALIZATION
 // ============================================
 
+const VEGAN_PRIORITY_SUPPLEMENT_IDS = new Set(['vitamin-b12', 'omega-3', 'iron', 'zinc', 'iodine']);
+const VEGETARIAN_PRIORITY_SUPPLEMENT_IDS = new Set(['vitamin-b12', 'iron', 'zinc']);
+const FISH_DERIVED_PATTERN = /fish|krill|anchovy|sardine|salmon|cod liver/;
+
 /**
  * Apply user profile adjustments to supplement scoring
  */
@@ -1040,25 +1271,28 @@ function applyProfileAdjustments(
   
   return supplements.map(({ supplement, score }) => {
     let adjustedScore = score;
+    const normalizedName = normalizeSafetyText(supplement.name);
+    const normalizedDescription = normalizeSafetyText(supplement.description || '');
     
     // Diet-based adjustments
     if (profile.diet === 'vegan') {
-      if (['Vitamin B12', 'Omega-3', 'Iron', 'Zinc'].includes(supplement.name)) {
+      if (
+        VEGAN_PRIORITY_SUPPLEMENT_IDS.has(supplement.id) ||
+        /\bvitamin b12\b|\bomega 3\b|\biron\b|\bzinc\b|\biodine\b/.test(normalizedName)
+      ) {
         adjustedScore *= 1.5;
       }
-      // Exclude fish-based supplements
-      if (
-        supplement.name.includes('Fish') ||
-        supplement.name.includes('Krill') ||
-        supplement.description?.includes('fish-derived') ||
-        supplement.id === 'krill-oil'
-      ) {
+      // Exclude animal-derived omega/fish products for vegan profiles.
+      if (FISH_DERIVED_PATTERN.test(normalizedName) || FISH_DERIVED_PATTERN.test(normalizedDescription) || supplement.id === 'krill-oil') {
         adjustedScore = 0;
       }
     }
     
     if (profile.diet === 'vegetarian') {
-      if (['Vitamin B12', 'Iron'].includes(supplement.name)) {
+      if (
+        VEGETARIAN_PRIORITY_SUPPLEMENT_IDS.has(supplement.id) ||
+        /\bvitamin b12\b|\biron\b|\bzinc\b/.test(normalizedName)
+      ) {
         adjustedScore *= 1.3;
       }
     }
@@ -1175,32 +1409,72 @@ export interface InteractionWarning {
   recommendation: string;
 }
 
+interface InteractionEntityMatch {
+  matched: boolean;
+  viaSupplement: boolean;
+  viaMedication: boolean;
+}
+
+const INTERACTION_ENTITY_MEDICATION_PATTERNS: Record<string, string[]> = {
+  'thyroid medication': ['levothyroxine', 'liothyronine', 'thyroid', 'synthroid'],
+  antidepressants: ['antidepressant', 'ssri', 'snri', 'maoi', 'sertraline', 'fluoxetine', 'venlafaxine'],
+  'blood thinners': ['blood thinner', 'warfarin', 'coumadin', 'apixaban', 'rivaroxaban', 'dabigatran', 'heparin'],
+  warfarin: ['warfarin', 'coumadin'],
+  metformin: ['metformin'],
+  maois: ['maoi', 'phenelzine', 'tranylcypromine', 'isocarboxazid'],
+  'parkinson s medication': ['levodopa', 'carbidopa', 'pramipexole', 'ropinirole', 'parkinson']
+};
+
+function getMedicationPatternsForEntity(entity: string): string[] {
+  const normalizedEntity = normalizeSafetyText(entity);
+  const mappedPatterns = INTERACTION_ENTITY_MEDICATION_PATTERNS[normalizedEntity] || [];
+  const classPatterns = MEDICATION_CLASS_MATCHES[normalizedEntity] || [];
+  return Array.from(new Set([normalizedEntity, ...mappedPatterns, ...classPatterns].map(pattern => normalizeSafetyText(pattern)).filter(Boolean)));
+}
+
+function matchInteractionEntity(
+  entity: string,
+  selectedSupplements: Supplement[],
+  normalizedMedications: string[]
+): InteractionEntityMatch {
+  const normalizedEntity = normalizeSafetyText(entity);
+  const viaSupplement = selectedSupplements.some(supplement => {
+    const normalizedName = normalizeSafetyText(supplement.name);
+    const normalizedId = normalizeSafetyText(supplement.id);
+    return normalizedIncludes(normalizedName, normalizedEntity) || normalizedIncludes(normalizedId, normalizedEntity);
+  });
+  const medicationPatterns = getMedicationPatternsForEntity(entity);
+  const viaMedication = normalizedMedications.some(medication =>
+    medicationPatterns.some(pattern => medication.includes(pattern))
+  );
+  return {
+    matched: viaSupplement || viaMedication,
+    viaSupplement,
+    viaMedication
+  };
+}
+
 /**
  * Check for interactions between selected supplements
  */
-export function checkInteractions(selectedSupplements: Supplement[]): InteractionWarning[] {
+export function checkInteractions(selectedSupplements: Supplement[], profile?: UserProfile): InteractionWarning[] {
   const warnings: InteractionWarning[] = [];
   const names = selectedSupplements.map(s => s.name);
+  const normalizedMedications = (profile?.medications || []).map(medication => normalizeSafetyText(medication)).filter(Boolean);
+  const medicationClasses = collectMatchedClasses(normalizedMedications, MEDICATION_CLASS_MATCHES);
   
   // Check predefined high-risk interactions
   for (const interaction of HIGH_RISK_INTERACTIONS) {
-    const [supp1, supp2] = interaction.supplements;
-    
-    // Fuzzy match supplement names
-    const hasSupp1 = names.some(n => 
-      n.toLowerCase().includes(supp1.toLowerCase()) ||
-      supp1.toLowerCase().includes(n.toLowerCase())
-    );
-    const hasSupp2 = names.some(n => 
-      n.toLowerCase().includes(supp2.toLowerCase()) ||
-      supp2.toLowerCase().includes(n.toLowerCase())
-    );
-    
-    if (hasSupp1 && hasSupp2) {
+    const [entityA, entityB] = interaction.supplements;
+    const matchA = matchInteractionEntity(entityA, selectedSupplements, normalizedMedications);
+    const matchB = matchInteractionEntity(entityB, selectedSupplements, normalizedMedications);
+
+    if (matchA.matched && matchB.matched && (matchA.viaSupplement || matchB.viaSupplement)) {
+      const detectedFromMedication = matchA.viaMedication || matchB.viaMedication;
       warnings.push({
         supplements: interaction.supplements,
         severity: interaction.severity,
-        reason: interaction.reason,
+        reason: detectedFromMedication ? `${interaction.reason} (detected using your medication list)` : interaction.reason,
         recommendation: interaction.severity === 'high' 
           ? 'Avoid combining these supplements without medical supervision.'
           : 'Consider timing them apart or consult a healthcare provider.'
@@ -1212,6 +1486,23 @@ export function checkInteractions(selectedSupplements: Supplement[]): Interactio
   for (const supplement of selectedSupplements) {
     if (supplement.drugInteractions && supplement.drugInteractions.length > 0) {
       for (const interaction of supplement.drugInteractions) {
+        const directMedicationMatch = normalizedMedications.find(medication => normalizedIncludes(interaction, medication));
+        const matchedMedicationClasses = getMatchedMedicationClasses(interaction, medicationClasses);
+        if (directMedicationMatch || matchedMedicationClasses.length > 0) {
+          const highlightedMedication = directMedicationMatch || matchedMedicationClasses[0];
+          const severeMedicationRisk =
+            matchedMedicationClasses.some(className => HIGH_RISK_MEDICATION_CLASSES.has(className)) ||
+            matchedMedicationClasses.some(className => SEROTONERGIC_MEDICATION_CLASSES.has(className));
+          warnings.push({
+            supplements: [supplement.name, highlightedMedication || 'Medication'],
+            severity: severeMedicationRisk ? 'high' : 'moderate',
+            reason: `${supplement.name}: ${interaction}`,
+            recommendation: severeMedicationRisk
+              ? 'Do not combine without clinician approval.'
+              : 'Review this combination with a healthcare provider.'
+          });
+        }
+
         // Check if any other selected supplement might interact
         for (const otherSupplement of selectedSupplements) {
           if (otherSupplement.name === supplement.name) continue;
@@ -1291,13 +1582,26 @@ export function checkInteractions(selectedSupplements: Supplement[]): Interactio
     }
   }
   
+  const sedativeSupplements = selectedSupplements.filter(isSedatingSupplement);
+  if (sedativeSupplements.length > 2) {
+    warnings.push({
+      supplements: [sedativeSupplements[0].name, sedativeSupplements[1].name],
+      severity: 'high',
+      reason: `Stack contains ${sedativeSupplements.length} sedative-leaning supplements (${sedativeSupplements.map(item => item.name).join(', ')}).`,
+      recommendation: 'Simplify the stack and avoid multiple sedatives unless specifically guided by a clinician.'
+    });
+  }
+
   // Deduplicate warnings
-  const uniqueWarnings = warnings.filter((warning, index, self) => 
-    index === self.findIndex(w => 
-      (w.supplements[0] === warning.supplements[0] && w.supplements[1] === warning.supplements[1]) ||
-      (w.supplements[0] === warning.supplements[1] && w.supplements[1] === warning.supplements[0])
-    )
-  );
+  const uniqueWarningsMap = new Map<string, InteractionWarning>();
+  for (const warning of warnings) {
+    const pairKey = [normalizeSafetyText(warning.supplements[0]), normalizeSafetyText(warning.supplements[1])].sort().join('|');
+    const key = `${pairKey}|${normalizeSafetyText(warning.reason)}`;
+    if (!uniqueWarningsMap.has(key)) {
+      uniqueWarningsMap.set(key, warning);
+    }
+  }
+  const uniqueWarnings = Array.from(uniqueWarningsMap.values());
   
   // Sort by severity
   return uniqueWarnings.sort((a, b) => {
@@ -1545,12 +1849,23 @@ export function analyzeGoal(
     }
   }
   
-  const confidenceMap: Record<NonNullable<GoalAnalysis['matchType']>, number> = {
-    keyword: 0.9,
-    direct: 0.8,
-    semantic: 0.7,
-    none: 0.2
+  const matchTypeSignal: Record<NonNullable<GoalAnalysis['matchType']>, number> = {
+    direct: 0.28,
+    keyword: 0.24,
+    semantic: 0.18,
+    none: 0.05
   };
+  const goalSignal = Math.min(0.35, matchedGoals.length * 0.09);
+  const systemSignal = Math.min(0.2, matchedSystems.length * 0.06);
+  const recommendationSignal = Math.min(0.2, finalRecommendations.length * 0.03);
+  const highRiskPenalty = finalRecommendations.some(rec => rec.cautionLevel === 'high') ? 0.08 : 0;
+  const confidence = Math.max(
+    0.15,
+    Math.min(
+      0.95,
+      matchTypeSignal[matchType ?? 'none'] + goalSignal + systemSignal + recommendationSignal - highRiskPenalty
+    )
+  );
 
   const recommendedStacks = getRecommendedStacks(profile, matchedGoals.map(goal => goal.id));
   const tips = generateTips(matchedGoals, profile);
@@ -1566,7 +1881,7 @@ export function analyzeGoal(
     tips,
     recommendedStacks,
     matchType,
-    confidence: confidenceMap[matchType ?? 'none'],
+    confidence,
     directSupplements: directMatchIds,
     relatedSupplements: relatedMatchIds,
     inferredGoals,

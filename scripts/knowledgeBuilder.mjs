@@ -286,7 +286,10 @@ const buildSafetyFlags = (supplement, override = {}) => {
   if (/bleed|blood thinner|anticoagul|antiplatelet/.test(safetyText)) flags.add('bleeding-risk');
   if (/blood pressure|hypertension|hypotension/.test(safetyText)) flags.add('blood-pressure');
   if (/blood sugar|diabet|hypoglyc/.test(safetyText)) flags.add('blood-sugar');
-  if (/sedat|sleepy|drows|calm|bedtime/.test(safetyText)) flags.add('sedation');
+  const hasSedationSignal =
+    /sedat|sleepy|drows|bedtime|somnol/.test(safetyText) ||
+    (/\bcalm\b/.test(safetyText) && /sleep|drows|bedtime/.test(safetyText));
+  if (hasSedationSignal) flags.add('sedation');
   if (/stimul|caffeine|jitters|alert/.test(safetyText)) flags.add('stimulant');
   if (/thyroid/.test(safetyText)) flags.add('thyroid');
   if (/liver|hepatic/.test(safetyText)) flags.add('liver');

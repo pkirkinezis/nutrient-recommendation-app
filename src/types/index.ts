@@ -3,6 +3,8 @@
 export type EvidenceLevel = 'strong' | 'moderate' | 'limited';
 export type SupplementType = 'vitamin' | 'mineral' | 'amino-acid' | 'herb' | 'tea' | 'ayurvedic' | 'mushroom' | 'probiotic' | 'fatty-acid' | 'protein' | 'performance' | 'enzyme' | 'antioxidant' | 'other';
 export type Priority = 'essential' | 'beneficial' | 'optional';
+export type ReproductiveStatus = 'unknown' | 'yes' | 'no' | 'not-applicable';
+export type MedicationIntakeStatus = 'unknown' | 'none' | 'taking';
 
 // ============================================
 // SUPPLEMENT TYPES
@@ -216,10 +218,14 @@ export interface UserProfile {
   sleepQuality?: 'poor' | 'fair' | 'good' | 'excellent';
   stressLevel?: 'low' | 'moderate' | 'high' | 'very-high';
   caffeineIntake?: 'none' | 'low' | 'moderate' | 'high';
+  pregnancyStatus?: ReproductiveStatus;
+  breastfeedingStatus?: ReproductiveStatus;
+  tryingToConceiveStatus?: ReproductiveStatus;
   
   // Current supplements & medications
   currentSupplements?: string[];
   healthConditions?: string[];
+  medicationStatus?: MedicationIntakeStatus;
   medications?: string[];
   
   // Preferences
