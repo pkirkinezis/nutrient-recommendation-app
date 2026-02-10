@@ -82,17 +82,15 @@ const search = (query, supplements, knowledgeMap) => {
     ]
       .map(normalize)
       .filter(Boolean);
-    const safetyTerms = safetyIntent
-      ? [
-          ...(knowledge?.safetyNotes || []),
-          ...(knowledge?.safetyFlags || []),
-          ...(supplement.cautions || []),
-          ...(supplement.drugInteractions || []),
-          ...(supplement.avoidIf || []),
-        ]
-          .map(normalize)
-          .filter(Boolean)
-      : [];
+    const safetyTerms = [
+      ...(knowledge?.safetyNotes || []),
+      ...(knowledge?.safetyFlags || []),
+      ...(supplement.cautions || []),
+      ...(supplement.drugInteractions || []),
+      ...(supplement.avoidIf || []),
+    ]
+      .map(normalize)
+      .filter(Boolean);
 
     let score = 0;
     score += bestMatchScore(normalizedQuery, [supplement.name, supplement.id.replace(/-/g, ' ')], {
@@ -110,7 +108,7 @@ const search = (query, supplements, knowledgeMap) => {
 
     for (const token of tokens) {
       if (benefitTerms.some((term) => term.includes(token))) score += 8;
-      if (safetyTerms.some((term) => term.includes(token))) score += 8;
+      if (safetyTerms.some((term) => term.includes(token))) score += safetyIntent ? 8 : 4;
     }
 
     if (score > 0) {
@@ -175,8 +173,8 @@ assert(
 
 const noSafetyIntent = search('warfarin', supplements, knowledgeMap).slice(0, 5);
 assert(
-  noSafetyIntent.length === 0,
-  `Expected "warfarin" without safety intent token to avoid broad matches, got ${noSafetyIntent.length} hits.`
+  noSafetyIntent.length > 0,
+  'Expected "warfarin" to return safety-aware matches even without extra intent keywords.'
 );
 
 const safetyIntent = search('warfarin interaction', supplements, knowledgeMap).slice(0, 5);

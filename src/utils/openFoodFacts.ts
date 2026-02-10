@@ -4,9 +4,9 @@ import { offlineFoods } from "../data/offlineFoods";
 const CACHE_TTL_MS = 1000 * 60 * 60 * 12; // 12 hours
 const CACHE_PREFIX = "nutricompass_off_cache_";
 
-const safeNumber = (value?: number | string): number | undefined => {
+const safeNumber = (value?: unknown): number | undefined => {
   if (value === undefined || value === null) return undefined;
-  const parsed = typeof value === "string" ? Number(value) : value;
+  const parsed = typeof value === "string" ? Number(value) : typeof value === "number" ? value : Number.NaN;
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
@@ -71,7 +71,7 @@ const parseNutriments = (nutriments: Record<string, unknown>): NutrimentEntry[] 
 
     const basis = key.endsWith("_100g") ? "100g" : key.endsWith("_serving") ? "serving" : undefined;
     const baseKey = key.replace(/_(100g|serving)$/u, "");
-    const value = safeNumber(rawValue as number | string);
+    const value = safeNumber(rawValue);
     if (value === undefined) return;
 
     const unitKey = `${baseKey}_unit`;

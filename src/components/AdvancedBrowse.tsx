@@ -160,6 +160,9 @@ const safeForConfig: Record<SafeForFilter, { label: string; activeClass: string 
   'sedation-sensitive': { label: 'No sedative effect', activeClass: 'bg-indigo-100 text-indigo-700' },
 };
 
+const pregnancyFriendlySupplementIds = new Set(['folate', 'iodine', 'iron', 'choline', 'omega-3', 'vitamin-d3', 'vitamin-b12']);
+const breastfeedingLowerRiskSupplementIds = new Set(['omega-3', 'vitamin-d3', 'vitamin-b12', 'folate', 'magnesium', 'iodine', 'iron', 'choline']);
+
 const strongInteractionSignalPattern =
   /warfarin|maoi|ssri|snri|anticoagul|blood thinner|antiplatelet|immunosuppress|digoxin|lithium|levodopa|carbidopa|contraindicat|do not combine|avoid with|major interaction/;
 
@@ -419,13 +422,15 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         const knowledgeFlags = new Set(knowledge?.safetyFlags || []);
 
         if (filters.safeFor.includes('pregnancy')) {
-          const legacyRisk = /pregnan|conceive|trying to conceive|ovulation/.test(avoidText);
-          if (legacyRisk || knowledgeFlags.has('pregnancy')) return false;
+          const hasExplicitRisk = /pregnan|conceive|trying to conceive|ovulation/.test(avoidText) || knowledgeFlags.has('pregnancy');
+          if (hasExplicitRisk) return false;
+          if (!pregnancyFriendlySupplementIds.has(s.id)) return false;
         }
 
         if (filters.safeFor.includes('breastfeeding')) {
-          const legacyRisk = /breastfeed|lactation/.test(avoidText);
-          if (legacyRisk || knowledgeFlags.has('breastfeeding')) return false;
+          const hasExplicitRisk = /breastfeed|lactation/.test(avoidText) || knowledgeFlags.has('breastfeeding');
+          if (hasExplicitRisk) return false;
+          if (!breastfeedingLowerRiskSupplementIds.has(s.id)) return false;
         }
 
         if (filters.safeFor.includes('low-interaction')) {

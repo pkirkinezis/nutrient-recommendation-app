@@ -6421,8 +6421,7 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
       "Very safe."
     ],
     "safetyFlags": [
-      "drug-interaction",
-      "sedation"
+      "drug-interaction"
     ],
     "citations": [
       {
