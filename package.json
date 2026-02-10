@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run build:knowledge && vite build",
+    "build:knowledge": "node scripts/buildKnowledge.mjs",
+    "check:knowledge": "node scripts/checkKnowledge.mjs",
+    "check:search": "node scripts/checkSearch.mjs",
     "preview": "vite preview",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --fix --report-unused-disable-directives",

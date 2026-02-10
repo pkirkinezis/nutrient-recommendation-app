@@ -1,22 +1,51 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Supplement, UserProfile } from '../types';
+import {
+  KnowledgeCategory,
+  KnowledgeEvidenceStrengthTag,
+  KnowledgeSafetyFlag,
+  Supplement,
+  UserProfile,
+} from '../types';
 import { supplements, formGuidance } from '../data/supplements';
 import { normalizeGoals, normalizeSystems } from '../utils/normalization';
 import { SupplementDetailModal } from './SupplementDetailModal';
+import {
+  getSupplementKnowledgeById,
+  knowledgeDisclaimers,
+} from '../data/supplementKnowledge';
+import {
+  searchSupplementsWithScores,
+  suggestClosestSupplementTerm,
+} from '../utils/supplementSearchEngine';
 
 type SortOption = 'relevance' | 'evidence' | 'name' | 'popularity';
 type ViewMode = 'grid' | 'list' | 'compact';
+type SafeForFilter =
+  | 'pregnancy'
+  | 'breastfeeding'
+  | 'low-interaction'
+  | 'stimulant-sensitive'
+  | 'sedation-sensitive';
 
 interface FilterState {
   types: Supplement['type'][];
   evidence: Supplement['evidence'][];
   goals: string[];
   systems: string[];
+  knowledgeCategories: KnowledgeCategory[];
+  evidenceTags: KnowledgeEvidenceStrengthTag[];
+  safetyFlags: KnowledgeSafetyFlag[];
   timing: string[];
-  safeFor: string[];
+  safeFor: SafeForFilter[];
   hasFormGuidance: boolean;
   traditionalOnly: boolean;
   modernOnly: boolean;
+}
+
+interface FilteredSupplementResult {
+  supplement: Supplement;
+  searchScore: number;
+  matchReasons: string[];
 }
 
 interface AdvancedBrowseProps {
@@ -25,7 +54,21 @@ interface AdvancedBrowseProps {
   selectedSupplements: Supplement[];
 }
 
+type SupplementKnowledge = NonNullable<ReturnType<typeof getSupplementKnowledgeById>>;
+
 const allSystems = Array.from(new Set(supplements.flatMap(s => normalizeSystems(s.systems)))).sort();
+const knowledgeEntries = supplements
+  .map((supplement) => getSupplementKnowledgeById(supplement.id))
+  .filter((entry): entry is NonNullable<ReturnType<typeof getSupplementKnowledgeById>> => Boolean(entry));
+const allKnowledgeCategories: KnowledgeCategory[] = Array.from(
+  new Set(knowledgeEntries.flatMap((entry) => entry.categories))
+).sort((a, b) => a.localeCompare(b));
+const allKnowledgeEvidenceTags: KnowledgeEvidenceStrengthTag[] = Array.from(
+  new Set(knowledgeEntries.flatMap((entry) => entry.evidenceStrengthTags))
+).sort((a, b) => a.localeCompare(b));
+const allKnowledgeSafetyFlags: KnowledgeSafetyFlag[] = Array.from(
+  new Set(knowledgeEntries.flatMap((entry) => entry.safetyFlags))
+).sort((a, b) => a.localeCompare(b));
 
 const goalCategories = {
   'Energy & Vitality': ['energy'],
@@ -70,6 +113,78 @@ const evidenceConfig: Record<Supplement['evidence'], { label: string; color: str
   'limited': { label: 'Traditional/Limited', color: 'text-gray-600', bg: 'bg-gray-100', score: 1 },
 };
 
+const knowledgeCategoryConfig: Record<KnowledgeCategory, { label: string; color: string; bg: string }> = {
+  'vitamin': { label: 'Vitamin', color: 'text-amber-700', bg: 'bg-amber-100' },
+  'mineral': { label: 'Mineral', color: 'text-sky-700', bg: 'bg-sky-100' },
+  'herb': { label: 'Herb', color: 'text-green-700', bg: 'bg-green-100' },
+  'tea': { label: 'Tea', color: 'text-teal-700', bg: 'bg-teal-100' },
+  'adaptogen': { label: 'Adaptogen', color: 'text-lime-700', bg: 'bg-lime-100' },
+  'amino-acid': { label: 'Amino Acid', color: 'text-violet-700', bg: 'bg-violet-100' },
+  'fatty-acid': { label: 'Fatty Acid', color: 'text-indigo-700', bg: 'bg-indigo-100' },
+  'probiotic': { label: 'Probiotic', color: 'text-cyan-700', bg: 'bg-cyan-100' },
+  'mushroom': { label: 'Mushroom', color: 'text-rose-700', bg: 'bg-rose-100' },
+  'enzyme': { label: 'Enzyme', color: 'text-teal-700', bg: 'bg-teal-100' },
+  'performance': { label: 'Performance', color: 'text-red-700', bg: 'bg-red-100' },
+  'antioxidant': { label: 'Antioxidant', color: 'text-fuchsia-700', bg: 'bg-fuchsia-100' },
+  'other': { label: 'Other', color: 'text-gray-700', bg: 'bg-gray-100' },
+};
+
+const evidenceTagConfig: Record<KnowledgeEvidenceStrengthTag, { label: string; color: string; bg: string }> = {
+  'well-supported': { label: 'Well Supported', color: 'text-emerald-700', bg: 'bg-emerald-100' },
+  'mixed': { label: 'Mixed Data', color: 'text-yellow-700', bg: 'bg-yellow-100' },
+  'emerging': { label: 'Emerging', color: 'text-blue-700', bg: 'bg-blue-100' },
+  'traditional': { label: 'Traditional', color: 'text-orange-700', bg: 'bg-orange-100' },
+};
+
+const safetyFlagConfig: Record<KnowledgeSafetyFlag, { label: string; color: string; bg: string }> = {
+  'pregnancy': { label: 'Pregnancy Caution', color: 'text-rose-700', bg: 'bg-rose-100' },
+  'breastfeeding': { label: 'Breastfeeding Caution', color: 'text-pink-700', bg: 'bg-pink-100' },
+  'drug-interaction': { label: 'Drug Interaction', color: 'text-red-700', bg: 'bg-red-100' },
+  'bleeding-risk': { label: 'Bleeding Risk', color: 'text-red-700', bg: 'bg-red-100' },
+  'blood-pressure': { label: 'Blood Pressure', color: 'text-orange-700', bg: 'bg-orange-100' },
+  'blood-sugar': { label: 'Blood Sugar', color: 'text-amber-700', bg: 'bg-amber-100' },
+  'sedation': { label: 'Sedation', color: 'text-indigo-700', bg: 'bg-indigo-100' },
+  'stimulant': { label: 'Stimulant', color: 'text-fuchsia-700', bg: 'bg-fuchsia-100' },
+  'thyroid': { label: 'Thyroid Caution', color: 'text-purple-700', bg: 'bg-purple-100' },
+  'liver': { label: 'Liver Caution', color: 'text-orange-700', bg: 'bg-orange-100' },
+  'kidney': { label: 'Kidney Caution', color: 'text-blue-700', bg: 'bg-blue-100' },
+  'autoimmune': { label: 'Autoimmune Caution', color: 'text-violet-700', bg: 'bg-violet-100' },
+  'general-caution': { label: 'General Caution', color: 'text-gray-700', bg: 'bg-gray-100' },
+};
+
+const safeForConfig: Record<SafeForFilter, { label: string; activeClass: string }> = {
+  pregnancy: { label: 'Pregnancy-friendly', activeClass: 'bg-rose-100 text-rose-700' },
+  breastfeeding: { label: 'Breastfeeding-friendly', activeClass: 'bg-pink-100 text-pink-700' },
+  'low-interaction': { label: 'Lower major interaction risk', activeClass: 'bg-red-100 text-red-700' },
+  'stimulant-sensitive': { label: 'No stimulants', activeClass: 'bg-fuchsia-100 text-fuchsia-700' },
+  'sedation-sensitive': { label: 'No sedative effect', activeClass: 'bg-indigo-100 text-indigo-700' },
+};
+
+const strongInteractionSignalPattern =
+  /warfarin|maoi|ssri|snri|anticoagul|blood thinner|antiplatelet|immunosuppress|digoxin|lithium|levodopa|carbidopa|contraindicat|do not combine|avoid with|major interaction/;
+
+const hasSignificantInteractionRisk = (
+  supplement: Supplement,
+  knowledge?: SupplementKnowledge
+): boolean => {
+  const interactionText = [
+    ...(supplement.drugInteractions || []),
+    ...(supplement.cautions || []),
+    ...(supplement.avoidIf || []),
+    ...(knowledge?.safetyNotes || []),
+  ]
+    .join(' ')
+    .toLowerCase();
+  return strongInteractionSignalPattern.test(interactionText);
+};
+
+const allSupplementTypes = Object.keys(typeConfig) as Supplement['type'][];
+const supplementTypeCounts = allSupplementTypes.reduce((counts, type) => {
+  counts[type] = supplements.filter((supplement) => supplement.type === type).length;
+  return counts;
+}, {} as Record<Supplement['type'], number>);
+const visibleSupplementTypes = allSupplementTypes.filter((type) => supplementTypeCounts[type] > 0);
+
 const popularityScores: Record<string, number> = {
   'vitamin-d3': 100, 'omega-3': 98, 'magnesium': 97, 'vitamin-b12': 90, 'vitamin-c': 89,
   'ashwagandha': 95, 'creatine': 94, 'probiotics': 88, 'zinc': 87, 'collagen': 86,
@@ -77,7 +192,16 @@ const popularityScores: Record<string, number> = {
   'l-theanine': 72, 'brahmi-bacopa': 65, 'nac': 60, 'glycine': 55, 'tongkat-ali': 68,
 };
 
-const quickFilters = [
+interface QuickFilter {
+  id: string;
+  label: string;
+  goals: string[];
+  types: Supplement['type'][];
+  evidence: Supplement['evidence'][];
+  ids?: string[];
+}
+
+const quickFilters: QuickFilter[] = [
   { id: 'beginners', label: '🌱 Beginner Essentials', goals: [], types: [], evidence: [], ids: ['vitamin-d3', 'magnesium', 'omega-3', 'vitamin-b12', 'zinc'] },
   { id: 'sleep', label: '😴 Sleep Stack', goals: ['sleep'], types: [], evidence: [] },
   { id: 'energy', label: '⚡ Energy & Focus', goals: ['energy', 'brain'], types: [], evidence: [] },
@@ -86,33 +210,6 @@ const quickFilters = [
   { id: 'longevity', label: '⏳ Longevity', goals: ['longevity'], types: [], evidence: [] },
   { id: 'strong-evidence', label: '✅ Strong Evidence', goals: [], types: [], evidence: ['strong'] },
 ];
-
-const tokenizeSearchQuery = (query: string): {
-  lowered: string;
-  tokens: string[];
-  normalizedGoals: string[];
-  normalizedSystems: string[];
-} => {
-  const lowered = query.toLowerCase();
-  const tokens = lowered.split(/[^a-z0-9]+/).filter(Boolean);
-  const expandedTokens = new Set(tokens);
-  const hasIntimacySignal = tokens.some(token => ['libido', 'fertility', 'reproductive', 'intimacy', 'sexual', 'sex', 'drive', 'erectile', 'erection', 'semen', 'sperm', 'ejaculation', 'refractory'].includes(token))
-    || lowered.includes('sexual health')
-    || lowered.includes('reproductive health');
-
-  if (hasIntimacySignal) {
-    ['libido', 'sex-drive', 'fertility', 'testosterone', 'hormonal-balance', 'reproductive', 'women-health', 'sexual-health', 'sexual-function', 'erectile-function', 'semen-volume', 'sperm-quality', 'hormones', 'intimacy', 'sexual']
-      .forEach(keyword => expandedTokens.add(keyword));
-  }
-
-  const expandedList = Array.from(expandedTokens);
-  return {
-    lowered,
-    tokens: expandedList,
-    normalizedGoals: normalizeGoals(expandedList),
-    normalizedSystems: normalizeSystems(expandedList),
-  };
-};
 
 export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupplements }: AdvancedBrowseProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -133,6 +230,9 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     evidence: [],
     goals: [],
     systems: [],
+    knowledgeCategories: [],
+    evidenceTags: [],
+    safetyFlags: [],
     timing: [],
     safeFor: [],
     hasFormGuidance: false,
@@ -225,14 +325,22 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       filters.evidence.length +
       filters.goals.length +
       filters.systems.length +
+      filters.knowledgeCategories.length +
+      filters.evidenceTags.length +
+      filters.safetyFlags.length +
+      filters.safeFor.length +
       (filters.hasFormGuidance ? 1 : 0) +
       (filters.traditionalOnly ? 1 : 0) +
       (filters.modernOnly ? 1 : 0)
     );
   }, [filters]);
 
-  const filteredSupplements = useMemo(() => {
+  const filteredResults = useMemo<FilteredSupplementResult[]>(() => {
     let result = [...supplements];
+    const scoredSearchResults = searchQuery.trim()
+      ? searchSupplementsWithScores(searchQuery, supplements, { gender: userProfile.sex })
+      : [];
+    const scoredSearchById = new Map(scoredSearchResults.map((entry) => [entry.supplement.id, entry]));
 
     if (activeQuickFilter) {
       const quick = quickFilters.find(filter => filter.id === activeQuickFilter);
@@ -248,22 +356,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     }
 
     if (searchQuery.trim()) {
-      const { lowered, tokens, normalizedGoals, normalizedSystems } = tokenizeSearchQuery(searchQuery);
-      const matchesText = (text: string) => {
-        const lowerText = text.toLowerCase();
-        return lowerText.includes(lowered) || tokens.some(token => lowerText.includes(token));
-      };
-
-      result = result.filter(s =>
-        matchesText(s.name) ||
-        matchesText(s.description) ||
-        s.benefits.some(b => matchesText(b)) ||
-        s.goals.some(g => matchesText(g)) ||
-        s.systems.some(system => matchesText(system)) ||
-        normalizedGoals.some(goal => normalizeGoals(s.goals).includes(goal)) ||
-        normalizedSystems.some(system => normalizeSystems(s.systems).includes(system)) ||
-        (s.traditionalUse && matchesText(s.traditionalUse))
-      );
+      result = result.filter((supplement) => scoredSearchById.has(supplement.id));
     }
 
     if (filters.types.length > 0) {
@@ -282,6 +375,30 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       result = result.filter(s => filters.systems.some(system => normalizeSystems(s.systems).includes(system)));
     }
 
+    if (filters.knowledgeCategories.length > 0) {
+      result = result.filter(s => {
+        const knowledge = getSupplementKnowledgeById(s.id);
+        if (!knowledge) return false;
+        return filters.knowledgeCategories.some(category => knowledge.categories.includes(category));
+      });
+    }
+
+    if (filters.evidenceTags.length > 0) {
+      result = result.filter(s => {
+        const knowledge = getSupplementKnowledgeById(s.id);
+        if (!knowledge) return false;
+        return filters.evidenceTags.some(tag => knowledge.evidenceStrengthTags.includes(tag));
+      });
+    }
+
+    if (filters.safetyFlags.length > 0) {
+      result = result.filter(s => {
+        const knowledge = getSupplementKnowledgeById(s.id);
+        if (!knowledge) return false;
+        return filters.safetyFlags.some(flag => knowledge.safetyFlags.includes(flag));
+      });
+    }
+
     if (filters.hasFormGuidance) {
       result = result.filter(s => Boolean(formGuidance[s.id]));
     }
@@ -294,8 +411,40 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       result = result.filter(s => s.category === 'modern');
     }
 
-    if (filters.safeFor.includes('pregnancy')) {
-      result = result.filter(s => !s.avoidIf?.some(a => a.toLowerCase().includes('pregnan')));
+    if (filters.safeFor.length > 0) {
+      result = result.filter((s) => {
+        const knowledge = getSupplementKnowledgeById(s.id);
+        const avoidText = (s.avoidIf || []).join(' ').toLowerCase();
+        const cautionText = [...(s.cautions || []), ...(s.drugInteractions || [])].join(' ').toLowerCase();
+        const knowledgeFlags = new Set(knowledge?.safetyFlags || []);
+
+        if (filters.safeFor.includes('pregnancy')) {
+          const legacyRisk = /pregnan|conceive|trying to conceive|ovulation/.test(avoidText);
+          if (legacyRisk || knowledgeFlags.has('pregnancy')) return false;
+        }
+
+        if (filters.safeFor.includes('breastfeeding')) {
+          const legacyRisk = /breastfeed|lactation/.test(avoidText);
+          if (legacyRisk || knowledgeFlags.has('breastfeeding')) return false;
+        }
+
+        if (filters.safeFor.includes('low-interaction')) {
+          const legacyRisk = hasSignificantInteractionRisk(s, knowledge || undefined);
+          if (legacyRisk) return false;
+        }
+
+        if (filters.safeFor.includes('stimulant-sensitive')) {
+          const legacyRisk = /stimul|caffeine|jitters|alert/.test(cautionText);
+          if (legacyRisk || knowledgeFlags.has('stimulant')) return false;
+        }
+
+        if (filters.safeFor.includes('sedation-sensitive')) {
+          const legacyRisk = /sedat|drows|sleepy|bedtime/.test(cautionText);
+          if (legacyRisk || knowledgeFlags.has('sedation')) return false;
+        }
+
+        return true;
+      });
     }
 
     switch (sortBy) {
@@ -311,36 +460,77 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       case 'relevance':
       default:
         result.sort((a, b) => {
-          const aPersonalized = personalizedRecommendations.find(r => r.id === a.id) ? 50 : 0;
-          const bPersonalized = personalizedRecommendations.find(r => r.id === b.id) ? 50 : 0;
+          const aSearchScore = scoredSearchById.get(a.id)?.score || 0;
+          const bSearchScore = scoredSearchById.get(b.id)?.score || 0;
+          if (searchQuery.trim() && bSearchScore !== aSearchScore) {
+            return bSearchScore - aSearchScore;
+          }
+
+          const aKnowledge = getSupplementKnowledgeById(a.id);
+          const bKnowledge = getSupplementKnowledgeById(b.id);
+          const queryGoalHints = normalizeGoals(searchQuery.toLowerCase().split(/[^a-z0-9-]+/).filter(Boolean));
+          const aKnowledgeGoalMatches = queryGoalHints.filter(goal =>
+            normalizeGoals(aKnowledge?.typicalUseCases || []).includes(goal)
+          ).length * 4;
+          const bKnowledgeGoalMatches = queryGoalHints.filter(goal =>
+            normalizeGoals(bKnowledge?.typicalUseCases || []).includes(goal)
+          ).length * 4;
+          const aPersonalized = personalizedRecommendations.find(r => r.id === a.id) ? 24 : 0;
+          const bPersonalized = personalizedRecommendations.find(r => r.id === b.id) ? 24 : 0;
           const aPopularity = popularityScores[a.id] || 0;
           const bPopularity = popularityScores[b.id] || 0;
           const aEvidence = evidenceConfig[a.evidence].score * 10;
           const bEvidence = evidenceConfig[b.evidence].score * 10;
 
-          return (bPersonalized + bPopularity + bEvidence) - (aPersonalized + aPopularity + aEvidence);
+          return (bKnowledgeGoalMatches + bPersonalized + bPopularity + bEvidence) - (aKnowledgeGoalMatches + aPersonalized + aPopularity + aEvidence);
         });
     }
 
-    return result;
-  }, [searchQuery, filters, sortBy, activeQuickFilter, personalizedRecommendations, normalizedFilterGoals]);
+    return result.map((supplement) => {
+      const scored = scoredSearchById.get(supplement.id);
+      return {
+        supplement,
+        searchScore: scored?.score || 0,
+        matchReasons: scored?.reasons.map((reason) => reason.label).slice(0, 3) || [],
+      };
+    });
+  }, [searchQuery, filters, sortBy, activeQuickFilter, personalizedRecommendations, normalizedFilterGoals, userProfile.sex]);
 
-  const isVirtualized = viewMode === 'list' && filteredSupplements.length > 100;
+  const suggestedQuery = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    return suggestClosestSupplementTerm(searchQuery, supplements);
+  }, [searchQuery]);
+
+  const isVirtualized = viewMode === 'list' && filteredResults.length > 100;
   // Simple windowing to avoid rendering 100+ cards at once.
   const itemHeight = 150;
   const overscan = 6;
   const startIndex = Math.max(0, Math.floor(listScrollTop / itemHeight) - overscan);
   const visibleCount = Math.ceil(listHeight / itemHeight) + overscan * 2;
-  const endIndex = Math.min(filteredSupplements.length, startIndex + visibleCount);
-  const visibleSupplements = isVirtualized ? filteredSupplements.slice(startIndex, endIndex) : filteredSupplements;
+  const endIndex = Math.min(filteredResults.length, startIndex + visibleCount);
+  const visibleResults = isVirtualized ? filteredResults.slice(startIndex, endIndex) : filteredResults;
   const paddingTop = isVirtualized ? startIndex * itemHeight : 0;
-  const paddingBottom = isVirtualized ? (filteredSupplements.length - endIndex) * itemHeight : 0;
+  const paddingBottom = isVirtualized ? (filteredResults.length - endIndex) * itemHeight : 0;
 
   const handleQuickFilter = (filterId: string): void => {
     const next = activeQuickFilter === filterId ? null : filterId;
     triggerLoading();
     setActiveQuickFilter(next);
-    setFilters(prev => ({ ...prev, goals: [], types: [], evidence: [], systems: [], timing: [], safeFor: [], hasFormGuidance: false, traditionalOnly: false, modernOnly: false }));
+    setFilters(prev => ({
+      ...prev,
+      goals: [],
+      types: [],
+      evidence: [],
+      systems: [],
+      knowledgeCategories: [],
+      evidenceTags: [],
+      safetyFlags: [],
+      timing: [],
+      safeFor: [],
+      hasFormGuidance: false,
+      traditionalOnly: false,
+      modernOnly: false
+    }));
   };
 
   const clearFilters = (): void => {
@@ -350,6 +540,9 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       evidence: [],
       goals: [],
       systems: [],
+      knowledgeCategories: [],
+      evidenceTags: [],
+      safetyFlags: [],
       timing: [],
       safeFor: [],
       hasFormGuidance: false,
@@ -519,7 +712,10 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Supplement type</h4>
               <div className="flex flex-wrap gap-2">
-                {Object.entries(typeConfig).map(([type, config]) => (
+                {visibleSupplementTypes.map((type) => {
+                  const config = typeConfig[type];
+                  const typeCount = supplementTypeCounts[type];
+                  return (
                   <button
                     key={type}
                     type="button"
@@ -531,9 +727,13 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                     }`}
                   >
                     <span>{config.icon}</span>
-                    {config.label}
+                    <span>{config.label}</span>
+                    <span className="rounded-full bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">
+                      {typeCount}
+                    </span>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -631,19 +831,88 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 </div>
               </div>
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Safety</h4>
-                <button
-                  type="button"
-                  onClick={() => toggleFilter('safeFor', 'pregnancy')}
-                  className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-                    filters.safeFor.includes('pregnancy')
-                      ? 'bg-rose-100 text-rose-700'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  Pregnancy-friendly
-                </button>
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Knowledge categories</h4>
+                <div className="flex flex-wrap gap-2">
+                  {allKnowledgeCategories.map(category => {
+                    const config = knowledgeCategoryConfig[category];
+                    return (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => toggleFilter('knowledgeCategories', category)}
+                        className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                          filters.knowledgeCategories.includes(category)
+                            ? `${config.bg} ${config.color}`
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {config.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Evidence profile tags</h4>
+                <div className="flex flex-wrap gap-2">
+                  {allKnowledgeEvidenceTags.map(tag => {
+                    const config = evidenceTagConfig[tag];
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => toggleFilter('evidenceTags', tag)}
+                        className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                          filters.evidenceTags.includes(tag)
+                            ? `${config.bg} ${config.color}`
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {config.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Safety warnings</h4>
+                <div className="flex flex-wrap gap-2">
+                  {(Object.keys(safeForConfig) as SafeForFilter[]).map((safeForKey) => (
+                    <button
+                      key={safeForKey}
+                      type="button"
+                      onClick={() => toggleFilter('safeFor', safeForKey)}
+                      className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                        filters.safeFor.includes(safeForKey)
+                          ? safeForConfig[safeForKey].activeClass
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {safeForConfig[safeForKey].label}
+                    </button>
+                  ))}
+                  {allKnowledgeSafetyFlags.map(flag => {
+                    const config = safetyFlagConfig[flag];
+                    return (
+                      <button
+                        key={flag}
+                        type="button"
+                        onClick={() => toggleFilter('safetyFlags', flag)}
+                        className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                          filters.safetyFlags.includes(flag)
+                            ? `${config.bg} ${config.color}`
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {config.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">
+                {knowledgeDisclaimers.medical}
+              </p>
             </div>
           )}
         </div>
@@ -653,7 +922,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Search results</p>
           <h3 className="text-lg font-semibold text-gray-900">
-            {filteredSupplements.length} results found
+            {filteredResults.length} results found
           </h3>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -698,11 +967,20 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
             </div>
           ))}
         </div>
-      ) : filteredSupplements.length === 0 ? (
+      ) : filteredResults.length === 0 ? (
         <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
           <div className="text-4xl mb-3">🔍</div>
           <p className="text-gray-600 font-medium">No supplements match your filters</p>
           <p className="text-sm text-gray-500 mt-1">Try adjusting your search or filters</p>
+          {searchQuery.trim() && suggestedQuery && suggestedQuery.toLowerCase() !== searchQuery.trim().toLowerCase() && (
+            <button
+              type="button"
+              onClick={() => handleSearchChange(suggestedQuery)}
+              className="mt-3 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              Did you mean: {suggestedQuery}?
+            </button>
+          )}
           <button
             type="button"
             onClick={clearFilters}
@@ -713,10 +991,11 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         </div>
       ) : viewMode === 'compact' ? (
         <div className="rounded-2xl border border-gray-200 bg-white divide-y divide-gray-100">
-          {visibleSupplements.map(supplement => (
+          {visibleResults.map(({ supplement, matchReasons }) => (
             <CompactCard
               key={supplement.id}
               supplement={supplement}
+              matchReasons={searchQuery.trim() ? matchReasons : []}
               isSelected={selectedSupplements.some(s => s.id === supplement.id)}
               onSelect={() => onSelectSupplement(supplement)}
               onViewDetails={() => setActiveSupplement(supplement)}
@@ -731,10 +1010,11 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           className={`space-y-3 ${isVirtualized ? 'max-h-[520px] overflow-y-auto pr-1' : ''}`}
         >
           <div style={{ paddingTop, paddingBottom }} className="space-y-3">
-            {visibleSupplements.map(supplement => (
+            {visibleResults.map(({ supplement, matchReasons }) => (
               <ListCard
                 key={supplement.id}
                 supplement={supplement}
+                matchReasons={searchQuery.trim() ? matchReasons : []}
                 isSelected={selectedSupplements.some(s => s.id === supplement.id)}
                 onSelect={() => onSelectSupplement(supplement)}
                 onViewDetails={() => setActiveSupplement(supplement)}
@@ -745,10 +1025,11 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {visibleSupplements.map(supplement => (
+          {visibleResults.map(({ supplement, matchReasons }) => (
             <GridCard
               key={supplement.id}
               supplement={supplement}
+              matchReasons={searchQuery.trim() ? matchReasons : []}
               isSelected={selectedSupplements.some(s => s.id === supplement.id)}
               onSelect={() => onSelectSupplement(supplement)}
               onViewDetails={() => setActiveSupplement(supplement)}
@@ -774,66 +1055,79 @@ interface CardProps {
   onSelect: () => void;
   onViewDetails: () => void;
   personalReason?: string;
+  matchReasons?: string[];
 }
 
-function CompactCard({ supplement, isSelected, onSelect, onViewDetails, personalReason }: CardProps) {
+const formatMatchReason = (reason: string): string =>
+  reason.length > 26 ? `${reason.slice(0, 26)}...` : reason;
+
+function CompactCard({ supplement, isSelected, onSelect, onViewDetails, personalReason, matchReasons }: CardProps) {
   const type = typeConfig[supplement.type];
   const evidence = evidenceConfig[supplement.evidence];
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition">
+    <div className="flex items-center gap-3 px-4 py-3 transition hover:bg-gray-50">
       <button
         type="button"
         onClick={onSelect}
-        className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition ${
-          isSelected ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300 hover:border-emerald-400'
+        className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition ${
+          isSelected ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-gray-300 hover:border-emerald-400'
         }`}
       >
         {isSelected && (
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
           </svg>
         )}
       </button>
       <span className="text-lg">{type.icon}</span>
-      <div className="flex-1 min-w-0">
-        <span className="font-medium text-gray-900 text-sm">{supplement.name}</span>
+      <div className="min-w-0 flex-1">
+        <span className="text-sm font-medium text-gray-900">{supplement.name}</span>
         {personalReason && (
-          <span className="ml-2 text-xs text-emerald-600">✨ {personalReason}</span>
+          <span className="ml-2 text-xs text-emerald-600">* {personalReason}</span>
+        )}
+        {matchReasons && matchReasons.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {matchReasons.slice(0, 2).map((reason) => (
+              <span key={reason} className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                {formatMatchReason(reason)}
+              </span>
+            ))}
+          </div>
         )}
       </div>
       <button
         type="button"
         onClick={onViewDetails}
-        className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-full px-2 py-1"
+        className="rounded-full px-2 py-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
       >
         Details
       </button>
-      <span className={`text-xs px-2 py-0.5 rounded-full ${evidence.bg} ${evidence.color}`}>
+      <span className={`rounded-full px-2 py-0.5 text-xs ${evidence.bg} ${evidence.color}`}>
         {supplement.evidence}
       </span>
     </div>
   );
 }
 
-function GridCard({ supplement, isSelected, onSelect, onViewDetails, personalReason }: CardProps) {
+function GridCard({ supplement, isSelected, onSelect, onViewDetails, personalReason, matchReasons }: CardProps) {
   const type = typeConfig[supplement.type];
   const evidence = evidenceConfig[supplement.evidence];
 
   return (
     <div className={`rounded-2xl border bg-white transition ${isSelected ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-gray-200'}`}>
-      <div className="p-4 space-y-3">
+      <div className="space-y-3 p-4">
         <div className="flex items-start justify-between">
           <span className="text-2xl">{type.icon}</span>
           <button
             type="button"
             onClick={onSelect}
-            className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition ${
-              isSelected ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300 hover:border-emerald-400'
+            className={`flex h-8 w-8 items-center justify-center rounded-lg border-2 transition ${
+              isSelected ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-gray-300 hover:border-emerald-400'
             }`}
           >
             {isSelected && (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             )}
@@ -842,21 +1136,30 @@ function GridCard({ supplement, isSelected, onSelect, onViewDetails, personalRea
         <div>
           <h3 className="text-sm font-semibold text-gray-900">{supplement.name.split('(')[0].trim()}</h3>
           {personalReason && (
-            <p className="text-xs text-emerald-600 mt-1">✨ {personalReason}</p>
+            <p className="mt-1 text-xs text-emerald-600">* {personalReason}</p>
+          )}
+          {matchReasons && matchReasons.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {matchReasons.slice(0, 2).map((reason) => (
+                <span key={reason} className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                  {formatMatchReason(reason)}
+                </span>
+              ))}
+            </div>
           )}
         </div>
         <div className="flex flex-wrap gap-1.5">
-          <span className={`text-xs px-2 py-0.5 rounded-full ${type.bg} ${type.color}`}>
+          <span className={`rounded-full px-2 py-0.5 text-xs ${type.bg} ${type.color}`}>
             {type.label}
           </span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${evidence.bg} ${evidence.color}`}>
+          <span className={`rounded-full px-2 py-0.5 text-xs ${evidence.bg} ${evidence.color}`}>
             {evidence.label}
           </span>
         </div>
-        <p className="text-xs text-gray-600 line-clamp-3">{supplement.description}</p>
+        <p className="line-clamp-3 text-xs text-gray-600">{supplement.description}</p>
         <div className="flex flex-wrap gap-1">
           {supplement.benefits.slice(0, 3).map((benefit) => (
-            <span key={benefit} className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+            <span key={benefit} className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">
               {benefit.length > 20 ? benefit.substring(0, 20) + '...' : benefit}
             </span>
           ))}
@@ -873,7 +1176,7 @@ function GridCard({ supplement, isSelected, onSelect, onViewDetails, personalRea
   );
 }
 
-function ListCard({ supplement, isSelected, onSelect, onViewDetails, personalReason }: CardProps) {
+function ListCard({ supplement, isSelected, onSelect, onViewDetails, personalReason, matchReasons }: CardProps) {
   const type = typeConfig[supplement.type];
   const evidence = evidenceConfig[supplement.evidence];
   const hasFormGuide = formGuidance[supplement.id];
@@ -884,41 +1187,46 @@ function ListCard({ supplement, isSelected, onSelect, onViewDetails, personalRea
         <button
           type="button"
           onClick={onSelect}
-          className={`flex-shrink-0 w-8 h-8 rounded-lg border-2 flex items-center justify-center transition ${
-            isSelected ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300 hover:border-emerald-400'
+          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border-2 transition ${
+            isSelected ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-gray-300 hover:border-emerald-400'
           }`}
         >
           {isSelected && (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           )}
         </button>
 
-        <div className="flex-1 min-w-0 space-y-2">
+        <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-lg">{type.icon}</span>
             <h3 className="font-semibold text-gray-900">{supplement.name}</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${type.bg} ${type.color}`}>
+            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${type.bg} ${type.color}`}>
               {type.label}
             </span>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${evidence.bg} ${evidence.color}`}>
+            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${evidence.bg} ${evidence.color}`}>
               {evidence.label}
             </span>
             {hasFormGuide && (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
-                💊 Form Guide
+              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                Form Guide
               </span>
             )}
             {personalReason && (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-                ✨ {personalReason}
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                * {personalReason}
               </span>
             )}
+            {matchReasons && matchReasons.slice(0, 2).map((reason) => (
+              <span key={reason} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                {formatMatchReason(reason)}
+              </span>
+            ))}
           </div>
-          <p className="text-sm text-gray-600 line-clamp-2">{supplement.description}</p>
+          <p className="line-clamp-2 text-sm text-gray-600">{supplement.description}</p>
         </div>
 
         <button

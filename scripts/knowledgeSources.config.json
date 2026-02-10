@@ -1,0 +1,1901 @@
+{
+  "version": 1,
+  "accessedAt": "2026-02-10",
+  "fallbackSourceKeys": [
+    "nccih-supplements-wisely",
+    "fda-dietary-supplements"
+  ],
+  "sources": {
+    "nih-ods-list": {
+      "title": "Dietary Supplement Fact Sheets",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/list-all/"
+    },
+    "nih-ods-vitamin-d": {
+      "title": "Vitamin D - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/"
+    },
+    "nih-ods-magnesium": {
+      "title": "Magnesium - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/"
+    },
+    "nih-ods-zinc": {
+      "title": "Zinc - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/"
+    },
+    "nih-ods-iron": {
+      "title": "Iron - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/"
+    },
+    "nih-ods-omega3": {
+      "title": "Omega-3 Fatty Acids - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/"
+    },
+    "nih-ods-folate": {
+      "title": "Folate - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/"
+    },
+    "nih-ods-b12": {
+      "title": "Vitamin B12 - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/VitaminB12-HealthProfessional/"
+    },
+    "nih-ods-vitamin-c": {
+      "title": "Vitamin C - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/"
+    },
+    "ods-exercise-performance": {
+      "title": "Dietary Supplements for Exercise and Athletic Performance",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/ExerciseAndAthleticPerformance-HealthProfessional/"
+    },
+    "nccih-supplements-wisely": {
+      "title": "Using Dietary Supplements Wisely",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/using-dietary-supplements-wisely"
+    },
+    "nccih-herbs-at-a-glance": {
+      "title": "Herbs at a Glance",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/herbsataglance"
+    },
+    "nccih-ashwagandha": {
+      "title": "Ashwagandha",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/ashwagandha"
+    },
+    "nccih-turmeric": {
+      "title": "Turmeric",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/turmeric"
+    },
+    "nccih-probiotics": {
+      "title": "Probiotics: What You Need To Know",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/probiotics-what-you-need-to-know"
+    },
+    "nccih-melatonin": {
+      "title": "Melatonin: What You Need To Know",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/melatonin-what-you-need-to-know"
+    },
+    "nccih-ginkgo": {
+      "title": "Ginkgo",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/ginkgo"
+    },
+    "nccih-kava": {
+      "title": "Kava",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/kava"
+    },
+    "nccih-stjohns": {
+      "title": "St. John's Wort and Depression: In Depth",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/st-johns-wort-and-depression-in-depth"
+    },
+    "fda-dietary-supplements": {
+      "title": "Dietary Supplements",
+      "publisher": "U.S. Food and Drug Administration",
+      "url": "https://www.fda.gov/food/dietary-supplements"
+    },
+    "nih-ods-vitamin-a": {
+      "title": "Vitamin A and Carotenoids - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/VitaminA-HealthProfessional/"
+    },
+    "nih-ods-thiamin": {
+      "title": "Thiamin - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Thiamin-HealthProfessional/"
+    },
+    "nih-ods-vitamin-e": {
+      "title": "Vitamin E - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/VitaminE-HealthProfessional/"
+    },
+    "nih-ods-vitamin-k": {
+      "title": "Vitamin K - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/VitaminK-HealthProfessional/"
+    },
+    "nih-ods-biotin": {
+      "title": "Biotin - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Biotin-HealthProfessional/"
+    },
+    "nih-ods-calcium": {
+      "title": "Calcium - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/"
+    },
+    "nih-ods-potassium": {
+      "title": "Potassium - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Potassium-HealthProfessional/"
+    },
+    "nih-ods-copper": {
+      "title": "Copper - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Copper-HealthProfessional/"
+    },
+    "nih-ods-selenium": {
+      "title": "Selenium - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Selenium-HealthProfessional/"
+    },
+    "nih-ods-chromium": {
+      "title": "Chromium - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Chromium-HealthProfessional/"
+    },
+    "nih-ods-iodine": {
+      "title": "Iodine - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Iodine-HealthProfessional/"
+    },
+    "nih-ods-boron": {
+      "title": "Boron - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Boron-HealthProfessional/"
+    },
+    "nih-ods-niacin": {
+      "title": "Niacin - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Niacin-HealthProfessional/"
+    },
+    "nih-ods-riboflavin": {
+      "title": "Riboflavin - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/Riboflavin-HealthProfessional/"
+    },
+    "nih-ods-vitamin-b6": {
+      "title": "Vitamin B6 - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/VitaminB6-HealthProfessional/"
+    },
+    "nih-ods-pantothenic-acid": {
+      "title": "Pantothenic Acid - Health Professional Fact Sheet",
+      "publisher": "NIH Office of Dietary Supplements",
+      "url": "https://ods.od.nih.gov/factsheets/PantothenicAcid-HealthProfessional/"
+    },
+    "nccih-rhodiola": {
+      "title": "Rhodiola: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/rhodiola"
+    },
+    "nccih-echinacea": {
+      "title": "Echinacea: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/echinacea"
+    },
+    "nccih-asian-ginseng": {
+      "title": "Asian Ginseng: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/asian-ginseng"
+    },
+    "nccih-valerian": {
+      "title": "Valerian: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/valerian"
+    },
+    "nccih-saw-palmetto": {
+      "title": "Saw Palmetto: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/saw-palmetto"
+    },
+    "nccih-milk-thistle": {
+      "title": "Milk Thistle: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/milk-thistle"
+    },
+    "nccih-elderberry": {
+      "title": "Elderberry: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/elderberry"
+    },
+    "nccih-fenugreek": {
+      "title": "Fenugreek: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/fenugreek"
+    },
+    "nccih-red-clover": {
+      "title": "Red Clover: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/red-clover"
+    },
+    "nccih-ginger": {
+      "title": "Ginger: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/ginger"
+    },
+    "nccih-passionflower": {
+      "title": "Passionflower: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/passionflower"
+    },
+    "nccih-hawthorn": {
+      "title": "Hawthorn: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/hawthorn"
+    },
+    "nccih-green-tea": {
+      "title": "Green Tea: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/green-tea"
+    },
+    "nccih-chamomile": {
+      "title": "Chamomile: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/chamomile"
+    },
+    "nccih-boswellia": {
+      "title": "Boswellia: Usefulness and Safety",
+      "publisher": "National Center for Complementary and Integrative Health",
+      "url": "https://www.nccih.nih.gov/health/boswellia"
+    },
+    "cdc-folic-acid": {
+      "title": "About Folic Acid",
+      "publisher": "Centers for Disease Control and Prevention",
+      "url": "https://www.cdc.gov/folic-acid/about/index.html"
+    },
+    "fda-probiotics-preterm-warning": {
+      "title": "FDA warns hospitals not to give preterm infants probiotic products due to risk of invasive, potentially fatal disease",
+      "publisher": "U.S. Food and Drug Administration",
+      "url": "https://www.fda.gov/food/hfp-constituent-updates/fda-warns-hospitals-not-give-preterm-infants-probiotic-products-risk-invasive-potentially-fatal"
+    }
+  },
+  "defaultSourceKeysByType": {
+    "vitamin": [
+      "nih-ods-list",
+      "fda-dietary-supplements"
+    ],
+    "mineral": [
+      "nih-ods-list",
+      "fda-dietary-supplements"
+    ],
+    "amino-acid": [
+      "ods-exercise-performance",
+      "fda-dietary-supplements"
+    ],
+    "herb": [
+      "nccih-herbs-at-a-glance",
+      "nccih-supplements-wisely",
+      "fda-dietary-supplements"
+    ],
+    "tea": [
+      "nccih-herbs-at-a-glance",
+      "nccih-supplements-wisely"
+    ],
+    "ayurvedic": [
+      "nccih-herbs-at-a-glance",
+      "nccih-supplements-wisely",
+      "fda-dietary-supplements"
+    ],
+    "mushroom": [
+      "nccih-herbs-at-a-glance",
+      "nccih-supplements-wisely",
+      "fda-dietary-supplements"
+    ],
+    "probiotic": [
+      "nccih-probiotics",
+      "fda-dietary-supplements"
+    ],
+    "fatty-acid": [
+      "nih-ods-omega3",
+      "fda-dietary-supplements"
+    ],
+    "protein": [
+      "ods-exercise-performance",
+      "fda-dietary-supplements"
+    ],
+    "performance": [
+      "ods-exercise-performance",
+      "fda-dietary-supplements"
+    ],
+    "enzyme": [
+      "nccih-supplements-wisely",
+      "fda-dietary-supplements"
+    ],
+    "antioxidant": [
+      "nccih-supplements-wisely",
+      "fda-dietary-supplements"
+    ],
+    "other": [
+      "nccih-supplements-wisely",
+      "fda-dietary-supplements"
+    ]
+  },
+  "supplementOverrides": {
+    "ashwagandha": {
+      "aliases": [
+        "withania somnifera",
+        "ashwaghanda",
+        "ashwaganda",
+        "ksm 66",
+        "sensoril"
+      ],
+      "categories": [
+        "herb",
+        "adaptogen"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Human trials suggest possible benefits for stress and sleep outcomes, but study size, extracts, and endpoints vary.",
+      "typicalUseCases": [
+        "stress resilience",
+        "sleep quality",
+        "calm focus"
+      ],
+      "safetyNotes": [
+        "Potential medication interactions can include thyroid, sedative, blood pressure, or immune-modulating therapies.",
+        "Pregnancy and breastfeeding use should be clinician-guided due to limited safety data."
+      ],
+      "safetyFlags": [
+        "pregnancy",
+        "breastfeeding",
+        "thyroid",
+        "drug-interaction"
+      ],
+      "dosageRangeNote": "Commonly studied extracts are often used in the low hundreds of milligrams per day depending on standardization.",
+      "citationSourceKeys": [
+        "nccih-ashwagandha",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "turmeric-curcumin": {
+      "aliases": [
+        "curcuma longa",
+        "curcumin",
+        "tumeric"
+      ],
+      "categories": [
+        "herb",
+        "antioxidant"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Curcumin has mixed but growing clinical evidence for inflammation-related wellness outcomes; formulations influence absorption.",
+      "typicalUseCases": [
+        "joint comfort",
+        "exercise recovery",
+        "general inflammation support"
+      ],
+      "safetyNotes": [
+        "Potential interactions can include anticoagulant and antiplatelet medications.",
+        "Use caution with gallbladder concerns unless a clinician advises otherwise."
+      ],
+      "safetyFlags": [
+        "drug-interaction",
+        "bleeding-risk",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-turmeric",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "turmeric": {
+      "aliases": [
+        "curcuma longa",
+        "curcumin",
+        "tumeric"
+      ],
+      "categories": [
+        "herb",
+        "antioxidant"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "typicalUseCases": [
+        "joint comfort",
+        "post-training recovery"
+      ],
+      "safetyFlags": [
+        "drug-interaction",
+        "bleeding-risk"
+      ],
+      "citationSourceKeys": [
+        "nccih-turmeric",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "probiotics": {
+      "aliases": [
+        "lactobacillus",
+        "bifidobacterium",
+        "probiotic"
+      ],
+      "categories": [
+        "probiotic"
+      ],
+      "evidenceStrengthTags": [
+        "mixed"
+      ],
+      "evidenceSummary": "Probiotic effects are strain-specific; outcomes vary by organism, dose, and individual context.",
+      "typicalUseCases": [
+        "digestive comfort",
+        "gut microbiome support"
+      ],
+      "safetyNotes": [
+        "Most healthy adults tolerate probiotics, but immunocompromised individuals should seek clinical guidance first.",
+        "Use caution in preterm infants and severely immunocompromised patients unless supervised by appropriate clinicians."
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-probiotics",
+        "nccih-supplements-wisely",
+        "fda-dietary-supplements",
+        "fda-probiotics-preterm-warning"
+      ]
+    },
+    "melatonin": {
+      "aliases": [
+        "melatonine",
+        "n-acetyl-5-methoxytryptamine"
+      ],
+      "categories": [
+        "other"
+      ],
+      "evidenceStrengthTags": [
+        "mixed"
+      ],
+      "evidenceSummary": "Evidence is strongest for circadian timing support, while broader sleep outcomes show variable responses.",
+      "typicalUseCases": [
+        "sleep onset support",
+        "jet lag adjustment"
+      ],
+      "safetyNotes": [
+        "Daytime drowsiness can occur in some users.",
+        "Potential interactions include sedatives and some anticoagulants."
+      ],
+      "safetyFlags": [
+        "sedation",
+        "drug-interaction",
+        "pregnancy"
+      ],
+      "citationSourceKeys": [
+        "nccih-melatonin",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "omega-3": {
+      "aliases": [
+        "fish oil",
+        "epa",
+        "dha",
+        "omega 3",
+        "omega3"
+      ],
+      "categories": [
+        "fatty-acid"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Omega-3 fatty acids are well studied for select cardiovascular biomarkers, with effects varying by dose and EPA/DHA composition.",
+      "typicalUseCases": [
+        "heart support",
+        "general inflammation support",
+        "brain health support"
+      ],
+      "safetyNotes": [
+        "High intakes may increase bleeding risk in some contexts, especially with anticoagulant therapy."
+      ],
+      "safetyFlags": [
+        "bleeding-risk",
+        "drug-interaction"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-omega3",
+        "fda-dietary-supplements"
+      ]
+    },
+    "vitamin-d3": {
+      "aliases": [
+        "vitamin d",
+        "cholecalciferol",
+        "vit d3"
+      ],
+      "categories": [
+        "vitamin"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported"
+      ],
+      "evidenceSummary": "Vitamin D has strong evidence for bone and mineral metabolism roles; broader outcomes depend on baseline status and dosing strategy.",
+      "typicalUseCases": [
+        "bone health support",
+        "immune support"
+      ],
+      "safetyNotes": [
+        "Excessive long-term intake can raise the risk of hypercalcemia."
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-vitamin-d",
+        "nih-ods-list"
+      ]
+    },
+    "magnesium": {
+      "aliases": [
+        "mag",
+        "magnesium glycinate",
+        "magnesium citrate",
+        "magnessium"
+      ],
+      "categories": [
+        "mineral"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Magnesium is an essential mineral with strong physiological rationale; trial outcomes vary by baseline status and salt form.",
+      "typicalUseCases": [
+        "sleep quality support",
+        "muscle function support",
+        "stress support"
+      ],
+      "safetyNotes": [
+        "Gastrointestinal effects can occur at higher supplemental doses depending on formulation.",
+        "Kidney impairment requires individualized dosing guidance."
+      ],
+      "safetyFlags": [
+        "kidney",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-magnesium",
+        "nih-ods-list"
+      ]
+    },
+    "zinc": {
+      "aliases": [
+        "zn",
+        "zink",
+        "zinc picolinate"
+      ],
+      "categories": [
+        "mineral"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Zinc is essential for immune and enzymatic function; deficiency correction is well supported while excess can cause adverse effects.",
+      "typicalUseCases": [
+        "immune support",
+        "skin support",
+        "reproductive health support"
+      ],
+      "safetyNotes": [
+        "Long-term high-dose use can reduce copper status."
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-zinc",
+        "nih-ods-list"
+      ]
+    },
+    "iron": {
+      "aliases": [
+        "fe",
+        "ferrous",
+        "ferric",
+        "irron"
+      ],
+      "categories": [
+        "mineral"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported"
+      ],
+      "evidenceSummary": "Iron supplementation is evidence-based when deficiency is confirmed; unnecessary use can create risk.",
+      "typicalUseCases": [
+        "iron repletion when indicated",
+        "energy support when deficiency exists"
+      ],
+      "safetyNotes": [
+        "Supplementation should ideally follow laboratory confirmation and clinician review.",
+        "Keep iron products away from children due to overdose risk."
+      ],
+      "safetyFlags": [
+        "general-caution",
+        "drug-interaction"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-iron",
+        "nih-ods-list"
+      ]
+    },
+    "folate": {
+      "aliases": [
+        "folic acid",
+        "vitamin b9",
+        "b9",
+        "folat"
+      ],
+      "categories": [
+        "vitamin"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported"
+      ],
+      "evidenceSummary": "Folate is essential for DNA synthesis and fetal neural tube development; preconception intake guidance is strongly established.",
+      "typicalUseCases": [
+        "preconception support",
+        "methylation support"
+      ],
+      "safetyNotes": [
+        "High folic acid intake can mask hematologic signs of vitamin B12 deficiency."
+      ],
+      "safetyFlags": [
+        "pregnancy",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-folate",
+        "nih-ods-list",
+        "cdc-folic-acid"
+      ]
+    },
+    "vitamin-b12": {
+      "aliases": [
+        "cobalamin",
+        "methylcobalamin",
+        "cyanocobalamin",
+        "vit b12"
+      ],
+      "categories": [
+        "vitamin"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported"
+      ],
+      "evidenceSummary": "Vitamin B12 is essential for neurologic function and blood formation, with supplementation most relevant when intake or absorption is limited.",
+      "typicalUseCases": [
+        "vegan nutrition support",
+        "energy metabolism support"
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-b12",
+        "nih-ods-list"
+      ]
+    },
+    "vitamin-c": {
+      "aliases": [
+        "ascorbic acid",
+        "vit c",
+        "vitamin c"
+      ],
+      "categories": [
+        "vitamin",
+        "antioxidant"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "typicalUseCases": [
+        "immune support",
+        "antioxidant support"
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-vitamin-c",
+        "nih-ods-list"
+      ]
+    },
+    "creatine": {
+      "aliases": [
+        "creatine monohydrate",
+        "creatin",
+        "creatine mono"
+      ],
+      "categories": [
+        "amino-acid",
+        "performance"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported"
+      ],
+      "evidenceSummary": "Creatine monohydrate is one of the best-studied performance supplements for high-intensity output and lean mass support.",
+      "typicalUseCases": [
+        "strength performance",
+        "power output",
+        "training recovery"
+      ],
+      "safetyNotes": [
+        "Hydration and total dose planning should match individual training context."
+      ],
+      "safetyFlags": [
+        "general-caution",
+        "kidney"
+      ],
+      "citationSourceKeys": [
+        "ods-exercise-performance",
+        "fda-dietary-supplements"
+      ]
+    },
+    "ginkgo": {
+      "aliases": [
+        "ginkgo biloba",
+        "gingko"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed"
+      ],
+      "typicalUseCases": [
+        "cognitive support",
+        "circulatory support"
+      ],
+      "safetyFlags": [
+        "bleeding-risk",
+        "drug-interaction"
+      ],
+      "citationSourceKeys": [
+        "nccih-ginkgo",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "st-johns-wort": {
+      "aliases": [
+        "st johns wort",
+        "hypericum perforatum",
+        "saint johns wort"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed"
+      ],
+      "typicalUseCases": [
+        "mood support"
+      ],
+      "safetyNotes": [
+        "This herb has clinically important drug-interaction potential and should be reviewed carefully with a clinician."
+      ],
+      "safetyFlags": [
+        "drug-interaction",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-stjohns",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "kava": {
+      "aliases": [
+        "piper methysticum",
+        "kavakava"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "typicalUseCases": [
+        "stress support",
+        "calm support"
+      ],
+      "safetyNotes": [
+        "Kava products may carry liver safety concerns; product quality and medical history are important."
+      ],
+      "safetyFlags": [
+        "liver",
+        "sedation",
+        "drug-interaction"
+      ],
+      "citationSourceKeys": [
+        "nccih-kava",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "rhodiola": {
+      "aliases": [
+        "rhodiola rosea",
+        "rodiola",
+        "golden root"
+      ],
+      "categories": [
+        "herb",
+        "adaptogen"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "typicalUseCases": [
+        "fatigue resilience",
+        "stress support",
+        "focus support"
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-herbs-at-a-glance",
+        "nccih-supplements-wisely",
+        "nccih-rhodiola"
+      ],
+      "evidenceSummary": "Rhodiola has mixed evidence for stress and fatigue outcomes, with response varying by extract profile and study design."
+    },
+    "shilajit": {
+      "aliases": [
+        "shilajeet",
+        "mineral pitch"
+      ],
+      "categories": [
+        "herb",
+        "adaptogen"
+      ],
+      "evidenceStrengthTags": [
+        "traditional",
+        "emerging"
+      ],
+      "typicalUseCases": [
+        "energy support",
+        "vitality support"
+      ],
+      "safetyNotes": [
+        "Choose purified, quality-tested products because contamination risk can vary across products."
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-supplements-wisely",
+        "fda-dietary-supplements"
+      ]
+    },
+    "tulsi": {
+      "aliases": [
+        "holy basil",
+        "ocimum sanctum",
+        "ocimum tenuiflorum",
+        "tulasi"
+      ],
+      "categories": [
+        "herb",
+        "adaptogen"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "typicalUseCases": [
+        "stress support",
+        "metabolic support"
+      ],
+      "safetyFlags": [
+        "pregnancy",
+        "drug-interaction"
+      ],
+      "citationSourceKeys": [
+        "nccih-herbs-at-a-glance",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "brahmi-bacopa": {
+      "aliases": [
+        "bacopa monnieri",
+        "brahmi",
+        "bakoopa"
+      ],
+      "categories": [
+        "herb",
+        "adaptogen"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "typicalUseCases": [
+        "memory support",
+        "focus support"
+      ],
+      "safetyFlags": [
+        "pregnancy",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-herbs-at-a-glance",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "maca": {
+      "aliases": [
+        "maca root",
+        "lepidium meyenii",
+        "macca"
+      ],
+      "categories": [
+        "herb",
+        "adaptogen"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "typicalUseCases": [
+        "vitality support",
+        "libido support"
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-herbs-at-a-glance",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "vitamin-a": {
+      "aliases": [
+        "retinol",
+        "beta carotene",
+        "vit a",
+        "vitamin a"
+      ],
+      "categories": [
+        "vitamin"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported"
+      ],
+      "evidenceSummary": "Vitamin A is essential for vision, immune function, and epithelial tissue health; supplementation is most useful when intake is inadequate.",
+      "typicalUseCases": [
+        "vision support",
+        "immune support",
+        "skin support"
+      ],
+      "safetyNotes": [
+        "High preformed vitamin A intake can increase toxicity risk, including liver effects.",
+        "Pregnancy use should avoid excessive retinol and follow prenatal guidance."
+      ],
+      "safetyFlags": [
+        "pregnancy",
+        "liver",
+        "general-caution"
+      ],
+      "dosageRangeNote": "Adult intake targets are typically 700-900 mcg RAE/day; high-dose retinol should stay below upper limits unless clinician-directed.",
+      "citationSourceKeys": [
+        "nih-ods-vitamin-a",
+        "nih-ods-list"
+      ]
+    },
+    "vitamin-b1": {
+      "aliases": [
+        "thiamin",
+        "thiamine",
+        "vit b1",
+        "vitamin b1"
+      ],
+      "categories": [
+        "vitamin"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported"
+      ],
+      "evidenceSummary": "Thiamin supports carbohydrate metabolism and nervous system function, with supplementation most relevant when status is low.",
+      "typicalUseCases": [
+        "energy metabolism support",
+        "nervous system support"
+      ],
+      "safetyNotes": [
+        "Deficiency risk can be higher in people with low intake, malabsorption, or heavy alcohol use."
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "dosageRangeNote": "Adult RDAs are commonly around 1.1-1.2 mg/day; supplemental doses vary by context.",
+      "citationSourceKeys": [
+        "nih-ods-thiamin",
+        "nih-ods-list"
+      ]
+    },
+    "vitamin-e": {
+      "aliases": [
+        "alpha tocopherol",
+        "tocopherol",
+        "vit e",
+        "vitamin e"
+      ],
+      "categories": [
+        "vitamin",
+        "antioxidant"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Vitamin E is an essential antioxidant nutrient; supplementation benefits are clearest when deficiency is present, while broad prevention outcomes are mixed.",
+      "typicalUseCases": [
+        "antioxidant support",
+        "cell protection support"
+      ],
+      "safetyNotes": [
+        "High-dose vitamin E may increase bleeding risk, especially with anticoagulant or antiplatelet therapy."
+      ],
+      "safetyFlags": [
+        "bleeding-risk",
+        "drug-interaction",
+        "general-caution"
+      ],
+      "dosageRangeNote": "Adult RDA is 15 mg/day alpha-tocopherol; high supplemental intakes should be clinician-reviewed.",
+      "citationSourceKeys": [
+        "nih-ods-vitamin-e",
+        "nih-ods-list"
+      ]
+    },
+    "vitamin-k2": {
+      "aliases": [
+        "menaquinone",
+        "vitamin k",
+        "mk-7",
+        "mk7",
+        "mk-4",
+        "mk4"
+      ],
+      "categories": [
+        "vitamin"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Vitamin K supports normal blood clotting and bone-related protein activation, with clinical response depending on baseline status and form.",
+      "typicalUseCases": [
+        "bone support",
+        "calcium metabolism support"
+      ],
+      "safetyNotes": [
+        "Vitamin K can alter anticoagulant response, especially with warfarin, so intake changes should be coordinated with clinicians."
+      ],
+      "safetyFlags": [
+        "drug-interaction",
+        "bleeding-risk",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-vitamin-k",
+        "nih-ods-list"
+      ]
+    },
+    "biotin": {
+      "aliases": [
+        "vitamin b7",
+        "vitamin h",
+        "vit b7",
+        "biotine"
+      ],
+      "categories": [
+        "vitamin"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Biotin is required for carboxylase enzyme function; deficiency is uncommon in the general population.",
+      "typicalUseCases": [
+        "hair and nail support",
+        "dietary gap support"
+      ],
+      "safetyNotes": [
+        "High-dose biotin can interfere with some laboratory tests, including certain thyroid and cardiac biomarkers."
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "dosageRangeNote": "Adult adequate intake is commonly listed as 30 mcg/day, with much higher doses used only in selected contexts.",
+      "citationSourceKeys": [
+        "nih-ods-biotin",
+        "nih-ods-list"
+      ]
+    },
+    "b-complex": {
+      "aliases": [
+        "b vitamins",
+        "vitamin b complex",
+        "b complex"
+      ],
+      "categories": [
+        "vitamin"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "B-complex products combine several B vitamins; benefits are usually strongest when intake is insufficient or requirements are increased.",
+      "typicalUseCases": [
+        "energy metabolism support",
+        "dietary gap support",
+        "nervous system support"
+      ],
+      "safetyNotes": [
+        "High-dose B-complex products can exceed tolerable intake levels for some components (for example, niacin or vitamin B6) when stacked with other products."
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-thiamin",
+        "nih-ods-riboflavin",
+        "nih-ods-niacin",
+        "nih-ods-vitamin-b6",
+        "nih-ods-pantothenic-acid",
+        "nih-ods-b12",
+        "nih-ods-folate"
+      ]
+    },
+    "calcium": {
+      "aliases": [
+        "ca",
+        "calcium citrate",
+        "calcium carbonate"
+      ],
+      "categories": [
+        "mineral"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Calcium is essential for bone and neuromuscular function, and supplementation is most useful when dietary intake is below targets.",
+      "typicalUseCases": [
+        "bone health support",
+        "muscle function support"
+      ],
+      "safetyNotes": [
+        "High supplemental intake can increase adverse-effect risk, including constipation and kidney stone risk in susceptible individuals."
+      ],
+      "safetyFlags": [
+        "kidney",
+        "general-caution"
+      ],
+      "dosageRangeNote": "Total daily intake goals are often around 1,000-1,200 mg/day from food plus supplements, with divided doses improving tolerance.",
+      "citationSourceKeys": [
+        "nih-ods-calcium",
+        "nih-ods-list"
+      ]
+    },
+    "potassium": {
+      "aliases": [
+        "k",
+        "potassium citrate",
+        "potassium chloride"
+      ],
+      "categories": [
+        "mineral"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Potassium supports blood pressure regulation, nerve signaling, and muscle contraction, with food-first intake generally preferred.",
+      "typicalUseCases": [
+        "blood pressure support",
+        "electrolyte support",
+        "muscle function support"
+      ],
+      "safetyNotes": [
+        "Supplemental potassium may be unsafe in kidney impairment or when combined with medications that reduce potassium excretion."
+      ],
+      "safetyFlags": [
+        "kidney",
+        "blood-pressure",
+        "drug-interaction",
+        "general-caution"
+      ],
+      "dosageRangeNote": "Adequate intake targets are generally in the gram range and are usually achieved through foods rather than high-dose supplements.",
+      "citationSourceKeys": [
+        "nih-ods-potassium",
+        "nih-ods-list"
+      ]
+    },
+    "copper": {
+      "aliases": [
+        "cu",
+        "copper bisglycinate",
+        "copper gluconate"
+      ],
+      "categories": [
+        "mineral"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Copper is required for iron metabolism, connective tissue biology, and antioxidant enzymes.",
+      "typicalUseCases": [
+        "trace mineral balance",
+        "iron metabolism support"
+      ],
+      "safetyNotes": [
+        "Excess copper intake can cause toxicity, and long-term high intake should be avoided without clinical indication."
+      ],
+      "safetyFlags": [
+        "liver",
+        "general-caution"
+      ],
+      "dosageRangeNote": "Adult RDA is typically 900 mcg/day; upper intake limits should be respected in multi-supplement plans.",
+      "citationSourceKeys": [
+        "nih-ods-copper",
+        "nih-ods-list"
+      ]
+    },
+    "selenium": {
+      "aliases": [
+        "se",
+        "selenomethionine",
+        "selenite"
+      ],
+      "categories": [
+        "mineral"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Selenium contributes to antioxidant systems and thyroid-related enzymes, with a relatively narrow margin between adequacy and excess.",
+      "typicalUseCases": [
+        "thyroid support",
+        "antioxidant support"
+      ],
+      "safetyNotes": [
+        "Long-term excessive selenium intake can lead to adverse effects such as selenosis."
+      ],
+      "safetyFlags": [
+        "thyroid",
+        "general-caution"
+      ],
+      "dosageRangeNote": "Adult RDA is commonly 55 mcg/day, and long-term intakes above upper limits should be avoided.",
+      "citationSourceKeys": [
+        "nih-ods-selenium",
+        "nih-ods-list"
+      ]
+    },
+    "chromium": {
+      "aliases": [
+        "chromium picolinate",
+        "chromium polynicotinate",
+        "cr"
+      ],
+      "categories": [
+        "mineral"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "emerging"
+      ],
+      "evidenceSummary": "Chromium has mixed evidence for metabolic outcomes, with effects varying across populations and formulations.",
+      "typicalUseCases": [
+        "metabolic support",
+        "blood sugar support"
+      ],
+      "safetyNotes": [
+        "Potential benefits and risks should be reviewed when used with glucose-lowering medications."
+      ],
+      "safetyFlags": [
+        "blood-sugar",
+        "drug-interaction",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-chromium",
+        "nih-ods-list"
+      ]
+    },
+    "iodine": {
+      "aliases": [
+        "iodide",
+        "potassium iodide",
+        "iodin"
+      ],
+      "categories": [
+        "mineral"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported"
+      ],
+      "evidenceSummary": "Iodine is required for thyroid hormone production, and both low and excessive intakes can disrupt thyroid function.",
+      "typicalUseCases": [
+        "thyroid support",
+        "prenatal micronutrient support"
+      ],
+      "safetyNotes": [
+        "People with thyroid disease and those who are pregnant should use supplemental iodine with individualized guidance."
+      ],
+      "safetyFlags": [
+        "thyroid",
+        "pregnancy",
+        "general-caution"
+      ],
+      "dosageRangeNote": "Adult RDA is generally 150 mcg/day, with higher needs in pregnancy and lactation.",
+      "citationSourceKeys": [
+        "nih-ods-iodine",
+        "nih-ods-list"
+      ]
+    },
+    "boron": {
+      "aliases": [
+        "bor",
+        "borate"
+      ],
+      "categories": [
+        "mineral"
+      ],
+      "evidenceStrengthTags": [
+        "emerging",
+        "mixed"
+      ],
+      "evidenceSummary": "Boron is a trace element with emerging evidence in bone and mineral metabolism, but clinical endpoints remain limited.",
+      "typicalUseCases": [
+        "bone support",
+        "trace mineral support"
+      ],
+      "safetyNotes": [
+        "No RDA has been established, so conservative dosing and product quality review are important."
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nih-ods-boron",
+        "nih-ods-list"
+      ]
+    },
+    "krill-oil": {
+      "aliases": [
+        "krill oil",
+        "euphausia superba oil"
+      ],
+      "categories": [
+        "fatty-acid"
+      ],
+      "evidenceStrengthTags": [
+        "well-supported",
+        "mixed"
+      ],
+      "evidenceSummary": "Krill oil supplies EPA and DHA, and expected effects generally track total omega-3 intake rather than marketing claims about delivery form.",
+      "typicalUseCases": [
+        "heart support",
+        "triglyceride support",
+        "brain health support"
+      ],
+      "safetyNotes": [
+        "Potential bleeding-risk considerations are similar to other omega-3 supplements, especially with anticoagulant therapy."
+      ],
+      "safetyFlags": [
+        "bleeding-risk",
+        "drug-interaction"
+      ],
+      "dosageRangeNote": "Compare products by EPA plus DHA content, not only by total oil milligrams.",
+      "citationSourceKeys": [
+        "nih-ods-omega3",
+        "fda-dietary-supplements"
+      ]
+    },
+    "echinacea": {
+      "aliases": [
+        "echinacea purpurea",
+        "purple coneflower",
+        "echinacia"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Echinacea may modestly reduce common-cold risk in some studies, while effects on symptom duration are less consistent.",
+      "typicalUseCases": [
+        "seasonal immune support",
+        "upper respiratory support"
+      ],
+      "safetyNotes": [
+        "Allergic reactions can occur, particularly in people sensitive to ragweed-related plants.",
+        "Potential interactions with immunomodulating therapies should be reviewed clinically."
+      ],
+      "safetyFlags": [
+        "drug-interaction",
+        "autoimmune",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-echinacea",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "ginseng-panax": {
+      "aliases": [
+        "panax ginseng",
+        "asian ginseng",
+        "korean ginseng",
+        "ginsing"
+      ],
+      "categories": [
+        "herb",
+        "adaptogen"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Asian ginseng has mixed clinical evidence for fatigue, metabolic markers, and cognition, with heterogeneity across preparations.",
+      "typicalUseCases": [
+        "energy support",
+        "focus support",
+        "stress resilience"
+      ],
+      "safetyNotes": [
+        "Possible side effects include insomnia or stimulation in sensitive users.",
+        "Potential interactions include anticoagulants, glucose-lowering therapies, and stimulants."
+      ],
+      "safetyFlags": [
+        "stimulant",
+        "blood-sugar",
+        "drug-interaction",
+        "bleeding-risk"
+      ],
+      "citationSourceKeys": [
+        "nccih-asian-ginseng",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "valerian": {
+      "aliases": [
+        "valeriana officinalis",
+        "valeriana",
+        "valerian root"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Valerian has mixed evidence for sleep outcomes, with some studies suggesting small benefits for sleep quality or latency.",
+      "typicalUseCases": [
+        "sleep support",
+        "calm support"
+      ],
+      "safetyNotes": [
+        "Sedation and next-day drowsiness can occur, especially when combined with other sedative agents."
+      ],
+      "safetyFlags": [
+        "sedation",
+        "drug-interaction",
+        "pregnancy"
+      ],
+      "citationSourceKeys": [
+        "nccih-valerian",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "saw-palmetto": {
+      "aliases": [
+        "serenoa repens",
+        "sabal serrulata"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Saw palmetto has not shown consistent benefit in high-quality trials for lower urinary tract symptom outcomes.",
+      "typicalUseCases": [
+        "prostate wellness support"
+      ],
+      "safetyNotes": [
+        "Potential interactions with anticoagulants and hormone-related treatments should be reviewed before use."
+      ],
+      "safetyFlags": [
+        "drug-interaction",
+        "bleeding-risk",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-saw-palmetto",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "milk-thistle": {
+      "aliases": [
+        "silybum marianum",
+        "silymarin",
+        "mary thistle"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Milk thistle evidence for liver and metabolic outcomes remains mixed, with inconsistent effects across trials.",
+      "typicalUseCases": [
+        "liver support",
+        "antioxidant support"
+      ],
+      "safetyNotes": [
+        "Product quality can vary, and contamination or inconsistent active content has been reported in some markets.",
+        "Allergic reactions are more likely in people sensitive to related plants."
+      ],
+      "safetyFlags": [
+        "liver",
+        "drug-interaction",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-milk-thistle",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "elderberry": {
+      "aliases": [
+        "sambucus nigra",
+        "sambucus",
+        "elder berry"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Elderberry evidence for respiratory symptom outcomes is limited and product-specific, with variable trial quality.",
+      "typicalUseCases": [
+        "seasonal immune support",
+        "respiratory comfort support"
+      ],
+      "safetyNotes": [
+        "Raw or unripe elderberry plant material can be toxic; use properly prepared commercial products."
+      ],
+      "safetyFlags": [
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-elderberry",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "fenugreek": {
+      "aliases": [
+        "trigonella foenum graecum",
+        "methi"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Fenugreek has mixed evidence for glycemic and other outcomes, with heterogeneity across studies and preparations.",
+      "typicalUseCases": [
+        "metabolic support",
+        "appetite support"
+      ],
+      "safetyNotes": [
+        "Fenugreek may lower blood glucose and can interact with medications affecting glucose or coagulation.",
+        "Pregnancy use should be clinically reviewed before supplementation."
+      ],
+      "safetyFlags": [
+        "blood-sugar",
+        "drug-interaction",
+        "pregnancy"
+      ],
+      "citationSourceKeys": [
+        "nccih-fenugreek",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "red-clover": {
+      "aliases": [
+        "trifolium pratense",
+        "red clover isoflavones"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Red clover isoflavones show mixed evidence for menopausal symptom support and other outcomes.",
+      "typicalUseCases": [
+        "menopause support",
+        "women wellness support"
+      ],
+      "safetyNotes": [
+        "Use caution with hormone-sensitive conditions and with anticoagulant or antiplatelet medications."
+      ],
+      "safetyFlags": [
+        "drug-interaction",
+        "bleeding-risk",
+        "pregnancy"
+      ],
+      "citationSourceKeys": [
+        "nccih-red-clover",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "ginger": {
+      "aliases": [
+        "zingiber officinale",
+        "ginger root"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Ginger has supportive evidence for pregnancy-related nausea and menstrual discomfort, with mixed findings for other outcomes.",
+      "typicalUseCases": [
+        "nausea support",
+        "digestive comfort",
+        "menstrual comfort"
+      ],
+      "safetyNotes": [
+        "Possible side effects include heartburn or gastrointestinal discomfort at higher intakes.",
+        "Medication interaction review is advised, particularly with anticoagulants."
+      ],
+      "safetyFlags": [
+        "bleeding-risk",
+        "drug-interaction",
+        "pregnancy"
+      ],
+      "citationSourceKeys": [
+        "nccih-ginger",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "passionflower": {
+      "aliases": [
+        "passiflora incarnata",
+        "maypop"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Passionflower has limited but emerging evidence for anxiety and sleep-related outcomes.",
+      "typicalUseCases": [
+        "calm support",
+        "sleep quality support"
+      ],
+      "safetyNotes": [
+        "Sedation can occur and may be amplified when combined with other sedative agents."
+      ],
+      "safetyFlags": [
+        "sedation",
+        "drug-interaction",
+        "pregnancy"
+      ],
+      "citationSourceKeys": [
+        "nccih-passionflower",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "hawthorn": {
+      "aliases": [
+        "crataegus",
+        "crataegus monogyna",
+        "hawthorne"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Hawthorn has mixed evidence for cardiovascular symptom measures and should not replace prescribed cardiac care.",
+      "typicalUseCases": [
+        "circulatory support",
+        "heart wellness support"
+      ],
+      "safetyNotes": [
+        "Potential interactions with cardiovascular and blood pressure medications require clinician review."
+      ],
+      "safetyFlags": [
+        "drug-interaction",
+        "blood-pressure",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-hawthorn",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "green-tea-matcha": {
+      "aliases": [
+        "camellia sinensis",
+        "matcha",
+        "green tea"
+      ],
+      "categories": [
+        "tea",
+        "antioxidant"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Green tea provides catechins and caffeine, with mixed evidence for metabolic and cardiometabolic endpoints in supplement form.",
+      "typicalUseCases": [
+        "focus support",
+        "antioxidant support",
+        "metabolic support"
+      ],
+      "safetyNotes": [
+        "Caffeine-related effects include insomnia, jitteriness, and heart-rate sensitivity in some users.",
+        "Concentrated green tea extracts have been linked to rare liver injury cases."
+      ],
+      "safetyFlags": [
+        "stimulant",
+        "liver",
+        "drug-interaction",
+        "pregnancy"
+      ],
+      "citationSourceKeys": [
+        "nccih-green-tea",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "green-tea-sencha": {
+      "aliases": [
+        "sencha",
+        "camellia sinensis green tea"
+      ],
+      "categories": [
+        "tea",
+        "antioxidant"
+      ],
+      "citationSourceKeys": [
+        "nccih-green-tea",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "jasmine-green-tea": {
+      "aliases": [
+        "jasmine tea",
+        "green jasmine tea"
+      ],
+      "categories": [
+        "tea",
+        "antioxidant"
+      ],
+      "citationSourceKeys": [
+        "nccih-green-tea",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "chamomile-tea": {
+      "aliases": [
+        "chamomile",
+        "matricaria recutita",
+        "german chamomile tea"
+      ],
+      "categories": [
+        "tea",
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Chamomile has limited evidence for relaxation and anxiety-related outcomes, with generally mild effects when present.",
+      "typicalUseCases": [
+        "relaxation support",
+        "sleep wind-down",
+        "digestive comfort"
+      ],
+      "safetyNotes": [
+        "Allergic reactions are more likely in people sensitive to ragweed-related plants.",
+        "Possible interactions include sedatives and anticoagulants."
+      ],
+      "safetyFlags": [
+        "sedation",
+        "bleeding-risk",
+        "drug-interaction",
+        "pregnancy"
+      ],
+      "citationSourceKeys": [
+        "nccih-chamomile",
+        "nccih-supplements-wisely"
+      ]
+    },
+    "boswellia": {
+      "aliases": [
+        "boswellia serrata",
+        "frankincense"
+      ],
+      "categories": [
+        "herb"
+      ],
+      "evidenceStrengthTags": [
+        "mixed",
+        "traditional"
+      ],
+      "evidenceSummary": "Boswellia shows mixed evidence for joint comfort and inflammation-related outcomes, with effect size varying by extract quality.",
+      "typicalUseCases": [
+        "joint comfort support",
+        "mobility support"
+      ],
+      "safetyNotes": [
+        "Gastrointestinal effects are possible, and medication interaction review is advisable before long-term use."
+      ],
+      "safetyFlags": [
+        "drug-interaction",
+        "general-caution"
+      ],
+      "citationSourceKeys": [
+        "nccih-boswellia",
+        "nccih-supplements-wisely"
+      ]
+    }
+  }
+}

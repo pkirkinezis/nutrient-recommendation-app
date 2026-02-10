@@ -14,6 +14,65 @@ export interface EvidenceSource {
   note?: string;
 }
 
+export type KnowledgeCategory =
+  | 'vitamin'
+  | 'mineral'
+  | 'herb'
+  | 'tea'
+  | 'adaptogen'
+  | 'amino-acid'
+  | 'fatty-acid'
+  | 'probiotic'
+  | 'mushroom'
+  | 'enzyme'
+  | 'performance'
+  | 'antioxidant'
+  | 'other';
+
+export type KnowledgeEvidenceStrengthTag =
+  | 'well-supported'
+  | 'mixed'
+  | 'emerging'
+  | 'traditional';
+
+export type KnowledgeSafetyFlag =
+  | 'pregnancy'
+  | 'breastfeeding'
+  | 'drug-interaction'
+  | 'bleeding-risk'
+  | 'blood-pressure'
+  | 'blood-sugar'
+  | 'sedation'
+  | 'stimulant'
+  | 'thyroid'
+  | 'liver'
+  | 'kidney'
+  | 'autoimmune'
+  | 'general-caution';
+
+export interface KnowledgeCitation {
+  title: string;
+  publisher: string;
+  url: string;
+  accessedAt: string;
+}
+
+export interface SupplementKnowledgeEntry {
+  supplementId: string;
+  supplementName: string;
+  aliases: string[];
+  categories: KnowledgeCategory[];
+  evidenceStrengthTags: KnowledgeEvidenceStrengthTag[];
+  evidenceSummary: string;
+  typicalUseCases: string[];
+  safetyNotes: string[];
+  safetyFlags: KnowledgeSafetyFlag[];
+  dosageRangeNote?: string;
+  citations: KnowledgeCitation[];
+}
+
+export type SupplementKnowledgeMap = Record<string, SupplementKnowledgeEntry>;
+
 export interface DosagePerKgGuidance {
   min: number;
   max: number;
