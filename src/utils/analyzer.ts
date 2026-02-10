@@ -20,6 +20,8 @@ import { buildNutrientTargets } from '../data/nutrientRequirements';
 import { premadeStacks } from '../data/stacks';
 import { semanticIntentDataset } from '../data/semanticIntents';
 import { rankByCosineSimilarity } from './similarity';
+import { getSupplementKnowledgeById } from '../data/supplementKnowledge';
+import { getSupplementSearchCandidates } from './supplementSearchEngine';
 
 // ============================================
 // TOKENIZATION & PARSING
@@ -332,19 +334,25 @@ function findSupplementByNameOrAlias(
   const normalizedName = name.toLowerCase();
   const alias = normalizeSupplementName(normalizedName).toLowerCase();
   return supplements.find(s => {
-    const lowerName = s.name.toLowerCase();
-    return lowerName === normalizedName ||
-      lowerName === alias ||
-      lowerName.includes(normalizedName) ||
-      lowerName.includes(alias) ||
-      s.id.toLowerCase() === normalizedName;
+    const candidates = getSupplementMatchCandidates(s);
+    return candidates.some(candidate =>
+      candidate === normalizedName ||
+      candidate === alias ||
+      candidate.includes(normalizedName) ||
+      candidate.includes(alias) ||
+      fuzzyMatch(normalizedName, candidate, 0.78) ||
+      fuzzyMatch(alias, candidate, 0.78)
+    );
   });
 }
 
-function isNegatedSupplementMatch(inputTokens: Token[], supplementName: string, alias: string): boolean {
+function getSupplementMatchCandidates(supplement: Supplement): string[] {
+  return getSupplementSearchCandidates(supplement);
+}
+
+function isNegatedSupplementMatch(inputTokens: Token[], candidates: string[]): boolean {
   const targetTokens = new Set([
-    ...tokenize(supplementName),
-    ...tokenize(alias)
+    ...candidates.flatMap(tokenize)
   ]);
   for (const token of inputTokens) {
     if (!token.isNegated) continue;
@@ -362,13 +370,18 @@ function findDirectSupplementMatches(input: string, supplements: Supplement[]): 
   }
 
   const inputTokens = parseInput(input);
-  const alias = normalizeSupplementName(normalizedInput).toLowerCase();
+  const queryCandidates = new Set<string>([
+    normalizedInput,
+    normalizeSupplementName(normalizedInput).toLowerCase(),
+  ]);
   const matches = supplements.filter(supplement => {
-    const normalizedName = supplement.name.toLowerCase();
-    if (isNegatedSupplementMatch(inputTokens, normalizedName, alias)) {
+    const supplementCandidates = getSupplementMatchCandidates(supplement);
+    if (isNegatedSupplementMatch(inputTokens, supplementCandidates)) {
       return false;
     }
-    return fuzzyMatch(normalizedInput, normalizedName) || fuzzyMatch(alias, normalizedName);
+    return Array.from(queryCandidates).some(query =>
+      supplementCandidates.some(candidate => fuzzyMatch(query, candidate, 0.78))
+    );
   });
 
   const inferredGoals = new Set<string>();
@@ -622,6 +635,8 @@ function scoreSupplementForGoals(
   let score = 0;
   const normalizedGoals = normalizeGoals(supplement.goals);
   const normalizedSystems = normalizeSystems(supplement.systems);
+  const knowledge = getSupplementKnowledgeById(supplement.id);
+  const normalizedKnowledgeUseCases = normalizeGoals((knowledge?.typicalUseCases || []).map(useCase => useCase.toLowerCase()));
   
   // Score based on goals
   for (const goal of matchedGoals) {
@@ -630,6 +645,10 @@ function scoreSupplementForGoals(
       const evidenceMultiplier = EVIDENCE_MULTIPLIERS[evidenceLevel] || 1;
       score += goal.score * 10 * evidenceMultiplier;
     }
+
+    if (normalizedKnowledgeUseCases.includes(goal.id)) {
+      score += goal.score * 6;
+    }
     // Check benefits text for goal keywords
     for (const keyword of goal.matchedKeywords) {
       if (supplement.benefits?.some(b => b.toLowerCase().includes(keyword))) {
@@ -637,6 +656,9 @@ function scoreSupplementForGoals(
       }
       if (supplement.description?.toLowerCase().includes(keyword)) {
         score += 1;
+      }
+      if (knowledge?.typicalUseCases.some(useCase => useCase.toLowerCase().includes(keyword))) {
+        score += 1.5;
       }
     }
   }
@@ -1127,6 +1149,7 @@ function filterCurrentSupplements(
   
   return supplements.filter(({ supplement }) => {
     const normalizedName = supplement.name.toLowerCase();
+    const knowledgeAliases = (getSupplementKnowledgeById(supplement.id)?.aliases || []).map(alias => alias.toLowerCase());
     // Also check aliases
     const aliases = Object.entries(SUPPLEMENT_ALIASES)
       .filter(([, canonical]) => canonical.toLowerCase() === normalizedName)
@@ -1135,7 +1158,8 @@ function filterCurrentSupplements(
     return !normalizedCurrent.some(current => 
       normalizedName.includes(current) ||
       current.includes(normalizedName) ||
-      aliases.some(alias => current.includes(alias))
+      aliases.some(alias => current.includes(alias)) ||
+      knowledgeAliases.some(alias => current.includes(alias) || alias.includes(current))
     );
   });
 }
