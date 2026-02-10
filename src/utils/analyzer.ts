@@ -219,13 +219,17 @@ function levenshteinDistance(a: string, b: string): number {
 
 function fuzzyMatch(input: string, target: string, threshold = 0.7): boolean {
   if (!input || !target) return false;
-  const normalizedInput = input.toLowerCase();
-  const normalizedTarget = target.toLowerCase();
+  const normalizedInput = input.toLowerCase().trim();
+  const normalizedTarget = target.toLowerCase().trim();
   if (normalizedInput === normalizedTarget) return true;
-  if (normalizedTarget.includes(normalizedInput) || normalizedInput.includes(normalizedTarget)) return true;
+  if (normalizedTarget.includes(normalizedInput)) return true;
+
+  const lengthDelta = Math.abs(normalizedInput.length - normalizedTarget.length);
+  const maxLengthDelta = Math.max(4, Math.floor(Math.max(normalizedInput.length, normalizedTarget.length) * 0.45));
+  if (lengthDelta > maxLengthDelta) return false;
 
   const distance = levenshteinDistance(normalizedInput, normalizedTarget);
-  const similarity = 1 - distance / Math.max(normalizedTarget.length, 1);
+  const similarity = 1 - distance / Math.max(normalizedInput.length, normalizedTarget.length, 1);
   return similarity >= threshold;
 }
 
@@ -357,6 +361,43 @@ function getSupplementMatchCandidates(supplement: Supplement): string[] {
   return getSupplementSearchCandidates(supplement);
 }
 
+function buildDirectQueryCandidates(input: string): string[] {
+  const normalizedInput = input.toLowerCase().trim();
+  const normalizedAliasInput = normalizeSupplementName(normalizedInput).toLowerCase().trim();
+  const queryCandidates = new Set<string>();
+
+  const addTokenPhrases = (tokens: string[]): void => {
+    const maxPhraseLength = Math.min(5, tokens.length);
+    for (let start = 0; start < tokens.length; start++) {
+      for (let length = 1; length <= maxPhraseLength && start + length <= tokens.length; length++) {
+        const phraseTokens = tokens.slice(start, start + length);
+        if (length === 1) {
+          const token = phraseTokens[0];
+          if (token.length < 3 || STOP_WORDS.has(token)) continue;
+        }
+        const phrase = phraseTokens.join(' ').trim();
+        if (phrase.length >= 3) {
+          queryCandidates.add(phrase);
+        }
+      }
+    }
+  };
+
+  if (normalizedInput.length >= 3) {
+    queryCandidates.add(normalizedInput);
+  }
+  if (normalizedAliasInput.length >= 3) {
+    queryCandidates.add(normalizedAliasInput);
+  }
+
+  addTokenPhrases(tokenize(normalizedInput));
+  if (normalizedAliasInput !== normalizedInput) {
+    addTokenPhrases(tokenize(normalizedAliasInput));
+  }
+
+  return Array.from(queryCandidates);
+}
+
 function isNegatedSupplementMatch(inputTokens: Token[], candidates: string[]): boolean {
   const targetTokens = new Set([
     ...candidates.flatMap(tokenize)
@@ -377,16 +418,13 @@ function findDirectSupplementMatches(input: string, supplements: Supplement[]): 
   }
 
   const inputTokens = parseInput(input);
-  const queryCandidates = new Set<string>([
-    normalizedInput,
-    normalizeSupplementName(normalizedInput).toLowerCase(),
-  ]);
+  const queryCandidates = buildDirectQueryCandidates(normalizedInput);
   const matches = supplements.filter(supplement => {
     const supplementCandidates = getSupplementMatchCandidates(supplement);
     if (isNegatedSupplementMatch(inputTokens, supplementCandidates)) {
       return false;
     }
-    return Array.from(queryCandidates).some(query =>
+    return queryCandidates.some(query =>
       supplementCandidates.some(candidate => fuzzyMatch(query, candidate, 0.78))
     );
   });

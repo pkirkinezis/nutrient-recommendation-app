@@ -97,6 +97,22 @@ try {
     'Search ordering is not deterministic for "energy support".'
   );
 
+  const nonsenseAnalysis = analyzeGoal('something', supplements);
+  assert(
+    nonsenseAnalysis.matchType !== 'direct',
+    `Expected "something" not to trigger direct-match mode, got ${nonsenseAnalysis.matchType || 'none'}.`
+  );
+  assert(
+    !nonsenseAnalysis.directSupplements.includes('fenugreek'),
+    'Expected "something" not to direct-match fenugreek via alias substring.'
+  );
+
+  const contextualDirect = analyzeGoal('I want magnesium', supplements);
+  assert(
+    contextualDirect.directSupplements.includes('magnesium'),
+    'Expected direct-match extraction to still detect magnesium in a longer sentence.'
+  );
+
   const supplementsById = new Map(supplements.map((supplement) => [supplement.id, supplement]));
   const canonicalKey = (id) => {
     const supplement = supplementsById.get(id);
