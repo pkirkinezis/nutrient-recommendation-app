@@ -330,6 +330,23 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     return recs.filter((rec, index, self) => self.findIndex(r => r.id === rec.id) === index);
   }, [userProfile]);
 
+  const selectedSupplementsByCanonical = useMemo(() => {
+    const byCanonical = new Map<string, Supplement>();
+    for (const selected of selectedSupplements) {
+      const canonicalKey = getCanonicalSupplementKey(selected);
+      if (!byCanonical.has(canonicalKey)) {
+        byCanonical.set(canonicalKey, selected);
+      }
+    }
+    return byCanonical;
+  }, [selectedSupplements]);
+
+  const handleSelectSupplement = useCallback((supplement: Supplement): void => {
+    const canonicalKey = getCanonicalSupplementKey(supplement);
+    const selectedEquivalent = selectedSupplementsByCanonical.get(canonicalKey);
+    onSelectSupplement(selectedEquivalent ?? supplement);
+  }, [onSelectSupplement, selectedSupplementsByCanonical]);
+
   const activeFilterCount = useMemo(() => {
     return (
       filters.types.length +
@@ -1057,7 +1074,8 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       ) : viewMode === 'compact' ? (
         <div className="rounded-2xl border border-gray-200 bg-white divide-y divide-gray-100">
           {visibleResults.map(({ supplement, matchReasons, cautionLevel, safetyFlags, excludedForSafety }) => {
-            const isSelected = selectedSupplements.some(s => s.id === supplement.id);
+            const canonicalKey = getCanonicalSupplementKey(supplement);
+            const isSelected = selectedSupplementsByCanonical.has(canonicalKey);
             const selectionDisabled = excludedForSafety && !isSelected;
             return (
               <CompactCard
@@ -1069,7 +1087,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 excludedForSafety={excludedForSafety}
                 selectionDisabled={selectionDisabled}
                 isSelected={isSelected}
-                onSelect={() => onSelectSupplement(supplement)}
+                onSelect={() => handleSelectSupplement(supplement)}
                 onViewDetails={() => setActiveSupplement(supplement)}
                 personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
               />
@@ -1084,7 +1102,8 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         >
           <div style={{ paddingTop, paddingBottom }} className="space-y-3">
             {visibleResults.map(({ supplement, matchReasons, cautionLevel, safetyFlags, excludedForSafety }) => {
-              const isSelected = selectedSupplements.some(s => s.id === supplement.id);
+              const canonicalKey = getCanonicalSupplementKey(supplement);
+              const isSelected = selectedSupplementsByCanonical.has(canonicalKey);
               const selectionDisabled = excludedForSafety && !isSelected;
               return (
                 <ListCard
@@ -1096,7 +1115,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                   excludedForSafety={excludedForSafety}
                   selectionDisabled={selectionDisabled}
                   isSelected={isSelected}
-                  onSelect={() => onSelectSupplement(supplement)}
+                  onSelect={() => handleSelectSupplement(supplement)}
                   onViewDetails={() => setActiveSupplement(supplement)}
                   personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
                 />
@@ -1107,7 +1126,8 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {visibleResults.map(({ supplement, matchReasons, cautionLevel, safetyFlags, excludedForSafety }) => {
-            const isSelected = selectedSupplements.some(s => s.id === supplement.id);
+            const canonicalKey = getCanonicalSupplementKey(supplement);
+            const isSelected = selectedSupplementsByCanonical.has(canonicalKey);
             const selectionDisabled = excludedForSafety && !isSelected;
             return (
               <GridCard
@@ -1119,7 +1139,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 excludedForSafety={excludedForSafety}
                 selectionDisabled={selectionDisabled}
                 isSelected={isSelected}
-                onSelect={() => onSelectSupplement(supplement)}
+                onSelect={() => handleSelectSupplement(supplement)}
                 onViewDetails={() => setActiveSupplement(supplement)}
                 personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
               />
