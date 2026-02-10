@@ -788,6 +788,18 @@ export const SUPPLEMENT_ALIASES: Record<string, string> = {
   'glycerol': 'Glycerol',
 };
 
+const normalizeAliasLookupKey = (value: string): string =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ');
+
+const SUPPLEMENT_ALIAS_LOOKUP = new Map<string, string>();
+for (const [alias, canonical] of Object.entries(SUPPLEMENT_ALIASES)) {
+  SUPPLEMENT_ALIAS_LOOKUP.set(normalizeAliasLookupKey(alias), canonical);
+}
+
 // ============================================
 // INTERACTION SEVERITY LEVELS
 // ============================================
@@ -850,7 +862,29 @@ export type StressLevel = typeof STRESS_LEVELS[number];
  */
 export function normalizeSupplementName(input: string): string {
   const normalized = input.toLowerCase().trim();
-  return SUPPLEMENT_ALIASES[normalized] || input;
+  if (SUPPLEMENT_ALIASES[normalized]) {
+    return SUPPLEMENT_ALIASES[normalized];
+  }
+
+  const normalizedKey = normalizeAliasLookupKey(input);
+  if (!normalizedKey) {
+    return input;
+  }
+  const directMatch = SUPPLEMENT_ALIAS_LOOKUP.get(normalizedKey);
+  if (directMatch) {
+    return directMatch;
+  }
+
+  for (const part of normalized.split(/[()/,+;|]+/)) {
+    const partKey = normalizeAliasLookupKey(part);
+    if (!partKey) continue;
+    const partMatch = SUPPLEMENT_ALIAS_LOOKUP.get(partKey);
+    if (partMatch) {
+      return partMatch;
+    }
+  }
+
+  return input;
 }
 
 /**

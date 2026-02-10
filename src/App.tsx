@@ -645,12 +645,19 @@ export function App() {
   // Toggle supplement selection for stacking
   const toggleSupplementSelection = (supplement: Supplement) => {
     if (educationOnlyMode) return;
-    setSelectedSupplements(prev => {
-      if (prev.find(s => s.id === supplement.id)) {
-        return prev.filter(s => s.id !== supplement.id);
-      }
-      return [...prev, supplement];
-    });
+    const alreadySelected = selectedSupplements.some(s => s.id === supplement.id);
+    if (alreadySelected) {
+      setSelectedSupplements(prev => prev.filter(s => s.id !== supplement.id));
+      return;
+    }
+    const requiresReproductiveSafety =
+      !reproductiveSafetyComplete &&
+      (hasReproductiveRiskSignal(supplement) || selectedSupplements.some(hasReproductiveRiskSignal));
+    if (requiresReproductiveSafety) {
+      setShowProfile(true);
+      return;
+    }
+    setSelectedSupplements(prev => [...prev, supplement]);
   };
 
   const handleAddStack = (stack: CuratedStack) => {
@@ -961,22 +968,22 @@ export function App() {
               </div>
             </button>
             <div className="flex items-center gap-2">
-              <div className="flex rounded-xl border border-gray-200 bg-white p-1">
+              <div className="flex rounded-xl border border-gray-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800/90">
                 <button
                   onClick={() => { setActiveTab('find'); setHasAnalyzed(false); }}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'find' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'find' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/25 dark:text-emerald-100' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
                 >
                   {t('tabFind')}
                 </button>
                 <button
                   onClick={() => { setActiveTab('stacks'); setHasAnalyzed(false); }}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'stacks' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'stacks' ? 'bg-blue-100 text-blue-700 dark:bg-blue-400/25 dark:text-blue-100' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
                 >
                   {t('tabStacks')}
                 </button>
                 <button
                   onClick={() => { setActiveTab('learn'); setHasAnalyzed(false); }}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'learn' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-200' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'learn' ? 'bg-purple-100 text-purple-700 dark:bg-purple-400/25 dark:text-purple-100' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
                 >
                   {t('tabLearn')}
                 </button>
@@ -1402,15 +1409,15 @@ export function App() {
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Find Supplements</h2>
-                <p className="text-sm text-gray-500">Switch between guided recommendations and full catalog browse.</p>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Find Supplements</h2>
+                <p className="text-sm text-gray-500 dark:text-slate-300">Switch between guided recommendations and full catalog browse.</p>
               </div>
-              <div className="flex rounded-xl border border-gray-200 bg-white p-1">
+              <div className="flex rounded-xl border border-gray-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800/90">
                 <button
                   type="button"
                   onClick={() => setFindMode('recommend')}
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition ${
-                    findMode === 'recommend' ? 'bg-emerald-500 text-white' : 'text-gray-600 hover:text-gray-900'
+                    findMode === 'recommend' ? 'bg-emerald-500 text-white' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'
                   }`}
                 >
                   Recommendations
@@ -1419,7 +1426,7 @@ export function App() {
                   type="button"
                   onClick={() => setFindMode('browse')}
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition ${
-                    findMode === 'browse' ? 'bg-emerald-500 text-white' : 'text-gray-600 hover:text-gray-900'
+                    findMode === 'browse' ? 'bg-emerald-500 text-white' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'
                   }`}
                 >
                   Browse Catalog
@@ -1448,10 +1455,10 @@ export function App() {
               <div className="space-y-8">
                 {/* Hero */}
                 <div className="text-center py-8">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-slate-100 mb-4">
                     What would you like to improve?
                   </h2>
-                  <p className="text-gray-600 max-w-2xl mx-auto">
+                  <p className="text-gray-600 dark:text-slate-300 max-w-2xl mx-auto">
                     Describe your health goal in plain language. We&apos;ll recommend evidence-based supplements 
                     including vitamins, minerals, herbs, and Ayurvedic remedies.
                   </p>

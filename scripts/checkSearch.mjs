@@ -1,4 +1,11 @@
-import { buildKnowledgeArtifacts } from './knowledgeBuilder.mjs';
+import { rmSync, writeFileSync } from 'node:fs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import path from 'node:path';
+import { build } from 'esbuild';
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const runtimeEntryPath = path.join(scriptDir, `.tmp.checkSearch.runtime.${process.pid}.ts`);
+const runtimeBundlePath = path.join(scriptDir, `.tmp.checkSearch.runtime.${process.pid}.mjs`);
 
 const normalize = (value) =>
   value
@@ -7,196 +14,182 @@ const normalize = (value) =>
     .replace(/[^a-z0-9]+/g, ' ')
     .replace(/\s+/g, ' ');
 
-const tokenize = (value) => normalize(value).split(' ').filter(Boolean);
+const runtimeEntrySource = `
+import { analyzeGoal } from '../src/utils/analyzer.ts';
+import { searchSupplementsWithScores, suggestClosestSupplementTerm } from '../src/utils/supplementSearchEngine.ts';
+import { supplements } from '../src/data/supplements.ts';
+import { dedupeSupplementsByCanonical, getCanonicalSupplementKey } from '../src/utils/supplementCanonical.ts';
 
-const safetyIntentTokens = new Set([
-  'safe',
-  'safety',
-  'risk',
-  'warning',
-  'interaction',
-  'interactions',
-  'contraindication',
-  'contraindications',
-  'avoid',
-  'pregnancy',
-  'pregnant',
-  'breastfeeding',
-  'lactation',
-]);
-
-const levenshteinDistance = (a, b) => {
-  if (a === b) return 0;
-  if (!a.length) return b.length;
-  if (!b.length) return a.length;
-  const matrix = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
-  for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
-  for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
-  for (let i = 1; i <= a.length; i++) {
-    for (let j = 1; j <= b.length; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
-    }
-  }
-  return matrix[a.length][b.length];
+export {
+  analyzeGoal,
+  searchSupplementsWithScores,
+  suggestClosestSupplementTerm,
+  supplements,
+  dedupeSupplementsByCanonical,
+  getCanonicalSupplementKey,
 };
-
-const similarity = (a, b) => 1 - levenshteinDistance(a, b) / Math.max(a.length, b.length, 1);
-
-const bestMatchScore = (query, values, weights) => {
-  if (!query) return 0;
-  const normalizedValues = values.map((value) => normalize(value)).filter(Boolean);
-  if (normalizedValues.some((value) => value === query)) return weights.exact;
-  if (normalizedValues.some((value) => value.startsWith(query))) return weights.prefix;
-  if (normalizedValues.some((value) => value.includes(query))) return weights.contains;
-  if (query.length >= 4) {
-    let best = 0;
-    for (const value of normalizedValues) {
-      best = Math.max(best, similarity(query, value));
-    }
-    if (best >= 0.82) return weights.fuzzy;
-  }
-  return 0;
-};
-
-const search = (query, supplements, knowledgeMap) => {
-  const normalizedQuery = normalize(query);
-  const tokens = tokenize(query).filter((token) => token.length > 2);
-  const safetyIntent = tokens.some((token) => safetyIntentTokens.has(token));
-  const rows = [];
-
-  for (const supplement of supplements) {
-    const knowledge = knowledgeMap[supplement.id];
-    const aliases = knowledge?.aliases || [];
-    const benefitTerms = [
-      supplement.name,
-      supplement.description,
-      ...(supplement.benefits || []),
-      ...(supplement.goals || []),
-      ...(knowledge?.typicalUseCases || []),
-      knowledge?.evidenceSummary || '',
-    ]
-      .map(normalize)
-      .filter(Boolean);
-    const safetyTerms = [
-      ...(knowledge?.safetyNotes || []),
-      ...(knowledge?.safetyFlags || []),
-      ...(supplement.cautions || []),
-      ...(supplement.drugInteractions || []),
-      ...(supplement.avoidIf || []),
-    ]
-      .map(normalize)
-      .filter(Boolean);
-
-    let score = 0;
-    score += bestMatchScore(normalizedQuery, [supplement.name, supplement.id.replace(/-/g, ' ')], {
-      exact: 140,
-      prefix: 108,
-      contains: 80,
-      fuzzy: 60,
-    });
-    score += bestMatchScore(normalizedQuery, aliases, {
-      exact: 128,
-      prefix: 96,
-      contains: 70,
-      fuzzy: 52,
-    });
-
-    for (const token of tokens) {
-      if (benefitTerms.some((term) => term.includes(token))) score += 8;
-      if (safetyTerms.some((term) => term.includes(token))) score += safetyIntent ? 8 : 4;
-    }
-
-    if (score > 0) {
-      rows.push({ id: supplement.id, score });
-    }
-  }
-
-  rows.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
-  return rows;
-};
-
-const suggest = (query, supplements, knowledgeMap) => {
-  const normalizedQuery = normalize(query);
-  if (!normalizedQuery || normalizedQuery.length < 3) return null;
-  const candidates = new Set();
-  for (const supplement of supplements) {
-    candidates.add(supplement.name);
-    candidates.add(supplement.id.replace(/-/g, ' '));
-    const knowledge = knowledgeMap[supplement.id];
-    for (const alias of knowledge?.aliases || []) {
-      candidates.add(alias);
-    }
-  }
-  let best = null;
-  let bestScore = 0;
-  for (const candidate of candidates) {
-    const normalizedCandidate = normalize(candidate);
-    if (!normalizedCandidate || normalizedCandidate === normalizedQuery) continue;
-    const score = similarity(normalizedQuery, normalizedCandidate);
-    if (score > bestScore || (score === bestScore && best && candidate.localeCompare(best) < 0)) {
-      best = candidate;
-      bestScore = score;
-    }
-  }
-  if (!best || bestScore < 0.74) return null;
-  return best;
-};
+`;
 
 const failures = [];
-
-const artifacts = await buildKnowledgeArtifacts();
-const { supplements, knowledgeMap } = artifacts;
-
 const assert = (condition, message) => {
   if (!condition) failures.push(message);
 };
 
-const thiamine = search('thiamine', supplements, knowledgeMap)[0]?.id;
-assert(thiamine === 'vitamin-b1', `Expected "thiamine" to rank vitamin-b1 first, got ${thiamine || 'none'}.`);
+try {
+  writeFileSync(runtimeEntryPath, runtimeEntrySource, 'utf8');
+  await build({
+    entryPoints: [runtimeEntryPath],
+    outfile: runtimeBundlePath,
+    bundle: true,
+    platform: 'node',
+    format: 'esm',
+    target: ['node20'],
+    logLevel: 'silent',
+  });
 
-const ashwagandhaMisspelled = search('ashwaghanda', supplements, knowledgeMap)[0]?.id;
-assert(
-  ashwagandhaMisspelled === 'ashwagandha',
-  `Expected "ashwaghanda" to rank ashwagandha first, got ${ashwagandhaMisspelled || 'none'}.`
-);
+  const runtime = await import(`${pathToFileURL(runtimeBundlePath).href}?v=${Date.now()}`);
+  const {
+    analyzeGoal,
+    searchSupplementsWithScores,
+    suggestClosestSupplementTerm,
+    supplements,
+    dedupeSupplementsByCanonical,
+    getCanonicalSupplementKey,
+  } = runtime;
 
-const suggestion = suggest('thaimine', supplements, knowledgeMap);
-assert(
-  suggestion !== null && normalize(suggestion).includes('thiam'),
-  `Expected typo suggestion for "thaimine" to point to thiamine-related term, got ${suggestion || 'none'}.`
-);
+  const search = (query, options = {}) => searchSupplementsWithScores(query, supplements, options);
+  const topSearchIds = (query, limit = 8, options = {}) =>
+    search(query, options)
+      .slice(0, limit)
+      .map((item) => item.supplement.id);
 
-const noSafetyIntent = search('warfarin', supplements, knowledgeMap).slice(0, 5);
-assert(
-  noSafetyIntent.length > 0,
-  'Expected "warfarin" to return safety-aware matches even without extra intent keywords.'
-);
+  const thiamine = topSearchIds('thiamine', 1)[0];
+  assert(thiamine === 'vitamin-b1', `Expected "thiamine" to rank vitamin-b1 first, got ${thiamine || 'none'}.`);
 
-const safetyIntent = search('warfarin interaction', supplements, knowledgeMap).slice(0, 5);
-assert(
-  safetyIntent.length > 0,
-  'Expected "warfarin interaction" to return safety-oriented matches.'
-);
+  const ashwagandhaMisspelled = topSearchIds('ashwaghanda', 1)[0];
+  assert(
+    ashwagandhaMisspelled === 'ashwagandha',
+    `Expected "ashwaghanda" to rank ashwagandha first, got ${ashwagandhaMisspelled || 'none'}.`
+  );
 
-const firstRun = search('energy support', supplements, knowledgeMap).slice(0, 20).map((item) => item.id);
-const secondRun = search('energy support', supplements, knowledgeMap).slice(0, 20).map((item) => item.id);
-assert(
-  JSON.stringify(firstRun) === JSON.stringify(secondRun),
-  'Search ordering is not deterministic for "energy support".'
-);
+  const suggestion = suggestClosestSupplementTerm('thaimine', supplements);
+  assert(
+    suggestion !== null && normalize(suggestion).includes('thiam'),
+    `Expected typo suggestion for "thaimine" to point to thiamine-related term, got ${suggestion || 'none'}.`
+  );
 
-if (failures.length > 0) {
-  console.error('Search checks failed:');
-  for (const failure of failures) {
-    console.error(`- ${failure}`);
+  const noSafetyIntent = topSearchIds('warfarin', 5);
+  assert(
+    noSafetyIntent.length > 0,
+    'Expected "warfarin" to return safety-aware matches even without extra intent keywords.'
+  );
+
+  const safetyIntent = topSearchIds('warfarin interaction', 5);
+  assert(
+    safetyIntent.length > 0,
+    'Expected "warfarin interaction" to return safety-oriented matches.'
+  );
+
+  const firstRun = topSearchIds('energy support', 20);
+  const secondRun = topSearchIds('energy support', 20);
+  assert(
+    JSON.stringify(firstRun) === JSON.stringify(secondRun),
+    'Search ordering is not deterministic for "energy support".'
+  );
+
+  const nonsenseAnalysis = analyzeGoal('something', supplements);
+  assert(
+    nonsenseAnalysis.matchType !== 'direct',
+    `Expected "something" not to trigger direct-match mode, got ${nonsenseAnalysis.matchType || 'none'}.`
+  );
+  assert(
+    !nonsenseAnalysis.directSupplements.includes('fenugreek'),
+    'Expected "something" not to direct-match fenugreek via alias substring.'
+  );
+
+  const contextualDirect = analyzeGoal('I want magnesium', supplements);
+  assert(
+    contextualDirect.directSupplements.includes('magnesium'),
+    'Expected direct-match extraction to still detect magnesium in a longer sentence.'
+  );
+
+  const supplementsById = new Map(supplements.map((supplement) => [supplement.id, supplement]));
+  const canonicalKey = (id) => {
+    const supplement = supplementsById.get(id);
+    if (!supplement) return '';
+    return getCanonicalSupplementKey(supplement);
+  };
+
+  assert(
+    canonicalKey('white-tea-silver-needle') !== canonicalKey('jasmine-green-tea'),
+    'Canonical dedupe should not merge distinct tea variants.'
+  );
+  assert(
+    canonicalKey('ginger') !== canonicalKey('ginger-tea'),
+    'Canonical dedupe should not merge ginger supplement with ginger tea.'
+  );
+  assert(
+    canonicalKey('vitamin-e') !== canonicalKey('vitamin-e-tocotrienol'),
+    'Canonical dedupe should not merge distinct Vitamin E variants.'
+  );
+  assert(
+    canonicalKey('citrulline') === canonicalKey('l-citrulline'),
+    'Canonical dedupe should merge citrulline and l-citrulline aliases.'
+  );
+
+  const dedupedSupplements = dedupeSupplementsByCanonical(supplements);
+  const dedupedIds = new Set(dedupedSupplements.map((supplement) => supplement.id));
+  assert(dedupedIds.has('white-tea-silver-needle'), 'Expected white-tea-silver-needle to survive dedupe.');
+  assert(dedupedIds.has('jasmine-green-tea'), 'Expected jasmine-green-tea to survive dedupe.');
+  assert(dedupedIds.has('ginger'), 'Expected ginger to survive dedupe.');
+  assert(dedupedIds.has('ginger-tea'), 'Expected ginger-tea to survive dedupe.');
+  assert(dedupedIds.has('vitamin-e'), 'Expected vitamin-e to survive dedupe.');
+  assert(dedupedIds.has('vitamin-e-tocotrienol'), 'Expected vitamin-e-tocotrienol to survive dedupe.');
+  const citrullineEntries = dedupedSupplements.filter((supplement) =>
+    ['citrulline', 'l-citrulline'].includes(supplement.id)
+  );
+  assert(
+    citrullineEntries.length === 1,
+    `Expected exactly one citrulline canonical entry after dedupe, got ${citrullineEntries.length}.`
+  );
+
+  const parityQueries = [
+    'better sleep and morning energy',
+    'high stress and focus',
+    'support libido and blood flow',
+    'vegan fatigue',
+    'joint pain recovery',
+  ];
+  let overlapAccumulator = 0;
+  for (const query of parityQueries) {
+    const browseTop = topSearchIds(query, 6);
+    const recommendTop = analyzeGoal(query, supplements).recommendations
+      .slice(0, 6)
+      .map((item) => item.supplement.id);
+    const overlapCount = browseTop.filter((id) => recommendTop.includes(id)).length;
+    overlapAccumulator += overlapCount / 6;
+    assert(
+      overlapCount >= 2,
+      `Expected browse/recommend parity overlap >= 2 for "${query}", got ${overlapCount}.`
+    );
   }
-  process.exit(1);
-}
+  const averageOverlap = overlapAccumulator / parityQueries.length;
+  assert(
+    averageOverlap >= 0.4,
+    `Expected average browse/recommend top-6 overlap >= 0.40, got ${averageOverlap.toFixed(2)}.`
+  );
 
-console.log('Search checks passed.');
-console.log(`Supplements checked: ${supplements.length}`);
+  if (failures.length > 0) {
+    console.error('Search checks failed:');
+    for (const failure of failures) {
+      console.error(`- ${failure}`);
+    }
+    process.exit(1);
+  }
+
+  console.log('Search checks passed.');
+  console.log(`Supplements checked: ${supplements.length}`);
+} finally {
+  rmSync(runtimeEntryPath, { force: true });
+  rmSync(runtimeBundlePath, { force: true });
+}

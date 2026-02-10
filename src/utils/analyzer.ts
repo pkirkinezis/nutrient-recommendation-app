@@ -21,7 +21,8 @@ import { premadeStacks } from '../data/stacks';
 import { semanticIntentDataset } from '../data/semanticIntents';
 import { rankByCosineSimilarity } from './similarity';
 import { getSupplementKnowledgeById } from '../data/supplementKnowledge';
-import { getSupplementSearchCandidates } from './supplementSearchEngine';
+import { getSupplementSearchCandidates, searchSupplementsWithScores } from './supplementSearchEngine';
+import { choosePreferredCanonicalSupplement, dedupeSupplementsByCanonical, getCanonicalSupplementKey } from './supplementCanonical';
 import {
   BREASTFEEDING_TEXT_PATTERN,
   PREGNANCY_TEXT_PATTERN,
@@ -218,13 +219,17 @@ function levenshteinDistance(a: string, b: string): number {
 
 function fuzzyMatch(input: string, target: string, threshold = 0.7): boolean {
   if (!input || !target) return false;
-  const normalizedInput = input.toLowerCase();
-  const normalizedTarget = target.toLowerCase();
+  const normalizedInput = input.toLowerCase().trim();
+  const normalizedTarget = target.toLowerCase().trim();
   if (normalizedInput === normalizedTarget) return true;
-  if (normalizedTarget.includes(normalizedInput) || normalizedInput.includes(normalizedTarget)) return true;
+  if (normalizedTarget.includes(normalizedInput)) return true;
+
+  const lengthDelta = Math.abs(normalizedInput.length - normalizedTarget.length);
+  const maxLengthDelta = Math.max(4, Math.floor(Math.max(normalizedInput.length, normalizedTarget.length) * 0.45));
+  if (lengthDelta > maxLengthDelta) return false;
 
   const distance = levenshteinDistance(normalizedInput, normalizedTarget);
-  const similarity = 1 - distance / Math.max(normalizedTarget.length, 1);
+  const similarity = 1 - distance / Math.max(normalizedInput.length, normalizedTarget.length, 1);
   return similarity >= threshold;
 }
 
@@ -356,6 +361,43 @@ function getSupplementMatchCandidates(supplement: Supplement): string[] {
   return getSupplementSearchCandidates(supplement);
 }
 
+function buildDirectQueryCandidates(input: string): string[] {
+  const normalizedInput = input.toLowerCase().trim();
+  const normalizedAliasInput = normalizeSupplementName(normalizedInput).toLowerCase().trim();
+  const queryCandidates = new Set<string>();
+
+  const addTokenPhrases = (tokens: string[]): void => {
+    const maxPhraseLength = Math.min(5, tokens.length);
+    for (let start = 0; start < tokens.length; start++) {
+      for (let length = 1; length <= maxPhraseLength && start + length <= tokens.length; length++) {
+        const phraseTokens = tokens.slice(start, start + length);
+        if (length === 1) {
+          const token = phraseTokens[0];
+          if (token.length < 3 || STOP_WORDS.has(token)) continue;
+        }
+        const phrase = phraseTokens.join(' ').trim();
+        if (phrase.length >= 3) {
+          queryCandidates.add(phrase);
+        }
+      }
+    }
+  };
+
+  if (normalizedInput.length >= 3) {
+    queryCandidates.add(normalizedInput);
+  }
+  if (normalizedAliasInput.length >= 3) {
+    queryCandidates.add(normalizedAliasInput);
+  }
+
+  addTokenPhrases(tokenize(normalizedInput));
+  if (normalizedAliasInput !== normalizedInput) {
+    addTokenPhrases(tokenize(normalizedAliasInput));
+  }
+
+  return Array.from(queryCandidates);
+}
+
 function isNegatedSupplementMatch(inputTokens: Token[], candidates: string[]): boolean {
   const targetTokens = new Set([
     ...candidates.flatMap(tokenize)
@@ -376,29 +418,27 @@ function findDirectSupplementMatches(input: string, supplements: Supplement[]): 
   }
 
   const inputTokens = parseInput(input);
-  const queryCandidates = new Set<string>([
-    normalizedInput,
-    normalizeSupplementName(normalizedInput).toLowerCase(),
-  ]);
+  const queryCandidates = buildDirectQueryCandidates(normalizedInput);
   const matches = supplements.filter(supplement => {
     const supplementCandidates = getSupplementMatchCandidates(supplement);
     if (isNegatedSupplementMatch(inputTokens, supplementCandidates)) {
       return false;
     }
-    return Array.from(queryCandidates).some(query =>
+    return queryCandidates.some(query =>
       supplementCandidates.some(candidate => fuzzyMatch(query, candidate, 0.78))
     );
   });
+  const canonicalMatches = dedupeSupplementsByCanonical(matches);
 
   const inferredGoals = new Set<string>();
   const inferredSystems = new Set<string>();
-  for (const match of matches) {
+  for (const match of canonicalMatches) {
     normalizeGoals(match.goals).forEach(goal => inferredGoals.add(goal));
     normalizeSystems(match.systems).forEach(system => inferredSystems.add(system));
   }
 
   return {
-    supplements: matches,
+    supplements: canonicalMatches,
     inferredGoals: Array.from(inferredGoals),
     inferredSystems: Array.from(inferredSystems)
   };
@@ -424,7 +464,7 @@ function findSemanticMatches(supplements: Supplement[], tokens: Token[]): Semant
   }
 
   return {
-    supplements: matchedSupplements,
+    supplements: dedupeSupplementsByCanonical(matchedSupplements),
     inferredGoals: normalizeGoals(Array.from(matchedGoals)),
     inferredSystems: normalizeSystems(Array.from(matchedSystems))
   };
@@ -857,7 +897,7 @@ function applyContextAdjustments(
   });
 }
 
-interface SafetyAssessment {
+export interface SafetyAssessment {
   flags: string[];
   cautionLevel?: 'high' | 'moderate' | 'low';
   scorePenalty: number;
@@ -1032,7 +1072,7 @@ function getMatchedMedicationClasses(text: string, medicationClasses: Set<string
   );
 }
 
-function buildSafetyAssessment(supplement: Supplement, profile?: UserProfile): SafetyAssessment {
+export function buildSupplementSafetyAssessment(supplement: Supplement, profile?: UserProfile): SafetyAssessment {
   if (!profile) {
     return { flags: [], scorePenalty: 0, exclude: false };
   }
@@ -1246,7 +1286,7 @@ function applySafetyScreening(
 ): { supplement: Supplement; score: number; safetyFlags: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }[] {
   return supplements
     .map(({ supplement, score }) => {
-      const assessment = buildSafetyAssessment(supplement, profile);
+      const assessment = buildSupplementSafetyAssessment(supplement, profile);
       let adjustedScore = score;
       if (assessment.scorePenalty > 0) {
         adjustedScore *= Math.max(0, 1 - assessment.scorePenalty);
@@ -1304,6 +1344,57 @@ function applyTrackingAdjustments(
     }
     return { ...item, score: adjustedScore };
   });
+}
+
+function dedupeScoredSupplementsByCanonical<T extends { supplement: Supplement; score: number; safetyFlags?: string[]; cautionLevel?: 'high' | 'moderate' | 'low' }>(
+  supplements: T[]
+): T[] {
+  const cautionOrder: Record<'high' | 'moderate' | 'low', number> = {
+    high: 3,
+    moderate: 2,
+    low: 1
+  };
+
+  const deduped = new Map<string, T>();
+  for (const candidate of supplements) {
+    const key = getCanonicalSupplementKey(candidate.supplement);
+    const existing = deduped.get(key);
+    if (!existing) {
+      deduped.set(key, {
+        ...candidate,
+        safetyFlags: Array.from(new Set(candidate.safetyFlags || []))
+      } as T);
+      continue;
+    }
+
+    const mergedFlags = Array.from(new Set([...(existing.safetyFlags || []), ...(candidate.safetyFlags || [])]));
+    const existingCaution = existing.cautionLevel;
+    const candidateCaution = candidate.cautionLevel;
+    const mergedCaution = (() => {
+      if (!existingCaution) return candidateCaution;
+      if (!candidateCaution) return existingCaution;
+      return cautionOrder[candidateCaution] > cautionOrder[existingCaution] ? candidateCaution : existingCaution;
+    })();
+
+    const shouldPreferCandidate = candidate.score > existing.score
+      || (candidate.score === existing.score && choosePreferredCanonicalSupplement(existing.supplement, candidate.supplement).id === candidate.supplement.id);
+
+    if (shouldPreferCandidate) {
+      deduped.set(key, {
+        ...candidate,
+        safetyFlags: mergedFlags,
+        cautionLevel: mergedCaution
+      } as T);
+    } else {
+      deduped.set(key, {
+        ...existing,
+        safetyFlags: mergedFlags,
+        cautionLevel: mergedCaution
+      } as T);
+    }
+  }
+
+  return Array.from(deduped.values());
 }
 
 function selectDiverseRecommendations(
@@ -1865,10 +1956,23 @@ export function analyzeGoal(
       matchedSystems = buildMatchedSystems(inferredSystems);
     }
   }
+
+  const lexicalGoalHint = matchedGoals[0]?.id;
+  const lexicalMatches = searchSupplementsWithScores(input, supplements, {
+    gender: profile?.sex,
+    goal: lexicalGoalHint,
+  });
+  const lexicalScoreById = new Map(lexicalMatches.map((entry) => [entry.supplement.id, entry.score]));
   
   // Score all supplements
   let scoredSupplements = supplements.map(supplement => {
     let score = scoreSupplementForGoals(supplement, matchedGoals, matchedSystems);
+    const lexicalScore = lexicalScoreById.get(supplement.id) || 0;
+    if (lexicalScore > 0) {
+      // Keep lexical influence meaningful but lower than semantic/goal safety-aware ranking.
+      const lexicalWeight = matchedGoals.length > 0 || matchedSystems.length > 0 ? 0.16 : 0.28;
+      score += Math.min(45, lexicalScore * lexicalWeight);
+    }
     if (matchType === 'direct' && directMatchIds.includes(supplement.id)) {
       score += 25;
     }
@@ -1889,12 +1993,14 @@ export function analyzeGoal(
   
   // Filter out current supplements
   scoredSupplements = filterCurrentSupplements(scoredSupplements, profile?.currentSupplements);
+  scoredSupplements = dedupeScoredSupplementsByCanonical(scoredSupplements);
 
   // Apply safety screening
   let screenedSupplements = applySafetyScreening(scoredSupplements, profile);
 
   // Apply tracking adjustments
   screenedSupplements = applyTrackingAdjustments(screenedSupplements, trackingData);
+  screenedSupplements = dedupeScoredSupplementsByCanonical(screenedSupplements);
 
   // Filter out zero scores after adjustments
   screenedSupplements = screenedSupplements.filter(({ score }) => score > 0);
@@ -1904,16 +2010,28 @@ export function analyzeGoal(
   
   // Take top recommendations (limit to 6-8)
   const topSupplements = selectDiverseRecommendations(screenedSupplements, matchedGoals, 8);
-  
-  // Generate recommendations with reasons
-  const recommendations: RecommendedSupplement[] = topSupplements.map(({ supplement, score, safetyFlags, cautionLevel }) => ({
+
+  const buildRecommendation = ({
+    supplement,
+    score,
+    safetyFlags,
+    cautionLevel
+  }: {
+    supplement: Supplement;
+    score: number;
+    safetyFlags?: string[];
+    cautionLevel?: 'high' | 'moderate' | 'low';
+  }): RecommendedSupplement => ({
     supplement,
     priority: determinePriority(score, supplement.evidence),
     reason: generateReason(supplement, matchedGoals, matchedSystems),
     relevanceScore: Math.min(100, Math.round(score)),
     safetyFlags: safetyFlags ?? [],
     cautionLevel
-  }));
+  });
+  
+  // Generate recommendations with reasons
+  const recommendations: RecommendedSupplement[] = topSupplements.map((item) => buildRecommendation(item));
   
   // Ensure we have a good mix of priorities
   const essential = recommendations.filter(r => r.priority === 'essential').slice(0, 2);
@@ -1952,14 +2070,7 @@ export function analyzeGoal(
     const sleepRecommendations = new Map<string, RecommendedSupplement>();
     for (const { supplement, score, safetyFlags, cautionLevel } of sleepCandidates) {
       if (!sleepRecommendations.has(supplement.id)) {
-        sleepRecommendations.set(supplement.id, {
-          supplement,
-          priority: determinePriority(score, supplement.evidence),
-          reason: generateReason(supplement, matchedGoals, matchedSystems),
-          relevanceScore: Math.min(100, Math.round(score)),
-          safetyFlags: safetyFlags ?? [],
-          cautionLevel
-        });
+        sleepRecommendations.set(supplement.id, buildRecommendation({ supplement, score, safetyFlags, cautionLevel }));
       }
     }
 
@@ -1972,6 +2083,49 @@ export function analyzeGoal(
         mergedRecommendations.set(rec.supplement.id, rec);
       }
       finalRecommendations = Array.from(mergedRecommendations.values());
+    }
+  }
+
+  const screenedById = new Map(screenedSupplements.map((entry) => [entry.supplement.id, entry]));
+  const lexicalAnchorIds = lexicalMatches
+    .map((entry) => entry.supplement.id)
+    .filter((id, index, ids) => ids.indexOf(id) === index && screenedById.has(id))
+    .slice(0, 4);
+
+  if (lexicalAnchorIds.length > 0) {
+    const lexicalSet = new Set(lexicalAnchorIds);
+    const targetLexicalCoverage = matchedGoals.length > 0 || matchedSystems.length > 0 ? 2 : 1;
+    let lexicalCoverage = finalRecommendations.filter((rec) => lexicalSet.has(rec.supplement.id)).length;
+    const selectedIds = new Set(finalRecommendations.map((rec) => rec.supplement.id));
+
+    for (const lexicalId of lexicalAnchorIds) {
+      if (lexicalCoverage >= targetLexicalCoverage) break;
+      if (selectedIds.has(lexicalId)) continue;
+
+      const candidate = screenedById.get(lexicalId);
+      if (!candidate) continue;
+
+      const replacementIndex = [...finalRecommendations]
+        .map((rec, index) => ({ rec, index }))
+        .reverse()
+        .find(({ rec }) => !lexicalSet.has(rec.supplement.id))
+        ?.index;
+
+      if (replacementIndex === undefined && finalRecommendations.length >= desiredCount) {
+        break;
+      }
+
+      const candidateRecommendation = buildRecommendation(candidate);
+      if (replacementIndex === undefined) {
+        finalRecommendations.push(candidateRecommendation);
+      } else {
+        const replacedId = finalRecommendations[replacementIndex].supplement.id;
+        selectedIds.delete(replacedId);
+        finalRecommendations[replacementIndex] = candidateRecommendation;
+      }
+
+      selectedIds.add(lexicalId);
+      lexicalCoverage += 1;
     }
   }
   
