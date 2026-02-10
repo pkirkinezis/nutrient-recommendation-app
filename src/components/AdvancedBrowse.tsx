@@ -160,8 +160,8 @@ const safeForConfig: Record<SafeForFilter, { label: string; activeClass: string 
   'sedation-sensitive': { label: 'No sedative effect', activeClass: 'bg-indigo-100 text-indigo-700' },
 };
 
-const pregnancyFriendlySupplementIds = new Set(['folate', 'iodine', 'iron', 'choline', 'alpha-gpc', 'omega-3', 'vitamin-d3', 'vitamin-b12']);
-const breastfeedingLowerRiskSupplementIds = new Set(['omega-3', 'vitamin-d3', 'vitamin-b12', 'folate', 'magnesium', 'iodine', 'iron', 'choline', 'alpha-gpc']);
+const pregnancyFriendlySupplementIds = new Set(['folate', 'iodine', 'iron', 'choline', 'omega-3', 'vitamin-d3', 'vitamin-b12']);
+const breastfeedingLowerRiskSupplementIds = new Set(['omega-3', 'vitamin-d3', 'vitamin-b12', 'folate', 'magnesium', 'iodine', 'iron', 'choline']);
 
 const strongInteractionSignalPattern =
   /warfarin|maoi|ssri|snri|anticoagul|blood thinner|antiplatelet|immunosuppress|digoxin|lithium|levodopa|carbidopa|contraindicat|do not combine|avoid with|major interaction/;

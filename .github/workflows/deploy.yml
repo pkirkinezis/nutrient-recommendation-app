@@ -36,8 +36,20 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Run type checking
+        run: npm run typecheck
+
       - name: Run linting
         run: npm run lint
+
+      - name: Run safety checks
+        run: npm run check:safety
+
+      - name: Run search checks
+        run: npm run check:search
+
+      - name: Run knowledge checks
+        run: npm run check:knowledge
 
       - name: Build
         env:

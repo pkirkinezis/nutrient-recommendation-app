@@ -22,6 +22,12 @@ import { semanticIntentDataset } from '../data/semanticIntents';
 import { rankByCosineSimilarity } from './similarity';
 import { getSupplementKnowledgeById } from '../data/supplementKnowledge';
 import { getSupplementSearchCandidates } from './supplementSearchEngine';
+import {
+  BREASTFEEDING_TEXT_PATTERN,
+  PREGNANCY_TEXT_PATTERN,
+  REPRODUCTIVE_GOAL_IDS,
+  TTC_TEXT_PATTERN
+} from '../constants/reproductiveScope';
 
 // ============================================
 // TOKENIZATION & PARSING
@@ -883,7 +889,7 @@ const CONDITION_CLASS_MATCHES: Record<string, string[]> = {
   bipolar: ['bipolar', 'mania', 'manic'],
   surgery: ['surgery', 'operation', 'pre-op', 'pre op', 'post-op', 'post op'],
   'bleeding-disorder': ['bleeding disorder', 'hemophilia'],
-  autoimmune: ['autoimmune', 'lupus', 'rheumatoid', 'multiple sclerosis', 'ms']
+  autoimmune: ['autoimmune', 'lupus', 'rheumatoid', 'multiple sclerosis']
 };
 
 const HIGH_RISK_MEDICATION_CLASSES = new Set([
@@ -906,17 +912,8 @@ const SEROTONERGIC_MEDICATION_CLASSES = new Set([
   'antidepressant'
 ]);
 
-const REPRODUCTIVE_GOAL_IDS = new Set([
-  'hormones',
-  'fertility',
-  'sexual-health',
-  'sexual-function',
-  'libido',
-  'reproductive'
-]);
-
 const BOTANICAL_TYPES = new Set<Supplement['type']>(['herb', 'ayurvedic', 'mushroom']);
-const PRENATAL_ESSENTIAL_SUPPLEMENT_IDS = new Set(['folate', 'iodine', 'iron', 'choline', 'alpha-gpc', 'omega-3', 'vitamin-d3', 'vitamin-b12']);
+const PRENATAL_ESSENTIAL_SUPPLEMENT_IDS = new Set(['folate', 'iodine', 'iron', 'choline', 'omega-3', 'vitamin-d3', 'vitamin-b12']);
 const SEROTONERGIC_SUPPLEMENT_IDS = new Set(['5-htp', 'same', 'st-johns-wort', 'tryptophan']);
 const THYROID_SPACING_SUPPLEMENT_IDS = new Set(['iron', 'calcium', 'magnesium']);
 const KIDNEY_HIGH_RISK_SUPPLEMENT_IDS = new Set(['potassium', 'magnesium', 'calcium', 'creatine', 'iron']);
@@ -937,11 +934,58 @@ function normalizeSafetyText(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function containsNormalizedPhrase(text: string, phrase: string): boolean {
+  const normalizedText = normalizeSafetyText(text);
+  const normalizedPhrase = normalizeSafetyText(phrase);
+  if (!normalizedText || !normalizedPhrase) return false;
+
+  const phrasePattern = escapeRegExp(normalizedPhrase).replace(/\s+/g, '\\s+');
+  const regex = new RegExp(`\\b${phrasePattern}\\b`);
+  if (regex.test(normalizedText)) return true;
+
+  const textTokens = normalizedText.split(' ').filter(Boolean);
+  const phraseTokens = normalizedPhrase.split(' ').filter(Boolean);
+  if (textTokens.length === 0 || phraseTokens.length === 0) return false;
+
+  const tokenMatchesPattern = (textToken: string, patternToken: string): boolean => {
+    if (textToken === patternToken) return true;
+    // Support common pluralized short medication class acronyms (e.g., SSRI -> SSRIs).
+    if (patternToken.length >= 4 && (textToken === `${patternToken}s` || textToken === `${patternToken}es`)) {
+      return true;
+    }
+    // Support safe inflections (plural/suffix forms) for longer clinical terms.
+    return patternToken.length >= 5 && textToken.startsWith(patternToken);
+  };
+
+  if (phraseTokens.length === 1) {
+    return textTokens.some(token => tokenMatchesPattern(token, phraseTokens[0]));
+  }
+
+  for (let i = 0; i <= textTokens.length - phraseTokens.length; i++) {
+    let allMatched = true;
+    for (let j = 0; j < phraseTokens.length; j++) {
+      if (!tokenMatchesPattern(textTokens[i + j], phraseTokens[j])) {
+        allMatched = false;
+        break;
+      }
+    }
+    if (allMatched) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function normalizedIncludes(a: string, b: string): boolean {
   const normalizedA = normalizeSafetyText(a);
   const normalizedB = normalizeSafetyText(b);
   if (!normalizedA || !normalizedB) return false;
-  return normalizedA.includes(normalizedB) || normalizedB.includes(normalizedA);
+  return containsNormalizedPhrase(normalizedA, normalizedB) || containsNormalizedPhrase(normalizedB, normalizedA);
 }
 
 function elevateCautionLevel(
@@ -957,7 +1001,7 @@ function collectMatchedClasses(values: string[], classMap: Record<string, string
   for (const value of values) {
     const normalizedValue = normalizeSafetyText(value);
     for (const [className, patterns] of Object.entries(classMap)) {
-      if (patterns.some(pattern => normalizedValue.includes(pattern))) {
+      if (patterns.some(pattern => containsNormalizedPhrase(normalizedValue, pattern))) {
         classes.add(className);
       }
     }
@@ -968,11 +1012,11 @@ function collectMatchedClasses(values: string[], classMap: Record<string, string
 function conditionMatchesText(conditions: string[], conditionClasses: Set<string>, text: string): boolean {
   const normalizedText = normalizeSafetyText(text);
   if (!normalizedText) return false;
-  if (conditions.some(condition => normalizedIncludes(normalizedText, condition))) {
+  if (conditions.some(condition => containsNormalizedPhrase(normalizedText, condition) || containsNormalizedPhrase(condition, normalizedText))) {
     return true;
   }
   for (const className of conditionClasses) {
-    if ((CONDITION_CLASS_MATCHES[className] || []).some(pattern => normalizedText.includes(pattern))) {
+    if ((CONDITION_CLASS_MATCHES[className] || []).some(pattern => containsNormalizedPhrase(normalizedText, pattern))) {
       return true;
     }
   }
@@ -983,8 +1027,8 @@ function getMatchedMedicationClasses(text: string, medicationClasses: Set<string
   const normalizedText = normalizeSafetyText(text);
   if (!normalizedText) return [];
   return Array.from(medicationClasses).filter(className =>
-    normalizedText.includes(className) ||
-    (MEDICATION_CLASS_MATCHES[className] || []).some(pattern => normalizedText.includes(pattern))
+    containsNormalizedPhrase(normalizedText, className) ||
+    (MEDICATION_CLASS_MATCHES[className] || []).some(pattern => containsNormalizedPhrase(normalizedText, pattern))
   );
 }
 
@@ -1016,12 +1060,18 @@ function buildSafetyAssessment(supplement: Supplement, profile?: UserProfile): S
     (profile.tryingToConceiveStatus ?? 'unknown') === 'unknown';
   const isBotanical = BOTANICAL_TYPES.has(supplement.type);
   const addressesReproductiveGoals = normalizedGoals.some(goal => REPRODUCTIVE_GOAL_IDS.has(goal));
+  const hasExplicitReproductiveRiskSignal =
+    knowledgeFlags.has('pregnancy') ||
+    knowledgeFlags.has('breastfeeding') ||
+    PREGNANCY_TEXT_PATTERN.test(combinedSafetyText) ||
+    BREASTFEEDING_TEXT_PATTERN.test(combinedSafetyText) ||
+    TTC_TEXT_PATTERN.test(combinedSafetyText);
   const hasBleedingRisk = knowledgeFlags.has('bleeding-risk') || BLEEDING_RISK_PATTERN.test(combinedSafetyText);
   const hasSerotonergicSignal = SEROTONERGIC_SUPPLEMENT_IDS.has(supplement.id) || SEROTONERGIC_PATTERN.test(combinedSafetyText);
   const hasThyroidSignal = knowledgeFlags.has('thyroid') || THYROID_PATTERN.test(combinedSafetyText);
 
-  if (hasReproductiveUnknown && (isBotanical || addressesReproductiveGoals)) {
-    flags.push('Safety intake incomplete: set pregnancy, breastfeeding, and trying-to-conceive status before using botanical/hormonal recommendations.');
+  if (hasReproductiveUnknown && (addressesReproductiveGoals || hasExplicitReproductiveRiskSignal)) {
+    flags.push('Safety intake incomplete: set pregnancy, breastfeeding, and trying-to-conceive status before using reproductive-risk recommendations.');
     cautionLevel = elevateCautionLevel(cautionLevel, 'high');
     scorePenalty += 1;
     exclude = true;
@@ -1049,6 +1099,51 @@ function buildSafetyAssessment(supplement: Supplement, profile?: UserProfile): S
   }
 
   for (const avoid of supplement.avoidIf || []) {
+    const avoidText = normalizeSafetyText(avoid);
+    const mentionsPregnancy = PREGNANCY_TEXT_PATTERN.test(avoidText);
+    const mentionsBreastfeeding = BREASTFEEDING_TEXT_PATTERN.test(avoidText);
+    const mentionsTtc = TTC_TEXT_PATTERN.test(avoidText);
+
+    if (mentionsPregnancy) {
+      if ((profile.pregnancyStatus ?? 'unknown') === 'yes') {
+        flags.push(`Avoid during pregnancy: ${avoid}`);
+        cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+        scorePenalty += 1;
+        exclude = true;
+      } else if ((profile.pregnancyStatus ?? 'unknown') === 'unknown') {
+        flags.push(`Pregnancy status required before considering this supplement: ${avoid}`);
+        cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+        scorePenalty += 1;
+        exclude = true;
+      }
+    }
+
+    if (mentionsBreastfeeding) {
+      if ((profile.breastfeedingStatus ?? 'unknown') === 'yes') {
+        flags.push(`Avoid while breastfeeding: ${avoid}`);
+        cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+        scorePenalty += 1;
+        exclude = true;
+      } else if ((profile.breastfeedingStatus ?? 'unknown') === 'unknown') {
+        flags.push(`Breastfeeding status required before considering this supplement: ${avoid}`);
+        cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+        scorePenalty += 1;
+        exclude = true;
+      }
+    }
+
+    if (mentionsTtc && (profile.tryingToConceiveStatus ?? 'unknown') === 'yes') {
+      flags.push(`Avoid while trying to conceive: ${avoid}`);
+      cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+      scorePenalty += 1;
+      exclude = true;
+    } else if (mentionsTtc && (profile.tryingToConceiveStatus ?? 'unknown') === 'unknown') {
+      flags.push(`Trying-to-conceive status required before considering this supplement: ${avoid}`);
+      cautionLevel = elevateCautionLevel(cautionLevel, 'high');
+      scorePenalty += 1;
+      exclude = true;
+    }
+
     if (conditionMatchesText(conditions, conditionClasses, avoid)) {
       flags.push(`Avoid if ${avoid}`);
       cautionLevel = elevateCautionLevel(cautionLevel, 'high');
@@ -1445,7 +1540,7 @@ function matchInteractionEntity(
   });
   const medicationPatterns = getMedicationPatternsForEntity(entity);
   const viaMedication = normalizedMedications.some(medication =>
-    medicationPatterns.some(pattern => medication.includes(pattern))
+    medicationPatterns.some(pattern => containsNormalizedPhrase(medication, pattern))
   );
   return {
     matched: viaSupplement || viaMedication,
@@ -1592,16 +1687,47 @@ export function checkInteractions(selectedSupplements: Supplement[], profile?: U
     });
   }
 
+  const summarizeWarningText = (items: string[], maxItems = 2): string => {
+    const normalizedSeen = new Set<string>();
+    const uniqueItems: string[] = [];
+    for (const item of items) {
+      const key = normalizeSafetyText(item);
+      if (!key || normalizedSeen.has(key)) continue;
+      normalizedSeen.add(key);
+      uniqueItems.push(item);
+    }
+    if (uniqueItems.length <= maxItems) {
+      return uniqueItems.join('; ');
+    }
+    return `${uniqueItems.slice(0, maxItems).join('; ')} (+${uniqueItems.length - maxItems} more)`;
+  };
+
   // Deduplicate warnings
-  const uniqueWarningsMap = new Map<string, InteractionWarning>();
+  const uniqueWarningsMap = new Map<string, { warning: InteractionWarning; reasons: string[]; recommendations: string[] }>();
   for (const warning of warnings) {
     const pairKey = [normalizeSafetyText(warning.supplements[0]), normalizeSafetyText(warning.supplements[1])].sort().join('|');
-    const key = `${pairKey}|${normalizeSafetyText(warning.reason)}`;
-    if (!uniqueWarningsMap.has(key)) {
-      uniqueWarningsMap.set(key, warning);
+    const key = `${pairKey}|${warning.severity}`;
+    const existing = uniqueWarningsMap.get(key);
+    if (!existing) {
+      uniqueWarningsMap.set(key, {
+        warning,
+        reasons: [warning.reason],
+        recommendations: [warning.recommendation]
+      });
+      continue;
+    }
+    if (!existing.reasons.some(reason => normalizeSafetyText(reason) === normalizeSafetyText(warning.reason))) {
+      existing.reasons.push(warning.reason);
+    }
+    if (!existing.recommendations.some(rec => normalizeSafetyText(rec) === normalizeSafetyText(warning.recommendation))) {
+      existing.recommendations.push(warning.recommendation);
     }
   }
-  const uniqueWarnings = Array.from(uniqueWarningsMap.values());
+  const uniqueWarnings = Array.from(uniqueWarningsMap.values()).map(({ warning, reasons, recommendations }) => ({
+    ...warning,
+    reason: summarizeWarningText(reasons),
+    recommendation: summarizeWarningText(recommendations)
+  }));
   
   // Sort by severity
   return uniqueWarnings.sort((a, b) => {

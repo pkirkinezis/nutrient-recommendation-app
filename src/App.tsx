@@ -14,6 +14,7 @@ import { buildLocalSyncMeta, fetchCloudSnapshot, mergeCloudIntoLocal, uploadLoca
 import { calculateMetabolicMetrics } from './utils/metabolism';
 import { buildTrackingChartData, buildTrackingCsv } from './utils/trackingExports';
 import { getTranslation, type Language } from './utils/i18n';
+import { hasReproductiveRiskSignalInText, isReproductiveScopeQuery } from './constants/reproductiveScope';
 
 const EducationalGuide = lazy(() => import('./components/EducationalGuide'));
 
@@ -109,14 +110,14 @@ const getCautionInfo = (cautionLevel?: Recommendation['cautionLevel']): { label:
   return info[cautionLevel];
 };
 
-const getMatchQualityLabel = (
+const getMatchStrengthLabel = (
   matchType: 'keyword' | 'direct' | 'semantic' | 'none',
   confidence: number
-): 'High' | 'Moderate' | 'Low' => {
-  if (matchType === 'direct') return 'High';
-  if (matchType === 'keyword') return confidence >= 0.75 ? 'High' : 'Moderate';
+): 'Stronger' | 'Moderate' | 'Exploratory' => {
+  if (matchType === 'direct') return confidence >= 0.8 ? 'Stronger' : 'Moderate';
+  if (matchType === 'keyword') return confidence >= 0.72 ? 'Stronger' : 'Moderate';
   if (matchType === 'semantic') return 'Moderate';
-  return 'Low';
+  return 'Exploratory';
 };
 
 // Example prompts for inspiration
@@ -130,6 +131,16 @@ const examplePrompts = [
   "Boost immunity during cold season",
   "Better skin and hair health",
 ];
+
+const hasReproductiveRiskSignal = (supplement: Supplement): boolean => {
+  const text = [
+    ...(supplement.avoidIf || []),
+    ...(supplement.cautions || []),
+    ...(supplement.drugInteractions || []),
+    ...(supplement.goals || [])
+  ].join(' ').toLowerCase();
+  return hasReproductiveRiskSignalInText(text);
+};
 
 export function App() {
   const { user, status: authStatus, error: authError, isConfigured: firebaseConfigured, signInWithEmail, registerWithEmail, signInWithGoogle, signOutUser } = useAuth();
@@ -580,25 +591,31 @@ export function App() {
     (userProfile.pregnancyStatus ?? 'unknown') !== 'unknown' &&
     (userProfile.breastfeedingStatus ?? 'unknown') !== 'unknown' &&
     (userProfile.tryingToConceiveStatus ?? 'unknown') !== 'unknown';
+  const normalizedQuery = query.toLowerCase();
+  const queryReproductiveScope = isReproductiveScopeQuery(normalizedQuery);
+  const analysisReproductiveScope = goalAnalysis.recommendations.some((rec) => hasReproductiveRiskSignal(rec.supplement));
+  const selectedReproductiveScope = selectedSupplements.some(hasReproductiveRiskSignal);
+  const shouldRequireReproductiveSafety = queryReproductiveScope || analysisReproductiveScope || selectedReproductiveScope;
+  const reproductiveSafetyBlocked = shouldRequireReproductiveSafety && !reproductiveSafetyComplete;
   const medicationStatus = userProfile.medicationStatus ?? ((userProfile.medications?.length || 0) > 0 ? 'taking' : 'unknown');
   const medicationListRequired = medicationStatus === 'taking';
   const medicationListProvided = !medicationListRequired || (userProfile.medications?.length || 0) > 0;
   const medicationSafetyIncomplete = medicationStatus === 'unknown' || !medicationListProvided;
   const educationOnlyMode = medicationSafetyIncomplete;
-  const safetyIntakeMessage = !reproductiveSafetyComplete
-    ? 'Complete pregnancy, breastfeeding, and trying-to-conceive safety intake to unlock personalized recommendations.'
+  const safetyIntakeMessage = reproductiveSafetyBlocked
+    ? 'This goal includes reproductive-risk considerations. Complete pregnancy, breastfeeding, and trying-to-conceive status first.'
     : null;
   const medicationSafetyMessage = medicationStatus === 'unknown'
     ? 'Medication status is unknown. Results are educational only until medication screening is completed.'
     : medicationListRequired && !medicationListProvided
       ? 'You marked that you take medications but the list is empty. Results are educational only until medications are listed.'
       : null;
-  const matchQuality = getMatchQualityLabel(matchType, matchConfidence);
+  const matchStrength = getMatchStrengthLabel(matchType, matchConfidence);
 
   // Analyze the user's goal
   const handleAnalyze = () => {
     if (!query.trim()) return;
-    if (!reproductiveSafetyComplete) {
+    if (reproductiveSafetyBlocked) {
       setShowProfile(true);
       return;
     }
@@ -1056,7 +1073,7 @@ export function App() {
               <span>👤</span> Safety Intake & Profile
             </h3>
             <p className="mb-4 text-xs text-gray-600">
-              Safety intake is required before recommendations: pregnancy, breastfeeding, and trying-to-conceive status must be set.
+              Complete reproductive safety fields when your query or selected supplements involve pregnancy, breastfeeding, or trying to conceive.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div>
@@ -1467,7 +1484,7 @@ export function App() {
                     )}
                     <button
                       onClick={handleAnalyze}
-                      disabled={!query.trim() || !reproductiveSafetyComplete}
+                      disabled={!query.trim() || reproductiveSafetyBlocked}
                       className="mt-3 w-full px-5 py-2.5 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-emerald-200 sm:absolute sm:bottom-4 sm:right-4 sm:mt-0 sm:w-auto"
                     >
                       Get Recommendations
@@ -1587,7 +1604,7 @@ export function App() {
                     <button
                       type="button"
                       onClick={handleAnalyze}
-                      disabled={!query.trim() || !reproductiveSafetyComplete}
+                      disabled={!query.trim() || reproductiveSafetyBlocked}
                       className="px-5 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                       Update Recommendations
@@ -1621,7 +1638,7 @@ export function App() {
                             Matched via: {matchType.replace('-', ' ')}
                           </span>
                           <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full font-medium">
-                            Match quality: {matchQuality}
+                            Match strength: {matchStrength}
                           </span>
                         </div>
                       )}
