@@ -13,10 +13,12 @@ import {
   getSupplementKnowledgeById,
   knowledgeDisclaimers,
 } from '../data/supplementKnowledge';
+import { buildSupplementSafetyAssessment } from '../utils/analyzer';
 import {
   searchSupplementsWithScores,
   suggestClosestSupplementTerm,
 } from '../utils/supplementSearchEngine';
+import { dedupeSupplementsByCanonical, getCanonicalSupplementKey } from '../utils/supplementCanonical';
 
 type SortOption = 'relevance' | 'evidence' | 'name' | 'popularity';
 type ViewMode = 'grid' | 'list' | 'compact';
@@ -46,6 +48,10 @@ interface FilteredSupplementResult {
   supplement: Supplement;
   searchScore: number;
   matchReasons: string[];
+  safetyFlags: string[];
+  cautionLevel?: 'high' | 'moderate' | 'low';
+  safetyPenalty: number;
+  excludedForSafety: boolean;
 }
 
 interface AdvancedBrowseProps {
@@ -56,8 +62,10 @@ interface AdvancedBrowseProps {
 
 type SupplementKnowledge = NonNullable<ReturnType<typeof getSupplementKnowledgeById>>;
 
-const allSystems = Array.from(new Set(supplements.flatMap(s => normalizeSystems(s.systems)))).sort();
-const knowledgeEntries = supplements
+const browseSupplements = dedupeSupplementsByCanonical(supplements);
+
+const allSystems = Array.from(new Set(browseSupplements.flatMap(s => normalizeSystems(s.systems)))).sort();
+const knowledgeEntries = browseSupplements
   .map((supplement) => getSupplementKnowledgeById(supplement.id))
   .filter((entry): entry is NonNullable<ReturnType<typeof getSupplementKnowledgeById>> => Boolean(entry));
 const allKnowledgeCategories: KnowledgeCategory[] = Array.from(
@@ -183,7 +191,7 @@ const hasSignificantInteractionRisk = (
 
 const allSupplementTypes = Object.keys(typeConfig) as Supplement['type'][];
 const supplementTypeCounts = allSupplementTypes.reduce((counts, type) => {
-  counts[type] = supplements.filter((supplement) => supplement.type === type).length;
+  counts[type] = browseSupplements.filter((supplement) => supplement.type === type).length;
   return counts;
 }, {} as Record<Supplement['type'], number>);
 const visibleSupplementTypes = allSupplementTypes.filter((type) => supplementTypeCounts[type] > 0);
@@ -338,10 +346,30 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     );
   }, [filters]);
 
+  const safetyAssessmentById = useMemo(() => {
+    return new Map(
+      browseSupplements.map((supplement) => [supplement.id, buildSupplementSafetyAssessment(supplement, userProfile)])
+    );
+  }, [userProfile]);
+
   const filteredResults = useMemo<FilteredSupplementResult[]>(() => {
-    let result = [...supplements];
+    const getSafetyPenalty = (supplementId: string): number => {
+      const assessment = safetyAssessmentById.get(supplementId);
+      if (!assessment) return 0;
+      const cautionPenalty = assessment.cautionLevel === 'high'
+        ? 0.45
+        : assessment.cautionLevel === 'moderate'
+          ? 0.2
+          : assessment.cautionLevel === 'low'
+            ? 0.08
+            : 0;
+      const exclusionPenalty = assessment.exclude ? 1.1 : 0;
+      return Math.min(1.6, assessment.scorePenalty + cautionPenalty + exclusionPenalty);
+    };
+
+    let result = [...browseSupplements];
     const scoredSearchResults = searchQuery.trim()
-      ? searchSupplementsWithScores(searchQuery, supplements, { gender: userProfile.sex })
+      ? searchSupplementsWithScores(searchQuery, browseSupplements, { gender: userProfile.sex })
       : [];
     const scoredSearchById = new Map(scoredSearchResults.map((entry) => [entry.supplement.id, entry]));
 
@@ -435,7 +463,11 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
 
         if (filters.safeFor.includes('low-interaction')) {
           const legacyRisk = hasSignificantInteractionRisk(s, knowledge || undefined);
-          if (legacyRisk) return false;
+          const safetyAssessment = safetyAssessmentById.get(s.id);
+          const highCaution =
+            safetyAssessment?.cautionLevel === 'high'
+            || (safetyAssessment?.scorePenalty || 0) >= 0.5;
+          if (legacyRisk || highCaution) return false;
         }
 
         if (filters.safeFor.includes('stimulant-sensitive')) {
@@ -467,8 +499,12 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         result.sort((a, b) => {
           const aSearchScore = scoredSearchById.get(a.id)?.score || 0;
           const bSearchScore = scoredSearchById.get(b.id)?.score || 0;
-          if (searchQuery.trim() && bSearchScore !== aSearchScore) {
-            return bSearchScore - aSearchScore;
+          const aSafetyPenalty = getSafetyPenalty(a.id) * 30;
+          const bSafetyPenalty = getSafetyPenalty(b.id) * 30;
+          const aSearchRank = aSearchScore - aSafetyPenalty;
+          const bSearchRank = bSearchScore - bSafetyPenalty;
+          if (searchQuery.trim() && bSearchRank !== aSearchRank) {
+            return bSearchRank - aSearchRank;
           }
 
           const aKnowledge = getSupplementKnowledgeById(a.id);
@@ -486,24 +522,41 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           const bPopularity = popularityScores[b.id] || 0;
           const aEvidence = evidenceConfig[a.evidence].score * 10;
           const bEvidence = evidenceConfig[b.evidence].score * 10;
+          const aTotal =
+            aSearchRank +
+            aKnowledgeGoalMatches +
+            aPersonalized +
+            aPopularity +
+            aEvidence;
+          const bTotal =
+            bSearchRank +
+            bKnowledgeGoalMatches +
+            bPersonalized +
+            bPopularity +
+            bEvidence;
 
-          return (bKnowledgeGoalMatches + bPersonalized + bPopularity + bEvidence) - (aKnowledgeGoalMatches + aPersonalized + aPopularity + aEvidence);
+          return bTotal - aTotal;
         });
     }
 
     return result.map((supplement) => {
       const scored = scoredSearchById.get(supplement.id);
+      const safetyAssessment = safetyAssessmentById.get(supplement.id);
       return {
         supplement,
         searchScore: scored?.score || 0,
         matchReasons: scored?.reasons.map((reason) => reason.label).slice(0, 3) || [],
+        safetyFlags: safetyAssessment?.flags || [],
+        cautionLevel: safetyAssessment?.cautionLevel,
+        safetyPenalty: getSafetyPenalty(supplement.id),
+        excludedForSafety: Boolean(safetyAssessment?.exclude),
       };
     });
-  }, [searchQuery, filters, sortBy, activeQuickFilter, personalizedRecommendations, normalizedFilterGoals, userProfile.sex]);
+  }, [searchQuery, filters, sortBy, activeQuickFilter, personalizedRecommendations, normalizedFilterGoals, userProfile.sex, safetyAssessmentById]);
 
   const suggestedQuery = useMemo(() => {
     if (!searchQuery.trim()) return null;
-    return suggestClosestSupplementTerm(searchQuery, supplements);
+    return suggestClosestSupplementTerm(searchQuery, browseSupplements);
   }, [searchQuery]);
 
   const isVirtualized = viewMode === 'list' && filteredResults.length > 100;
@@ -646,7 +699,14 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           <h3 className="text-sm font-semibold text-emerald-800 mb-3">Personalized starting points</h3>
           <div className="flex flex-wrap gap-2">
             {personalizedRecommendations.slice(0, 6).map(rec => {
-              const supp = supplements.find(s => s.id === rec.id);
+              const supp = (() => {
+                const directMatch = browseSupplements.find(s => s.id === rec.id);
+                if (directMatch) return directMatch;
+                const sourceMatch = supplements.find(s => s.id === rec.id);
+                if (!sourceMatch) return undefined;
+                const canonicalKey = getCanonicalSupplementKey(sourceMatch);
+                return browseSupplements.find(s => getCanonicalSupplementKey(s) === canonicalKey);
+              })();
               if (!supp) return null;
               return (
                 <button
@@ -996,17 +1056,25 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         </div>
       ) : viewMode === 'compact' ? (
         <div className="rounded-2xl border border-gray-200 bg-white divide-y divide-gray-100">
-          {visibleResults.map(({ supplement, matchReasons }) => (
-            <CompactCard
-              key={supplement.id}
-              supplement={supplement}
-              matchReasons={searchQuery.trim() ? matchReasons : []}
-              isSelected={selectedSupplements.some(s => s.id === supplement.id)}
-              onSelect={() => onSelectSupplement(supplement)}
-              onViewDetails={() => setActiveSupplement(supplement)}
-              personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
-            />
-          ))}
+          {visibleResults.map(({ supplement, matchReasons, cautionLevel, safetyFlags, excludedForSafety }) => {
+            const isSelected = selectedSupplements.some(s => s.id === supplement.id);
+            const selectionDisabled = excludedForSafety && !isSelected;
+            return (
+              <CompactCard
+                key={supplement.id}
+                supplement={supplement}
+                matchReasons={searchQuery.trim() ? matchReasons : []}
+                cautionLevel={cautionLevel}
+                safetyFlags={safetyFlags}
+                excludedForSafety={excludedForSafety}
+                selectionDisabled={selectionDisabled}
+                isSelected={isSelected}
+                onSelect={() => onSelectSupplement(supplement)}
+                onViewDetails={() => setActiveSupplement(supplement)}
+                personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
+              />
+            );
+          })}
         </div>
       ) : viewMode === 'list' ? (
         <div
@@ -1015,32 +1083,48 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           className={`space-y-3 ${isVirtualized ? 'max-h-[520px] overflow-y-auto pr-1' : ''}`}
         >
           <div style={{ paddingTop, paddingBottom }} className="space-y-3">
-            {visibleResults.map(({ supplement, matchReasons }) => (
-              <ListCard
-                key={supplement.id}
-                supplement={supplement}
-                matchReasons={searchQuery.trim() ? matchReasons : []}
-                isSelected={selectedSupplements.some(s => s.id === supplement.id)}
-                onSelect={() => onSelectSupplement(supplement)}
-                onViewDetails={() => setActiveSupplement(supplement)}
-                personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
-              />
-            ))}
+            {visibleResults.map(({ supplement, matchReasons, cautionLevel, safetyFlags, excludedForSafety }) => {
+              const isSelected = selectedSupplements.some(s => s.id === supplement.id);
+              const selectionDisabled = excludedForSafety && !isSelected;
+              return (
+                <ListCard
+                  key={supplement.id}
+                  supplement={supplement}
+                  matchReasons={searchQuery.trim() ? matchReasons : []}
+                  cautionLevel={cautionLevel}
+                  safetyFlags={safetyFlags}
+                  excludedForSafety={excludedForSafety}
+                  selectionDisabled={selectionDisabled}
+                  isSelected={isSelected}
+                  onSelect={() => onSelectSupplement(supplement)}
+                  onViewDetails={() => setActiveSupplement(supplement)}
+                  personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
+                />
+              );
+            })}
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {visibleResults.map(({ supplement, matchReasons }) => (
-            <GridCard
-              key={supplement.id}
-              supplement={supplement}
-              matchReasons={searchQuery.trim() ? matchReasons : []}
-              isSelected={selectedSupplements.some(s => s.id === supplement.id)}
-              onSelect={() => onSelectSupplement(supplement)}
-              onViewDetails={() => setActiveSupplement(supplement)}
-              personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
-            />
-          ))}
+          {visibleResults.map(({ supplement, matchReasons, cautionLevel, safetyFlags, excludedForSafety }) => {
+            const isSelected = selectedSupplements.some(s => s.id === supplement.id);
+            const selectionDisabled = excludedForSafety && !isSelected;
+            return (
+              <GridCard
+                key={supplement.id}
+                supplement={supplement}
+                matchReasons={searchQuery.trim() ? matchReasons : []}
+                cautionLevel={cautionLevel}
+                safetyFlags={safetyFlags}
+                excludedForSafety={excludedForSafety}
+                selectionDisabled={selectionDisabled}
+                isSelected={isSelected}
+                onSelect={() => onSelectSupplement(supplement)}
+                onViewDetails={() => setActiveSupplement(supplement)}
+                personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -1057,26 +1141,65 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
 interface CardProps {
   supplement: Supplement;
   isSelected: boolean;
+  selectionDisabled?: boolean;
   onSelect: () => void;
   onViewDetails: () => void;
   personalReason?: string;
   matchReasons?: string[];
+  cautionLevel?: 'high' | 'moderate' | 'low';
+  safetyFlags?: string[];
+  excludedForSafety?: boolean;
 }
 
 const formatMatchReason = (reason: string): string =>
   reason.length > 26 ? `${reason.slice(0, 26)}...` : reason;
 
-function CompactCard({ supplement, isSelected, onSelect, onViewDetails, personalReason, matchReasons }: CardProps) {
+const safetyBadgeConfig: Record<'high' | 'moderate' | 'low', { label: string; className: string }> = {
+  high: { label: 'High Caution', className: 'bg-red-100 text-red-700' },
+  moderate: { label: 'Moderate Caution', className: 'bg-amber-100 text-amber-700' },
+  low: { label: 'Low Caution', className: 'bg-yellow-100 text-yellow-700' },
+};
+
+const getSafetyBadge = (
+  cautionLevel?: 'high' | 'moderate' | 'low',
+  excludedForSafety?: boolean
+): { label: string; className: string } | null => {
+  if (!cautionLevel) return null;
+  if (excludedForSafety) {
+    return { label: 'Needs Intake', className: 'bg-rose-100 text-rose-700' };
+  }
+  return safetyBadgeConfig[cautionLevel];
+};
+
+function CompactCard({
+  supplement,
+  isSelected,
+  selectionDisabled,
+  onSelect,
+  onViewDetails,
+  personalReason,
+  matchReasons,
+  cautionLevel,
+  safetyFlags,
+  excludedForSafety
+}: CardProps) {
   const type = typeConfig[supplement.type];
   const evidence = evidenceConfig[supplement.evidence];
+  const safetyBadge = getSafetyBadge(cautionLevel, excludedForSafety);
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 transition hover:bg-gray-50">
       <button
         type="button"
+        disabled={selectionDisabled}
         onClick={onSelect}
+        title={selectionDisabled ? 'Complete intake profile to add this supplement.' : undefined}
         className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition ${
-          isSelected ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-gray-300 hover:border-emerald-400'
+          isSelected
+            ? 'border-emerald-500 bg-emerald-500 text-white'
+            : selectionDisabled
+              ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-300'
+              : 'border-gray-300 hover:border-emerald-400'
         }`}
       >
         {isSelected && (
@@ -1111,13 +1234,33 @@ function CompactCard({ supplement, isSelected, onSelect, onViewDetails, personal
       <span className={`rounded-full px-2 py-0.5 text-xs ${evidence.bg} ${evidence.color}`}>
         {supplement.evidence}
       </span>
+      {safetyBadge && (
+        <span
+          title={safetyFlags && safetyFlags.length > 0 ? safetyFlags[0] : safetyBadge.label}
+          className={`rounded-full px-2 py-0.5 text-xs ${safetyBadge.className}`}
+        >
+          {safetyBadge.label}
+        </span>
+      )}
     </div>
   );
 }
 
-function GridCard({ supplement, isSelected, onSelect, onViewDetails, personalReason, matchReasons }: CardProps) {
+function GridCard({
+  supplement,
+  isSelected,
+  selectionDisabled,
+  onSelect,
+  onViewDetails,
+  personalReason,
+  matchReasons,
+  cautionLevel,
+  safetyFlags,
+  excludedForSafety
+}: CardProps) {
   const type = typeConfig[supplement.type];
   const evidence = evidenceConfig[supplement.evidence];
+  const safetyBadge = getSafetyBadge(cautionLevel, excludedForSafety);
 
   return (
     <div className={`rounded-2xl border bg-white transition ${isSelected ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-gray-200'}`}>
@@ -1126,9 +1269,15 @@ function GridCard({ supplement, isSelected, onSelect, onViewDetails, personalRea
           <span className="text-2xl">{type.icon}</span>
           <button
             type="button"
+            disabled={selectionDisabled}
             onClick={onSelect}
+            title={selectionDisabled ? 'Complete intake profile to add this supplement.' : undefined}
             className={`flex h-8 w-8 items-center justify-center rounded-lg border-2 transition ${
-              isSelected ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-gray-300 hover:border-emerald-400'
+              isSelected
+                ? 'border-emerald-500 bg-emerald-500 text-white'
+                : selectionDisabled
+                  ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-300'
+                  : 'border-gray-300 hover:border-emerald-400'
             }`}
           >
             {isSelected && (
@@ -1160,6 +1309,14 @@ function GridCard({ supplement, isSelected, onSelect, onViewDetails, personalRea
           <span className={`rounded-full px-2 py-0.5 text-xs ${evidence.bg} ${evidence.color}`}>
             {evidence.label}
           </span>
+          {safetyBadge && (
+            <span
+              title={safetyFlags && safetyFlags.length > 0 ? safetyFlags[0] : safetyBadge.label}
+              className={`rounded-full px-2 py-0.5 text-xs ${safetyBadge.className}`}
+            >
+              {safetyBadge.label}
+            </span>
+          )}
         </div>
         <p className="line-clamp-3 text-xs text-gray-600">{supplement.description}</p>
         <div className="flex flex-wrap gap-1">
@@ -1181,19 +1338,37 @@ function GridCard({ supplement, isSelected, onSelect, onViewDetails, personalRea
   );
 }
 
-function ListCard({ supplement, isSelected, onSelect, onViewDetails, personalReason, matchReasons }: CardProps) {
+function ListCard({
+  supplement,
+  isSelected,
+  selectionDisabled,
+  onSelect,
+  onViewDetails,
+  personalReason,
+  matchReasons,
+  cautionLevel,
+  safetyFlags,
+  excludedForSafety
+}: CardProps) {
   const type = typeConfig[supplement.type];
   const evidence = evidenceConfig[supplement.evidence];
   const hasFormGuide = formGuidance[supplement.id];
+  const safetyBadge = getSafetyBadge(cautionLevel, excludedForSafety);
 
   return (
     <div className={`rounded-2xl border bg-white p-4 transition ${isSelected ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-gray-200'}`}>
       <div className="flex items-start gap-4">
         <button
           type="button"
+          disabled={selectionDisabled}
           onClick={onSelect}
+          title={selectionDisabled ? 'Complete intake profile to add this supplement.' : undefined}
           className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border-2 transition ${
-            isSelected ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-gray-300 hover:border-emerald-400'
+            isSelected
+              ? 'border-emerald-500 bg-emerald-500 text-white'
+              : selectionDisabled
+                ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-300'
+                : 'border-gray-300 hover:border-emerald-400'
           }`}
         >
           {isSelected && (
@@ -1218,6 +1393,14 @@ function ListCard({ supplement, isSelected, onSelect, onViewDetails, personalRea
             {hasFormGuide && (
               <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
                 Form Guide
+              </span>
+            )}
+            {safetyBadge && (
+              <span
+                title={safetyFlags && safetyFlags.length > 0 ? safetyFlags[0] : safetyBadge.label}
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${safetyBadge.className}`}
+              >
+                {safetyBadge.label}
               </span>
             )}
             {personalReason && (

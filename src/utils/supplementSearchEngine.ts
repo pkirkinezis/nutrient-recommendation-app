@@ -5,6 +5,7 @@ import {
   getSupplementKnowledgeById,
 } from '../data/supplementKnowledge';
 import { normalizeGoals, normalizeSystems } from './normalization';
+import { choosePreferredCanonicalSupplement, getCanonicalSupplementKey } from './supplementCanonical';
 
 export interface SupplementSearchOptions {
   gender?: 'male' | 'female' | 'other';
@@ -347,14 +348,55 @@ export function searchSupplementsWithScores(
     });
   }
 
-  results.sort((a, b) => {
+  const canonicalResults = new Map<string, ScoredSupplementMatch>();
+  for (const result of results) {
+    const canonicalKey = getCanonicalSupplementKey(result.supplement);
+    const existing = canonicalResults.get(canonicalKey);
+    if (!existing) {
+      canonicalResults.set(canonicalKey, result);
+      continue;
+    }
+
+    const mergedReasons = Array.from(new Set([
+      ...existing.reasons.map((reason) => `${reason.code}:${reason.label}`),
+      ...result.reasons.map((reason) => `${reason.code}:${reason.label}`),
+    ])).map((entry) => {
+      const [code, ...labelParts] = entry.split(':');
+      return { code, label: labelParts.join(':') };
+    });
+
+    const shouldReplace =
+      result.score > existing.score
+      || (result.score === existing.score && result.goalScore > existing.goalScore)
+      || (
+        result.score === existing.score
+        && result.goalScore === existing.goalScore
+        && choosePreferredCanonicalSupplement(existing.supplement, result.supplement).id === result.supplement.id
+      );
+
+    if (shouldReplace) {
+      canonicalResults.set(canonicalKey, {
+        ...result,
+        reasons: mergedReasons.slice(0, 4),
+      });
+    } else {
+      canonicalResults.set(canonicalKey, {
+        ...existing,
+        reasons: mergedReasons.slice(0, 4),
+      });
+    }
+  }
+
+  const dedupedResults = Array.from(canonicalResults.values());
+
+  dedupedResults.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     if (b.goalScore !== a.goalScore) return b.goalScore - a.goalScore;
     if (b.textScore !== a.textScore) return b.textScore - a.textScore;
     return a.supplement.name.localeCompare(b.supplement.name);
   });
 
-  return results;
+  return dedupedResults;
 }
 
 export function suggestClosestSupplementTerm(query: string, supplements: Supplement[]): string | null {
