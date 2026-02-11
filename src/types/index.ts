@@ -1,6 +1,7 @@
 // Comprehensive Type Definitions for NutriCompass
 
 export type EvidenceLevel = 'strong' | 'moderate' | 'limited';
+export type PragmaticTier = 'S+' | 'S' | 'A' | 'B' | 'C';
 export type SupplementType = 'vitamin' | 'mineral' | 'amino-acid' | 'herb' | 'tea' | 'ayurvedic' | 'mushroom' | 'probiotic' | 'fatty-acid' | 'protein' | 'performance' | 'enzyme' | 'antioxidant' | 'other';
 export type Priority = 'essential' | 'beneficial' | 'optional';
 export type ReproductiveStatus = 'unknown' | 'yes' | 'no' | 'not-applicable';
@@ -98,6 +99,8 @@ export interface Supplement {
   timing: string;
   timeframe: string;
   evidence: EvidenceLevel;
+  pragmaticTier?: PragmaticTier;
+  pragmaticTierContext?: string;
   bioavailabilityNote?: string;
   evidenceSources?: EvidenceSource[];
   goalEvidence?: Partial<Record<string, EvidenceLevel>>;
