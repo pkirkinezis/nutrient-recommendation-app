@@ -6,6 +6,7 @@ import { AdvancedBrowse } from './components/AdvancedBrowse';
 import { SupplementDetailModal } from './components/SupplementDetailModal';
 import { curatedStacks } from './data/curatedStacks';
 import { premadeStacks } from './data/stacks';
+import { getPragmaticTierForSupplement, getPragmaticTierInfo } from './data/pragmaticTiers';
 import { FoodLookup } from './components/FoodLookup';
 import { TrackingChart } from './components/TrackingChart';
 import { useAuth } from './context/AuthContext';
@@ -2460,6 +2461,8 @@ function SupplementCard({
   onViewDetails: () => void;
 }) {
   const evidenceInfo = getEvidenceInfo(supplement.evidence);
+  const pragmaticTier = getPragmaticTierForSupplement(supplement);
+  const pragmaticTierInfo = getPragmaticTierInfo(pragmaticTier);
   const cautionInfo = recommendation ? getCautionInfo(recommendation.cautionLevel) : null;
 
   return (
@@ -2491,6 +2494,11 @@ function SupplementCard({
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${evidenceInfo.color}`}>
               {evidenceInfo.label}
             </span>
+            {pragmaticTierInfo && (
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${pragmaticTierInfo.bg} ${pragmaticTierInfo.color}`}>
+                Tier {pragmaticTierInfo.shortLabel}
+              </span>
+            )}
             {recommendation && (
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                 recommendation.priority === 'essential' ? 'bg-emerald-500 text-white' :

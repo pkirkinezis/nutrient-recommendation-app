@@ -3,6 +3,7 @@ import {
   KnowledgeCategory,
   KnowledgeEvidenceStrengthTag,
   KnowledgeSafetyFlag,
+  PragmaticTier,
   Supplement,
   UserProfile,
 } from '../types';
@@ -13,6 +14,12 @@ import {
   getSupplementKnowledgeById,
   knowledgeDisclaimers,
 } from '../data/supplementKnowledge';
+import {
+  getPragmaticTierForSupplement,
+  getPragmaticTierInfo,
+  getPragmaticTierScore,
+  pragmaticTierConfig,
+} from '../data/pragmaticTiers';
 import { buildSupplementSafetyAssessment } from '../utils/analyzer';
 import {
   searchSupplementsWithScores,
@@ -20,7 +27,7 @@ import {
 } from '../utils/supplementSearchEngine';
 import { dedupeSupplementsByCanonical, getCanonicalSupplementKey } from '../utils/supplementCanonical';
 
-type SortOption = 'relevance' | 'evidence' | 'name' | 'popularity';
+type SortOption = 'relevance' | 'evidence' | 'pragmatic-tier' | 'name' | 'popularity';
 type ViewMode = 'grid' | 'list' | 'compact';
 type SafeForFilter =
   | 'pregnancy'
@@ -32,6 +39,7 @@ type SafeForFilter =
 interface FilterState {
   types: Supplement['type'][];
   evidence: Supplement['evidence'][];
+  pragmaticTiers: PragmaticTier[];
   goals: string[];
   systems: string[];
   knowledgeCategories: KnowledgeCategory[];
@@ -209,17 +217,19 @@ interface QuickFilter {
   goals: string[];
   types: Supplement['type'][];
   evidence: Supplement['evidence'][];
+  pragmaticTiers: PragmaticTier[];
   ids?: string[];
 }
 
 const quickFilters: QuickFilter[] = [
-  { id: 'beginners', label: '🌱 Beginner Essentials', goals: [], types: [], evidence: [], ids: ['vitamin-d3', 'magnesium', 'omega-3', 'vitamin-b12', 'zinc'] },
-  { id: 'sleep', label: '😴 Sleep Stack', goals: ['sleep'], types: [], evidence: [] },
-  { id: 'energy', label: '⚡ Energy & Focus', goals: ['energy', 'brain'], types: [], evidence: [] },
-  { id: 'stress', label: '🧘 Stress & Calm', goals: ['stress'], types: [], evidence: [] },
-  { id: 'immunity', label: '🛡️ Immune Support', goals: ['immunity'], types: [], evidence: [] },
-  { id: 'longevity', label: '⏳ Longevity', goals: ['longevity'], types: [], evidence: [] },
-  { id: 'strong-evidence', label: '✅ Strong Evidence', goals: [], types: [], evidence: ['strong'] },
+  { id: 'beginners', label: '🌱 Beginner Essentials', goals: [], types: [], evidence: [], pragmaticTiers: [], ids: ['vitamin-d3', 'magnesium', 'omega-3', 'vitamin-b12', 'zinc'] },
+  { id: 'sleep', label: '😴 Sleep Stack', goals: ['sleep'], types: [], evidence: [], pragmaticTiers: [] },
+  { id: 'energy', label: '⚡ Energy & Focus', goals: ['energy', 'brain'], types: [], evidence: [], pragmaticTiers: [] },
+  { id: 'stress', label: '🧘 Stress & Calm', goals: ['stress'], types: [], evidence: [], pragmaticTiers: [] },
+  { id: 'immunity', label: '🛡️ Immune Support', goals: ['immunity'], types: [], evidence: [], pragmaticTiers: [] },
+  { id: 'longevity', label: '⏳ Longevity', goals: ['longevity'], types: [], evidence: [], pragmaticTiers: [] },
+  { id: 'strong-evidence', label: '✅ Strong Evidence', goals: [], types: [], evidence: ['strong'], pragmaticTiers: [] },
+  { id: 'top-pragmatic', label: '🏆 Pragmatic Top Tier', goals: [], types: [], evidence: [], pragmaticTiers: ['S+', 'S'] },
 ];
 
 export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupplements }: AdvancedBrowseProps) {
@@ -239,6 +249,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
   const [filters, setFilters] = useState<FilterState>({
     types: [],
     evidence: [],
+    pragmaticTiers: [],
     goals: [],
     systems: [],
     knowledgeCategories: [],
@@ -351,6 +362,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     return (
       filters.types.length +
       filters.evidence.length +
+      filters.pragmaticTiers.length +
       filters.goals.length +
       filters.systems.length +
       filters.knowledgeCategories.length +
@@ -401,6 +413,12 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       if (quick?.evidence?.length) {
         result = result.filter(s => quick.evidence.includes(s.evidence));
       }
+      if (quick?.pragmaticTiers?.length) {
+        result = result.filter((s) => {
+          const tier = getPragmaticTierForSupplement(s);
+          return Boolean(tier && quick.pragmaticTiers.includes(tier));
+        });
+      }
     }
 
     if (searchQuery.trim()) {
@@ -413,6 +431,13 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
 
     if (filters.evidence.length > 0) {
       result = result.filter(s => filters.evidence.includes(s.evidence));
+    }
+
+    if (filters.pragmaticTiers.length > 0) {
+      result = result.filter((s) => {
+        const tier = getPragmaticTierForSupplement(s);
+        return Boolean(tier && filters.pragmaticTiers.includes(tier));
+      });
     }
 
     if (normalizedFilterGoals.length > 0) {
@@ -508,6 +533,15 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       case 'evidence':
         result.sort((a, b) => evidenceConfig[b.evidence].score - evidenceConfig[a.evidence].score);
         break;
+      case 'pragmatic-tier':
+        result.sort((a, b) => {
+          const aTier = getPragmaticTierForSupplement(a);
+          const bTier = getPragmaticTierForSupplement(b);
+          const scoreDelta = getPragmaticTierScore(bTier) - getPragmaticTierScore(aTier);
+          if (scoreDelta !== 0) return scoreDelta;
+          return evidenceConfig[b.evidence].score - evidenceConfig[a.evidence].score;
+        });
+        break;
       case 'popularity':
         result.sort((a, b) => (popularityScores[b.id] || 0) - (popularityScores[a.id] || 0));
         break;
@@ -539,18 +573,22 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           const bPopularity = popularityScores[b.id] || 0;
           const aEvidence = evidenceConfig[a.evidence].score * 10;
           const bEvidence = evidenceConfig[b.evidence].score * 10;
+          const aPragmaticTier = getPragmaticTierScore(getPragmaticTierForSupplement(a)) * 8;
+          const bPragmaticTier = getPragmaticTierScore(getPragmaticTierForSupplement(b)) * 8;
           const aTotal =
             aSearchRank +
             aKnowledgeGoalMatches +
             aPersonalized +
             aPopularity +
-            aEvidence;
+            aEvidence +
+            aPragmaticTier;
           const bTotal =
             bSearchRank +
             bKnowledgeGoalMatches +
             bPersonalized +
             bPopularity +
-            bEvidence;
+            bEvidence +
+            bPragmaticTier;
 
           return bTotal - aTotal;
         });
@@ -596,6 +634,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       goals: [],
       types: [],
       evidence: [],
+      pragmaticTiers: [],
       systems: [],
       knowledgeCategories: [],
       evidenceTags: [],
@@ -613,6 +652,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     setFilters({
       types: [],
       evidence: [],
+      pragmaticTiers: [],
       goals: [],
       systems: [],
       knowledgeCategories: [],
@@ -839,6 +879,27 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                   </button>
                 ))}
               </div>
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mt-4 mb-2">Pragmatic tier</h4>
+              <div className="flex flex-wrap gap-2">
+                {(Object.keys(pragmaticTierConfig) as PragmaticTier[]).map((tier) => {
+                  const config = pragmaticTierConfig[tier];
+                  return (
+                    <button
+                      key={tier}
+                      type="button"
+                      onClick={() => toggleFilter('pragmaticTiers', tier)}
+                      className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+                        filters.pragmaticTiers.includes(tier)
+                          ? `${config.bg} ${config.color}`
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                      title={config.description}
+                    >
+                      Tier {tier}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Form intelligence</h4>
@@ -1015,6 +1076,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           >
             <option value="relevance">Sort: Relevance</option>
             <option value="evidence">Sort: Evidence</option>
+            <option value="pragmatic-tier">Sort: Pragmatic Tier</option>
             <option value="popularity">Sort: Popularity</option>
             <option value="name">Sort: A-Z</option>
           </select>
@@ -1205,6 +1267,8 @@ function CompactCard({
 }: CardProps) {
   const type = typeConfig[supplement.type];
   const evidence = evidenceConfig[supplement.evidence];
+  const pragmaticTier = getPragmaticTierForSupplement(supplement);
+  const pragmaticTierInfo = getPragmaticTierInfo(pragmaticTier);
   const safetyBadge = getSafetyBadge(cautionLevel, excludedForSafety);
 
   return (
@@ -1254,6 +1318,11 @@ function CompactCard({
       <span className={`rounded-full px-2 py-0.5 text-xs ${evidence.bg} ${evidence.color}`}>
         {supplement.evidence}
       </span>
+      {pragmaticTierInfo && (
+        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${pragmaticTierInfo.bg} ${pragmaticTierInfo.color}`}>
+          Tier {pragmaticTierInfo.shortLabel}
+        </span>
+      )}
       {safetyBadge && (
         <span
           title={safetyFlags && safetyFlags.length > 0 ? safetyFlags[0] : safetyBadge.label}
@@ -1280,6 +1349,8 @@ function GridCard({
 }: CardProps) {
   const type = typeConfig[supplement.type];
   const evidence = evidenceConfig[supplement.evidence];
+  const pragmaticTier = getPragmaticTierForSupplement(supplement);
+  const pragmaticTierInfo = getPragmaticTierInfo(pragmaticTier);
   const safetyBadge = getSafetyBadge(cautionLevel, excludedForSafety);
 
   return (
@@ -1329,6 +1400,11 @@ function GridCard({
           <span className={`rounded-full px-2 py-0.5 text-xs ${evidence.bg} ${evidence.color}`}>
             {evidence.label}
           </span>
+          {pragmaticTierInfo && (
+            <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${pragmaticTierInfo.bg} ${pragmaticTierInfo.color}`}>
+              Tier {pragmaticTierInfo.shortLabel}
+            </span>
+          )}
           {safetyBadge && (
             <span
               title={safetyFlags && safetyFlags.length > 0 ? safetyFlags[0] : safetyBadge.label}
@@ -1372,6 +1448,8 @@ function ListCard({
 }: CardProps) {
   const type = typeConfig[supplement.type];
   const evidence = evidenceConfig[supplement.evidence];
+  const pragmaticTier = getPragmaticTierForSupplement(supplement);
+  const pragmaticTierInfo = getPragmaticTierInfo(pragmaticTier);
   const hasFormGuide = formGuidance[supplement.id];
   const safetyBadge = getSafetyBadge(cautionLevel, excludedForSafety);
 
@@ -1410,6 +1488,11 @@ function ListCard({
             <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${evidence.bg} ${evidence.color}`}>
               {evidence.label}
             </span>
+            {pragmaticTierInfo && (
+              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${pragmaticTierInfo.bg} ${pragmaticTierInfo.color}`}>
+                Tier {pragmaticTierInfo.shortLabel}
+              </span>
+            )}
             {hasFormGuide && (
               <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
                 Form Guide
