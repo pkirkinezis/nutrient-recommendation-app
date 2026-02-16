@@ -4,6 +4,7 @@ import { supplements, formGuidance, supplementComparisons, misinformationAlerts 
 import { checkInteractions, generateTimingSchedule, useGoalAnalysis } from './utils/analyzer';
 import { AdvancedBrowse } from './components/AdvancedBrowse';
 import { SupplementDetailModal } from './components/SupplementDetailModal';
+import { ApplicationOverviewTab } from './components/ApplicationOverviewTab';
 import { curatedStacks } from './data/curatedStacks';
 import { premadeStacks } from './data/stacks';
 import { getPragmaticTierForSupplement, getPragmaticTierInfo } from './data/pragmaticTiers';
@@ -182,7 +183,7 @@ export function App() {
       return saved ? JSON.parse(saved) : {};
     } catch { return {}; }
   });
-  const [activeTab, setActiveTab] = useState<'find' | 'stacks' | 'learn'>('find');
+  const [activeTab, setActiveTab] = useState<'find' | 'stacks' | 'learn' | 'about'>('find');
   const [findMode, setFindMode] = useState<'recommend' | 'browse'>('recommend');
   const [learnMode, setLearnMode] = useState<'guide' | 'insights' | 'track'>('insights');
   const [language, setLanguage] = useState<Language>(() => {
@@ -987,6 +988,12 @@ export function App() {
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'learn' ? 'bg-purple-100 text-purple-700 dark:bg-purple-400/25 dark:text-purple-100' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
                 >
                   {t('tabLearn')}
+                </button>
+                <button
+                  onClick={() => { setActiveTab('about'); setHasAnalyzed(false); }}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'about' ? 'bg-amber-100 text-amber-700 dark:bg-amber-400/25 dark:text-amber-100' : 'text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white'}`}
+                >
+                  {t('tabAbout')}
                 </button>
               </div>
               <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
@@ -1905,6 +1912,8 @@ export function App() {
               })}
             </div>
           </div>
+        ) : activeTab === 'about' ? (
+          <ApplicationOverviewTab />
         ) : (
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
