@@ -88,6 +88,7 @@ function run() {
     validatePositionSourceMetadata
   } = require('../src/data/positionSourceMap.ts');
   const { hasIllustrationForEveryPosition, positionIllustrationById } = require('../src/data/positionIllustrations.ts');
+  const { importedSearchProfileByPositionId } = require('../src/data/importedIntimacyPositions.ts');
 
   test('Gating denies access when age is unverified', () => {
     const flags = buildIntimacyFeatureFlags({
@@ -249,6 +250,16 @@ function run() {
   });
 
   test('Position image search links stay valid and concise for Google/Yandex', () => {
+    const GENERIC_QUERY_TOKENS = new Set(['sex', 'position', 'sexpositions', 'club']);
+
+    const findSpecificTokens = (value) =>
+      value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((token) => token.length > 0 && !GENERIC_QUERY_TOKENS.has(token))
+        .filter((token) => token.length >= 3 || /^\d+$/.test(token));
+
     for (const position of intimacyPositions) {
       const link = buildPositionImageSearchUrl(position);
       const fallbackLink = buildPositionImageFallbackSearchUrl(position);
@@ -370,6 +381,36 @@ function run() {
         yandexFallbackQuery.length <= 90,
         `Yandex fallback query should stay concise for ${position.id}; got ${yandexFallbackQuery.length} chars`
       );
+
+      if (position.id.startsWith('club-')) {
+        const importedProfile = importedSearchProfileByPositionId[position.id];
+        assert.ok(
+          importedProfile,
+          `Imported search profile is missing for ${position.id}`
+        );
+        assert.ok(
+          query.includes('sexpositions'),
+          `Imported targeted Google query should include site context for ${position.id}; got "${query}"`
+        );
+        assert.ok(
+          yandexQuery.includes('sexpositions'),
+          `Imported targeted Yandex query should include site context for ${position.id}; got "${yandexQuery}"`
+        );
+
+        const specificTokens = findSpecificTokens(importedProfile.primaryTerm);
+        assert.ok(
+          specificTokens.length > 0,
+          `Imported profile should expose at least one specific token for ${position.id}`
+        );
+        assert.ok(
+          specificTokens.some((token) => query.includes(token)),
+          `Imported targeted Google query should include one imported token (${specificTokens.join(', ')}) for ${position.id}; got "${query}"`
+        );
+        assert.ok(
+          specificTokens.some((token) => yandexQuery.includes(token)),
+          `Imported targeted Yandex query should include one imported token (${specificTokens.join(', ')}) for ${position.id}; got "${yandexQuery}"`
+        );
+      }
     }
   });
 

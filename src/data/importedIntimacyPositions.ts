@@ -88,6 +88,11 @@ export interface ImportedIllustrationHint {
   mechanicsFocus: string[];
 }
 
+export interface ImportedSearchProfileHint {
+  primaryTerm: string;
+  secondaryTerms: string[];
+}
+
 interface ImportedCatalogEntry {
   position: PositionEntry;
   sourceEntry: ImportedPositionSourceEntry;
@@ -95,6 +100,7 @@ interface ImportedCatalogEntry {
   signals: RowSignals;
   mappedTemplateId: string;
   externalReference: ImportedPositionExternalReference | null;
+  searchProfile: ImportedSearchProfileHint;
 }
 
 const SOURCES: Record<string, PositionDocumentationSource> = {
@@ -1204,6 +1210,36 @@ const buildImportedIllustrationHint = (
   };
 };
 
+const buildImportedSearchProfile = (
+  row: ImportedReferenceRow,
+  signals: RowSignals,
+): ImportedSearchProfileHint => {
+  const externalName = compactWhitespace(row.externalName ?? "");
+  const externalId = compactWhitespace(row.externalId ?? "");
+  const positionNumber = externalId.match(/(\d+)/)?.[1] ?? "";
+  const surfaceHint = describeSurface(signals);
+  const interactionHint = describeInteraction(signals);
+
+  const primaryParts = [
+    externalName || "imported position",
+    "sex position",
+    "sexpositions club",
+    positionNumber,
+  ].filter(Boolean);
+
+  const secondaryParts = [
+    externalName || "imported position",
+    "sex position",
+    interactionHint === "comfort-first" ? "" : interactionHint,
+    surfaceHint === "supported surface" ? "" : surfaceHint,
+  ].filter(Boolean);
+
+  return {
+    primaryTerm: primaryParts.join(" "),
+    secondaryTerms: [secondaryParts.join(" "), `${externalName} sexpositions club`.trim()],
+  };
+};
+
 const buildCatalogEntry = (row: ImportedReferenceRow, index: number): ImportedCatalogEntry | null => {
   const externalId = compactWhitespace(row.externalId ?? "");
   const externalName = compactWhitespace(row.externalName ?? "");
@@ -1257,6 +1293,7 @@ const buildCatalogEntry = (row: ImportedReferenceRow, index: number): ImportedCa
     signals,
     mappedTemplateId,
     externalReference: buildImportedExternalReference(row, positionId),
+    searchProfile: buildImportedSearchProfile(row, signals),
   };
 };
 
@@ -1300,4 +1337,9 @@ export const importedIllustrationHintByPositionId: Record<string, ImportedIllust
       entry.position.id,
       buildImportedIllustrationHint(entry.signals, entry.mappedTemplateId),
     ]),
+  );
+
+export const importedSearchProfileByPositionId: Record<string, ImportedSearchProfileHint> =
+  Object.fromEntries(
+    catalogEntries.map((entry) => [entry.position.id, entry.searchProfile]),
   );
