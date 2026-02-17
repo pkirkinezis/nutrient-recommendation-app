@@ -430,6 +430,74 @@ export interface LabResult {
 }
 
 // ============================================
+// INTIMACY & SEXUAL WELLNESS TYPES
+// ============================================
+
+export interface LessonStep {
+  id: string;
+  title: string;
+  bodyMechanics: string[];
+  comfortPrompts: string[];
+  consentPrompt: string;
+  stopSwitchPrompt: string;
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  goal: string;
+  timeMinutes: number;
+  steps: LessonStep[];
+  options: string[];
+  aftercare: string[];
+  safety: string[];
+}
+
+export type PositionDifficulty = "beginner" | "intermediate" | "advanced";
+
+export interface PositionDocumentationSource {
+  label: string;
+  url: string;
+}
+
+export interface PositionEntry {
+  id: string;
+  name: string;
+  inspirationTags: string[];
+  comfortTags: string[];
+  setup: string[];
+  alignmentCues: string[];
+  comfortCues: string[];
+  modifications: string[];
+  difficulty: PositionDifficulty;
+  contraindications: string[];
+  documentationSources: PositionDocumentationSource[];
+}
+
+export type ConsentResponse = "continue" | "switch" | "stop";
+
+export interface ConsentCheckIn {
+  prompt: string;
+  userResponse: ConsentResponse;
+  timestamp: string;
+  context: "lesson" | "position";
+  contextId: string;
+}
+
+export interface UserPreferences {
+  ageVerified: boolean;
+  sexualContentOptIn: boolean;
+  boundaries: string[];
+  accessibilityNeeds: string[];
+}
+
+export interface IntimacyFeatureFlags {
+  ageVerified: boolean;
+  sexualContentOptIn: boolean;
+  hiddenByDefault: boolean;
+}
+
+// ============================================
 // FILTER TYPES
 // ============================================
 
