@@ -19,6 +19,10 @@ interface ImportedReferenceRow {
   };
 }
 
+interface ImportedReferenceRowWithImage extends ImportedReferenceRow {
+  imageUrl: string;
+}
+
 interface ImportedPayload {
   rows?: ImportedReferenceRow[];
 }
@@ -55,11 +59,11 @@ const isValidImageUrl = (value: string | undefined): value is string =>
   Boolean(value && /^https?:\/\/\S+/i.test(value));
 
 const rawRows = ((importedPositionData as ImportedPayload).rows ?? []).filter(
-  (row): row is ImportedReferenceRow =>
+  (row): row is ImportedReferenceRowWithImage =>
     Boolean(row && row.externalId && row.externalName && row.source && isValidImageUrl(row.imageUrl)),
 );
 
-const rowsByNormalizedName = new Map<string, ImportedReferenceRow[]>();
+const rowsByNormalizedName = new Map<string, ImportedReferenceRowWithImage[]>();
 for (const row of rawRows) {
   const key = normalize(row.externalName);
   const list = rowsByNormalizedName.get(key) ?? [];
@@ -67,7 +71,7 @@ for (const row of rawRows) {
   rowsByNormalizedName.set(key, list);
 }
 
-const pickBestRow = (rows: ImportedReferenceRow[]): ImportedReferenceRow | null => {
+const pickBestRow = (rows: ImportedReferenceRowWithImage[]): ImportedReferenceRowWithImage | null => {
   if (rows.length === 0) return null;
   const sorted = [...rows].sort((a, b) => {
     const byConfidence = confidenceRank[b.mappingConfidence] - confidenceRank[a.mappingConfidence];
@@ -91,10 +95,10 @@ const preferredTitlesByPositionId: Record<string, string[]> = {
   "edge-of-bed-assisted": ["Doggy on the edge", "Doggy on the edge 2"],
 };
 
-const toReference = (row: ImportedReferenceRow, mappedPositionId: string): ExternalPositionReference => ({
+const toReference = (row: ImportedReferenceRowWithImage, mappedPositionId: string): ExternalPositionReference => ({
   externalId: row.externalId,
   externalName: row.externalName,
-  imageUrl: row.imageUrl!,
+  imageUrl: row.imageUrl,
   imageAlt: row.imageAlt,
   sourceName: row.source.sourceName,
   sourceUrl: row.source.sourceUrl,
@@ -115,7 +119,7 @@ const buildReferenceMap = (options: ReferenceBuildOptions): Record<string, Exter
   const references: Record<string, ExternalPositionReference> = {};
 
   for (const [positionId, preferredTitles] of Object.entries(preferredTitlesByPositionId)) {
-    let selected: ImportedReferenceRow | null = null;
+    let selected: ImportedReferenceRowWithImage | null = null;
     for (const title of preferredTitles) {
       const candidates = rowsByNormalizedName.get(normalize(title)) ?? [];
       const candidate = pickBestRow(
@@ -134,7 +138,7 @@ const buildReferenceMap = (options: ReferenceBuildOptions): Record<string, Exter
   }
 
   // Safe fallback: include only explicit high-confidence matches from importer.
-  const groupedFallback = new Map<string, ImportedReferenceRow[]>();
+  const groupedFallback = new Map<string, ImportedReferenceRowWithImage[]>();
   for (const row of rawRows) {
     if (!row.mappedPositionId) continue;
     if (!options.allowKeywordMatches && !isStrictConfidence(row.mappingConfidence)) continue;
