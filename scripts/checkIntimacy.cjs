@@ -78,7 +78,8 @@ function run() {
   const { intimacyPositions } = require('../src/data/intimacyPositions.ts');
   const {
     externalReferenceByPositionId,
-    externalReferenceByPositionIdBroad
+    externalReferenceByPositionIdBroad,
+    getExternalReferenceForPosition
   } = require('../src/data/intimacyExternalReferences.ts');
   const {
     getPositionIdFromExternalName,
@@ -205,6 +206,16 @@ function run() {
       assert.ok(knownIds.has(positionId));
       assert.ok(/^https?:\/\/\S+/i.test(reference.imageUrl));
     }
+
+    const importedPositions = intimacyPositions.filter((position) => position.id.startsWith('club-'));
+    const importedWithDirectReference = importedPositions.filter((position) =>
+      Boolean(getExternalReferenceForPosition(position, { allowBroadMatches: false }))
+    );
+    assert.equal(
+      importedWithDirectReference.length,
+      importedPositions.length,
+      `Every imported position should resolve a mapped external reference. Got ${importedWithDirectReference.length}/${importedPositions.length}.`
+    );
   });
 
   test('Every position has a non-explicit safety-first illustration mapping', () => {
@@ -443,9 +454,17 @@ function run() {
     assert.equal(coercion.severity, 'urgent');
     assert.ok(coercion.immediateSteps.length >= 2);
 
+    const coercionByLanguage = evaluateSafetyEscalation('I feel pressured to continue.');
+    assert.equal(coercionByLanguage.requiresEscalation, true);
+    assert.equal(coercionByLanguage.severity, 'urgent');
+
     const pain = evaluateSafetyEscalation('There is persistent pain and distress.');
     assert.equal(pain.requiresEscalation, true);
     assert.equal(pain.severity, 'pause');
+
+    const physicalPressure = evaluateSafetyEscalation('I feel knee pressure and discomfort.');
+    assert.equal(physicalPressure.requiresEscalation, true);
+    assert.equal(physicalPressure.severity, 'pause');
 
     const plainPain = evaluateSafetyEscalation('There is pain when we continue.');
     assert.equal(plainPain.requiresEscalation, true);

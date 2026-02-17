@@ -1,4 +1,5 @@
 import type { PositionEntry, PositionDocumentationSource } from "../types";
+import { importedIntimacyPositions } from "./importedIntimacyPositions";
 
 const SOURCES: Record<string, PositionDocumentationSource> = {
   mayoPainfulIntercourse: {
@@ -38,7 +39,7 @@ const SOURCES: Record<string, PositionDocumentationSource> = {
 const sources = (...keys: Array<keyof typeof SOURCES>): PositionDocumentationSource[] =>
   keys.map((key) => SOURCES[key]);
 
-export const intimacyPositions: PositionEntry[] = [
+const curatedIntimacyPositions: PositionEntry[] = [
   {
     id: "side-lying-support",
     name: "Spooning (Side-Lying Support)",
@@ -463,4 +464,9 @@ export const intimacyPositions: PositionEntry[] = [
     contraindications: ["None specific; this is a recovery posture"],
     documentationSources: sources("nhsPainDuringSex", "mayoPainfulIntercourse", "aafpDyspareunia2021"),
   },
+];
+
+export const intimacyPositions: PositionEntry[] = [
+  ...curatedIntimacyPositions,
+  ...importedIntimacyPositions,
 ];

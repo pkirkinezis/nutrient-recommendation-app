@@ -1,4 +1,11 @@
 import type { PositionEntry } from "../types";
+import {
+  importedIntimacyPositions,
+  importedIllustrationHintByPositionId,
+  importedPositionPostureById,
+  importedTemplateIdByPositionId,
+  type ImportedPostureFamily,
+} from "./importedIntimacyPositions";
 
 export type PositionIllustrationKey =
   | "side-lying-spooning"
@@ -32,7 +39,7 @@ const DEFAULT_ILLUSTRATION: PositionIllustrationMeta = {
   ],
 };
 
-export const positionIllustrationById: Record<string, PositionIllustrationMeta> = {
+const curatedPositionIllustrationById: Record<string, PositionIllustrationMeta> = {
   "side-lying-support": {
     key: "side-lying-spooning",
     caption: "Side-lying setup with stacked support and neutral spine.",
@@ -233,6 +240,93 @@ export const positionIllustrationById: Record<string, PositionIllustrationMeta> 
       "Resume only after mutual consent and symptom stabilization.",
     ],
   },
+};
+
+const importedIllustrationByPosture: Record<ImportedPostureFamily, PositionIllustrationMeta> = {
+  "side-lying": {
+    key: "side-lying-spooning",
+    caption: "Side-lying support illustration with low-strain transitions.",
+    mechanicsFocus: [
+      "Keep hips stacked with pillow support at head and knees.",
+      "Use gradual pace changes and frequent comfort check-ins.",
+    ],
+  },
+  seated: {
+    key: "chair-supported",
+    caption: "Seated support illustration focused on neutral trunk alignment.",
+    mechanicsFocus: [
+      "Ground feet and keep rib cage stacked over pelvis.",
+      "Reset posture when back or hip fatigue rises.",
+    ],
+  },
+  standing: {
+    key: "standing-wall-supported",
+    caption: "Standing support illustration with balance-first pacing.",
+    mechanicsFocus: [
+      "Use wall or stable contact points for balance support.",
+      "Keep intervals short and transition early if strain rises.",
+    ],
+  },
+  quadruped: {
+    key: "quadruped-supported",
+    caption: "Quadruped support illustration with controlled trunk loading.",
+    mechanicsFocus: [
+      "Maintain neutral lower-back alignment and cushioned joint support.",
+      "Use brief rounds with planned recovery pauses.",
+    ],
+  },
+  "top-led": {
+    key: "top-forward-supported",
+    caption: "Top-led support illustration emphasizing pace control and stability.",
+    mechanicsFocus: [
+      "Use stable hand support and small range transitions.",
+      "Track comfort ratings before each angle change.",
+    ],
+  },
+  "oral-support": {
+    key: "seated-face-to-face",
+    caption: "Communication-led support illustration for low-strain positioning.",
+    mechanicsFocus: [
+      "Keep neck and shoulder posture supported and neutral.",
+      "Use explicit pause cues and regular posture resets.",
+    ],
+  },
+  "supine-support": {
+    key: "supine-supported",
+    caption: "Supine support illustration for comfort-first pacing.",
+    mechanicsFocus: [
+      "Use pillows under knees or hips to keep a neutral base.",
+      "Lower range and recheck comfort after each movement change.",
+    ],
+  },
+};
+
+const buildImportedIllustrationMeta = (position: PositionEntry): PositionIllustrationMeta => {
+  const directHint = importedIllustrationHintByPositionId[position.id];
+  if (directHint) {
+    return {
+      key: directHint.key,
+      caption: directHint.caption,
+      mechanicsFocus: directHint.mechanicsFocus,
+    };
+  }
+
+  const mappedTemplateId = importedTemplateIdByPositionId[position.id];
+  if (mappedTemplateId && curatedPositionIllustrationById[mappedTemplateId]) {
+    return curatedPositionIllustrationById[mappedTemplateId];
+  }
+  const posture = importedPositionPostureById[position.id];
+  if (!posture) return DEFAULT_ILLUSTRATION;
+  return importedIllustrationByPosture[posture] ?? DEFAULT_ILLUSTRATION;
+};
+
+const importedPositionIllustrationById: Record<string, PositionIllustrationMeta> = Object.fromEntries(
+  importedIntimacyPositions.map((position) => [position.id, buildImportedIllustrationMeta(position)]),
+);
+
+export const positionIllustrationById: Record<string, PositionIllustrationMeta> = {
+  ...curatedPositionIllustrationById,
+  ...importedPositionIllustrationById,
 };
 
 export const getPositionIllustrationMeta = (position: PositionEntry): PositionIllustrationMeta =>

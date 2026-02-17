@@ -17,10 +17,13 @@ import { calculateMetabolicMetrics } from './utils/metabolism';
 import { buildTrackingChartData, buildTrackingCsv } from './utils/trackingExports';
 import { getTranslation, type Language } from './utils/i18n';
 import { hasReproductiveRiskSignalInText, isReproductiveScopeQuery } from './constants/reproductiveScope';
-import { IntimacyWellnessSection } from './components/IntimacyWellnessSection';
 import { clearIntimacyLocalData, DEFAULT_USER_PREFERENCES, loadIntimacyConsentCheckIns, loadIntimacyPreferences, saveIntimacyConsentCheckIns, saveIntimacyPreferences } from './utils/intimacyStorage';
 
 const EducationalGuide = lazy(() => import('./components/EducationalGuide'));
+const IntimacyWellnessSection = lazy(async () => {
+  const module = await import('./components/IntimacyWellnessSection');
+  return { default: module.IntimacyWellnessSection };
+});
 
 // LocalStorage keys
 const STORAGE_KEYS = {
@@ -2244,13 +2247,15 @@ export function App() {
                 )}
               </div>
             ) : learnMode === 'intimacy' ? (
-              <IntimacyWellnessSection
-                preferences={intimacyPreferences}
-                onPreferencesChange={setIntimacyPreferences}
-                consentCheckIns={intimacyConsentCheckIns}
-                onAddConsentCheckIn={handleAddIntimacyConsentCheckIn}
-                onDeleteAllData={handleDeleteIntimacyData}
-              />
+              <Suspense fallback={<div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-500">Loading intimacy section...</div>}>
+                <IntimacyWellnessSection
+                  preferences={intimacyPreferences}
+                  onPreferencesChange={setIntimacyPreferences}
+                  consentCheckIns={intimacyConsentCheckIns}
+                  onAddConsentCheckIn={handleAddIntimacyConsentCheckIn}
+                  onDeleteAllData={handleDeleteIntimacyData}
+                />
+              </Suspense>
             ) : (
               <div className="space-y-8">
                 <FoodLookup

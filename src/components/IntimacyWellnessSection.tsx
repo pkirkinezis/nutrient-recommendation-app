@@ -75,6 +75,32 @@ export const IntimacyWellnessSection = ({
             both enabled.
           </p>
         </div>
+        <div className="space-y-3 rounded-xl border border-rose-200 bg-rose-50 p-4">
+          <p className="text-sm font-semibold text-rose-900">Privacy Controls Stay Available</p>
+          <p className="text-xs text-rose-800">
+            Intimacy data controls remain available even when content is hidden.
+          </p>
+          <div className="rounded-lg border border-rose-200 bg-white p-3">
+            <p className="text-xs font-semibold text-rose-800">Consent check-ins logged</p>
+            <p className="mt-1 text-sm text-rose-900">{consentCheckIns.length}</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExport}
+              className="rounded-lg border border-rose-300 bg-white px-3 py-2 text-xs font-semibold text-rose-800 hover:bg-rose-100"
+            >
+              Export Intimacy Data
+            </button>
+            <button
+              type="button"
+              onClick={onDeleteAllData}
+              className="rounded-lg border border-rose-300 bg-rose-100 px-3 py-2 text-xs font-semibold text-rose-900 hover:bg-rose-200"
+            >
+              Delete Intimacy Data
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

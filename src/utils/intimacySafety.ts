@@ -19,12 +19,12 @@ const ESCALATION_RULES: SafetyRule[] = [
     ],
   },
   {
-    pattern: /\b(force|forced|coerce|coercion|pressured|pressure|threat|violence)\b/i,
-    reason: "Potential coercion or pressure was detected.",
+    pattern: /\b(force|forced|forcing|coerce|coerced|coercion|pressured|threat|violence)\b/i,
+    reason: "Potential coercion was detected.",
     severity: "urgent",
     immediateSteps: [
       "Stop immediately and prioritize physical safety.",
-      "Move to a private safe location away from pressure.",
+      "Move to a private safe location away from coercive pressure.",
       "Reach out to trusted support or crisis resources.",
     ],
   },
@@ -39,7 +39,7 @@ const ESCALATION_RULES: SafetyRule[] = [
     ],
   },
   {
-    pattern: /\b(severe pain|persistent pain|ongoing pain|painful|pain|hurt|hurts|distress|panic)\b/i,
+    pattern: /\b(severe pain|persistent pain|ongoing pain|painful|pain|pressure|discomfort|hurt|hurts|distress|panic)\b/i,
     reason: "Potential pain or high distress was detected.",
     severity: "pause",
     immediateSteps: [

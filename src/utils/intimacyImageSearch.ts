@@ -1,4 +1,5 @@
 import type { PositionEntry } from "../types";
+import { importedTemplateIdByPositionId } from "../data/importedIntimacyPositions";
 
 interface PositionImageSearchProfile {
   primaryTerm: string;
@@ -134,7 +135,10 @@ const ensureSexKeyword = (value: string): string => {
 };
 
 const getSearchProfile = (position: PositionEntry): PositionImageSearchProfile =>
-  SEARCH_PROFILE_BY_ID[position.id] ?? {
+  SEARCH_PROFILE_BY_ID[position.id] ??
+  (importedTemplateIdByPositionId[position.id]
+    ? SEARCH_PROFILE_BY_ID[importedTemplateIdByPositionId[position.id]]
+    : null) ?? {
     primaryTerm: `${position.name} sex position`,
     secondaryTerms: ["sex position"],
   };

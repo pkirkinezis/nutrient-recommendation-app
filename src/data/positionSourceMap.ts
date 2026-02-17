@@ -1,4 +1,5 @@
 import type { PositionEntry } from "../types";
+import { importedPositionSourceEntries } from "./importedIntimacyPositions";
 
 export interface PositionSourceProvenance {
   sourceName: string;
@@ -39,7 +40,7 @@ const withProvenance = (
   provenance: [INTERNAL_MAPPING_PROVENANCE, EXTERNAL_REFERENCE_PROVENANCE],
 });
 
-export const positionSourceMap: Record<string, PositionSourceMapEntry> = {
+const curatedPositionSourceMap: Record<string, PositionSourceMapEntry> = {
   "side-lying-support": withProvenance(
     "side-lying-support",
     "Spooning (Side-Lying Support)",
@@ -165,6 +166,23 @@ export const positionSourceMap: Record<string, PositionSourceMapEntry> = {
     "Aftercare Rest Position",
     ["aftercare rest", "aftercare cuddle", "recovery cuddle position"],
   ),
+};
+
+const importedPositionSourceMap: Record<string, PositionSourceMapEntry> = Object.fromEntries(
+  Object.entries(importedPositionSourceEntries).map(([positionId, entry]) => [
+    positionId,
+    {
+      positionId: entry.positionId,
+      displayName: entry.displayName,
+      aliases: entry.aliases,
+      provenance: entry.provenance,
+    },
+  ]),
+);
+
+export const positionSourceMap: Record<string, PositionSourceMapEntry> = {
+  ...curatedPositionSourceMap,
+  ...importedPositionSourceMap,
 };
 
 const normalizeAlias = (value: string): string =>

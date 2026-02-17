@@ -1,7 +1,8 @@
 import importedPositionData from "./importedPositionData.json";
+import { importedExternalReferenceByPositionId } from "./importedIntimacyPositions";
 import type { PositionEntry } from "../types";
 
-type MappingConfidence = "exact" | "alias" | "keyword" | "unmapped";
+type MappingConfidence = "exact" | "alias" | "keyword" | "unmapped" | "manual";
 
 interface ImportedReferenceRow {
   externalId: string;
@@ -36,6 +37,7 @@ export interface ExternalPositionReference {
 }
 
 const confidenceRank: Record<MappingConfidence, number> = {
+  manual: 4,
   exact: 3,
   alias: 2,
   keyword: 1,
@@ -158,6 +160,9 @@ export const getExternalReferenceForPosition = (
   position: Pick<PositionEntry, "id">,
   options?: { allowBroadMatches?: boolean },
 ): ExternalPositionReference | null => {
+  const importedReference = importedExternalReferenceByPositionId[position.id];
+  if (importedReference) return importedReference;
+
   if (options?.allowBroadMatches) {
     return externalReferenceByPositionIdBroad[position.id] ?? null;
   }
