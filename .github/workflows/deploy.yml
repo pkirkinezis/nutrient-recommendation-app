@@ -45,6 +45,9 @@ jobs:
       - name: Run safety checks
         run: npm run check:safety
 
+      - name: Run intimacy checks
+        run: npm run check:intimacy
+
       - name: Run search checks
         run: npm run check:search
 

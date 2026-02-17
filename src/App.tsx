@@ -1,5 +1,5 @@
 import { Suspense, lazy, useMemo, useEffect, useRef, useState, useCallback } from 'react';
-import { CuratedStack, Supplement, SupplementStack, UserProfile, Recommendation, InteractionWarning, TrackingData, DailyLog, LabResult, LocalSyncMeta } from './types/index';
+import { CuratedStack, Supplement, SupplementStack, UserProfile, Recommendation, InteractionWarning, TrackingData, DailyLog, LabResult, LocalSyncMeta, UserPreferences, ConsentCheckIn } from './types/index';
 import { supplements, formGuidance, supplementComparisons, misinformationAlerts } from './data/supplements';
 import { checkInteractions, generateTimingSchedule, useGoalAnalysis } from './utils/analyzer';
 import { AdvancedBrowse } from './components/AdvancedBrowse';
@@ -17,8 +17,13 @@ import { calculateMetabolicMetrics } from './utils/metabolism';
 import { buildTrackingChartData, buildTrackingCsv } from './utils/trackingExports';
 import { getTranslation, type Language } from './utils/i18n';
 import { hasReproductiveRiskSignalInText, isReproductiveScopeQuery } from './constants/reproductiveScope';
+import { clearIntimacyLocalData, DEFAULT_USER_PREFERENCES, loadIntimacyConsentCheckIns, loadIntimacyPreferences, saveIntimacyConsentCheckIns, saveIntimacyPreferences } from './utils/intimacyStorage';
 
 const EducationalGuide = lazy(() => import('./components/EducationalGuide'));
+const IntimacyWellnessSection = lazy(async () => {
+  const module = await import('./components/IntimacyWellnessSection');
+  return { default: module.IntimacyWellnessSection };
+});
 
 // LocalStorage keys
 const STORAGE_KEYS = {
@@ -185,7 +190,9 @@ export function App() {
   });
   const [activeTab, setActiveTab] = useState<'find' | 'stacks' | 'learn' | 'about'>('find');
   const [findMode, setFindMode] = useState<'recommend' | 'browse'>('recommend');
-  const [learnMode, setLearnMode] = useState<'guide' | 'insights' | 'track'>('insights');
+  const [learnMode, setLearnMode] = useState<'guide' | 'insights' | 'track' | 'intimacy'>('insights');
+  const [intimacyPreferences, setIntimacyPreferences] = useState<UserPreferences>(() => loadIntimacyPreferences());
+  const [intimacyConsentCheckIns, setIntimacyConsentCheckIns] = useState<ConsentCheckIn[]>(() => loadIntimacyConsentCheckIns());
   const [language, setLanguage] = useState<Language>(() => {
     try {
       const saved = localStorage.getItem('nutricompass_language') as Language | null;
@@ -318,6 +325,22 @@ export function App() {
     }
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
+
+  useEffect(() => {
+    try {
+      saveIntimacyPreferences(intimacyPreferences);
+    } catch {
+      // ignore persistence errors
+    }
+  }, [intimacyPreferences]);
+
+  useEffect(() => {
+    try {
+      saveIntimacyConsentCheckIns(intimacyConsentCheckIns);
+    } catch {
+      // ignore persistence errors
+    }
+  }, [intimacyConsentCheckIns]);
 
   const activeRecommendation = useMemo(() => {
     if (!activeSupplement) return undefined;
@@ -838,6 +861,16 @@ export function App() {
       note: '',
       date: new Date().toISOString().split('T')[0]
     });
+  };
+
+  const handleAddIntimacyConsentCheckIn = (entry: ConsentCheckIn): void => {
+    setIntimacyConsentCheckIns(prev => [entry, ...prev].slice(0, 200));
+  };
+
+  const handleDeleteIntimacyData = (): void => {
+    clearIntimacyLocalData();
+    setIntimacyPreferences(DEFAULT_USER_PREFERENCES);
+    setIntimacyConsentCheckIns([]);
   };
 
   const parseListInput = (value: string): string[] => value
@@ -1949,18 +1982,29 @@ export function App() {
                 >
                   Track
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setLearnMode('intimacy')}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition ${
+                    learnMode === 'intimacy' ? 'bg-purple-500 text-white' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Intimacy
+                </button>
               </div>
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-purple-100 bg-purple-50 px-4 py-3 text-sm text-purple-800">
-              <span>Looking for USDA FoodData Central or Open Food Facts? Use the Insights tab to access Food Lookup.</span>
-              <button
-                type="button"
-                onClick={() => setLearnMode('insights')}
-                className="rounded-full border border-purple-200 bg-white px-3 py-1 text-xs font-semibold text-purple-700 hover:border-purple-300 hover:text-purple-800"
-              >
-                Go to Insights
-              </button>
-            </div>
+            {learnMode !== 'intimacy' && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-purple-100 bg-purple-50 px-4 py-3 text-sm text-purple-800">
+                <span>Looking for USDA FoodData Central or Open Food Facts? Use the Insights tab to access Food Lookup.</span>
+                <button
+                  type="button"
+                  onClick={() => setLearnMode('insights')}
+                  className="rounded-full border border-purple-200 bg-white px-3 py-1 text-xs font-semibold text-purple-700 hover:border-purple-300 hover:text-purple-800"
+                >
+                  Go to Insights
+                </button>
+              </div>
+            )}
 
             {learnMode === 'guide' ? (
               <Suspense fallback={<div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-500">Loading guide...</div>}>
@@ -2202,6 +2246,16 @@ export function App() {
                   </div>
                 )}
               </div>
+            ) : learnMode === 'intimacy' ? (
+              <Suspense fallback={<div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-500">Loading intimacy section...</div>}>
+                <IntimacyWellnessSection
+                  preferences={intimacyPreferences}
+                  onPreferencesChange={setIntimacyPreferences}
+                  consentCheckIns={intimacyConsentCheckIns}
+                  onAddConsentCheckIn={handleAddIntimacyConsentCheckIn}
+                  onDeleteAllData={handleDeleteIntimacyData}
+                />
+              </Suspense>
             ) : (
               <div className="space-y-8">
                 <FoodLookup

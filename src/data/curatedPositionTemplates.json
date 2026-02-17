@@ -1,0 +1,1135 @@
+{
+  "side-lying-support": {
+    "id": "side-lying-support",
+    "name": "Spooning (Side-Lying Support)",
+    "inspirationTags": [
+      "documented comfort classic",
+      "low strain",
+      "beginner friendly"
+    ],
+    "comfortTags": [
+      "low-back-sensitive",
+      "pelvic-floor-tension",
+      "fatigue-aware"
+    ],
+    "setup": [
+      "Both partners lie on their sides with pillows supporting head and knees.",
+      "Keep hips stacked and spine in a neutral line."
+    ],
+    "alignmentCues": [
+      "Maintain shoulder and hip alignment without twisting.",
+      "Adjust pillow height to keep neck relaxed."
+    ],
+    "comfortCues": [
+      "Check breathing rhythm every minute.",
+      "Reduce pressure by adjusting knee and hip spacing."
+    ],
+    "modifications": [
+      "Place a folded blanket between knees for joint comfort.",
+      "Use a small pillow under waist for lumbar support."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "Acute shoulder pain",
+      "Recent hip injury without clinician clearance"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "PubMed: Male coital spine biomechanics (2014)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/24342991/"
+      },
+      {
+        "label": "PubMed: Female coital spine biomechanics (2014)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/24562134/"
+      }
+    ]
+  },
+  "side-lying-spooning-variation": {
+    "id": "side-lying-spooning-variation",
+    "name": "Spooning (Pillow Variation)",
+    "inspirationTags": [
+      "documented side variation",
+      "comfort first"
+    ],
+    "comfortTags": [
+      "dryness-sensitive",
+      "gentle-depth-control",
+      "fatigue-aware"
+    ],
+    "setup": [
+      "Use side-lying alignment with one partner positioned behind for shared support.",
+      "Add pillows under head and knees to reduce trunk rotation."
+    ],
+    "alignmentCues": [
+      "Keep both spines supported and avoid forced twisting.",
+      "Use small range changes with verbal check-ins."
+    ],
+    "comfortCues": [
+      "Pause often for pressure and tension checks.",
+      "Keep pace slow and predictable."
+    ],
+    "modifications": [
+      "Add hip support pillow if low-back tension appears.",
+      "Switch to face-to-face side-lying if rotation feels uncomfortable."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "Current shoulder compression pain",
+      "Acute thoracic rotation pain"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "AAFP: Dyspareunia in Women (2021)",
+        "url": "https://www.aafp.org/pubs/afp/issues/2021/0515/p597.html"
+      }
+    ]
+  },
+  "side-lying-face-to-face-variation": {
+    "id": "side-lying-face-to-face-variation",
+    "name": "Face-to-Face Side-Lying",
+    "inspirationTags": [
+      "communication focused",
+      "shared pacing"
+    ],
+    "comfortTags": [
+      "communication-focused",
+      "pelvic-floor-tension",
+      "gentle-depth-control"
+    ],
+    "setup": [
+      "Lie side-by-side facing each other with stacked pillows for neck support.",
+      "Keep knees softly bent and hips in mid-range."
+    ],
+    "alignmentCues": [
+      "Keep shoulders relaxed and jaw unclenched.",
+      "Use minimal trunk torque."
+    ],
+    "comfortCues": [
+      "Use verbal comfort ratings at regular intervals.",
+      "Slow or stop at first discomfort signal."
+    ],
+    "modifications": [
+      "Add pillow between knees for hip comfort.",
+      "Increase torso support to reduce abdominal loading."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "Acute neck pain in side-lying",
+      "Unresolved rib pain with side pressure"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      }
+    ]
+  },
+  "seated-face-to-face": {
+    "id": "seated-face-to-face",
+    "name": "Seated Face-to-Face",
+    "inspirationTags": [
+      "upright communication",
+      "controlled pacing"
+    ],
+    "comfortTags": [
+      "communication-focused",
+      "gentle-depth-control",
+      "mobility-limited"
+    ],
+    "setup": [
+      "Sit upright on a firm surface with back support available.",
+      "Keep knees and hips in comfortable, non-forced angles."
+    ],
+    "alignmentCues": [
+      "Maintain a tall spine with relaxed shoulders.",
+      "Keep body weight centered to avoid lower-back strain."
+    ],
+    "comfortCues": [
+      "Pause for check-ins when posture starts to collapse.",
+      "Use hand support behind hips if needed."
+    ],
+    "modifications": [
+      "Add cushions under hips to reduce hip flexion strain.",
+      "Use a wall or headboard for added trunk support."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "Acute lower-back flare-up",
+      "Unmanaged vestibular dizziness while upright"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      }
+    ]
+  },
+  "semi-reclined-lotus-support": {
+    "id": "semi-reclined-lotus-support",
+    "name": "Reclined Lotus",
+    "inspirationTags": [
+      "seated supported variation",
+      "lotus-inspired"
+    ],
+    "comfortTags": [
+      "communication-focused",
+      "pelvic-floor-tension",
+      "dryness-sensitive"
+    ],
+    "setup": [
+      "Use a reclined backrest with supported seated alignment.",
+      "Keep hips and knees in pain-free range using cushions."
+    ],
+    "alignmentCues": [
+      "Maintain neutral neck position with back support.",
+      "Avoid prolonged unsupported trunk flexion."
+    ],
+    "comfortCues": [
+      "Use low movement amplitude and frequent pauses.",
+      "Check breathing and muscle tension every minute."
+    ],
+    "modifications": [
+      "Increase recline angle for lower-back relief.",
+      "Use side bolsters to reduce hip strain."
+    ],
+    "difficulty": "intermediate",
+    "contraindications": [
+      "Acute hip impingement pain",
+      "Seated intolerance from coccyx injury"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "AAFP: Dyspareunia in Women (2021)",
+        "url": "https://www.aafp.org/pubs/afp/issues/2021/0515/p597.html"
+      }
+    ]
+  },
+  "reverse-facing-seated-support": {
+    "id": "reverse-facing-seated-support",
+    "name": "Reverse Seated",
+    "inspirationTags": [
+      "seated variation",
+      "backward-facing control"
+    ],
+    "comfortTags": [
+      "gentle-depth-control",
+      "low-back-sensitive",
+      "mobility-limited"
+    ],
+    "setup": [
+      "Use stable seated support with one partner facing away for angle control.",
+      "Keep lumbar spine supported to reduce extension strain."
+    ],
+    "alignmentCues": [
+      "Maintain stacked rib-to-pelvis posture.",
+      "Avoid abrupt trunk rotation."
+    ],
+    "comfortCues": [
+      "Use short intervals with reset breaks.",
+      "Stop if lumbar discomfort increases."
+    ],
+    "modifications": [
+      "Add lumbar roll for additional back support.",
+      "Use arm support to offload hips and back."
+    ],
+    "difficulty": "intermediate",
+    "contraindications": [
+      "Current low-back instability flare",
+      "Balance issues without stable support"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "PubMed: Sexual disability in low back pain framework (2024)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38200986/"
+      }
+    ]
+  },
+  "reclined-pillows": {
+    "id": "reclined-pillows",
+    "name": "Reclined with Pillows",
+    "inspirationTags": [
+      "supportive",
+      "slow pace",
+      "comfort first"
+    ],
+    "comfortTags": [
+      "pelvic-floor-tension",
+      "fatigue-aware",
+      "gentle-depth-control"
+    ],
+    "setup": [
+      "Use two to three pillows to create a gentle recline angle.",
+      "Support knees and lower back to distribute load."
+    ],
+    "alignmentCues": [
+      "Keep chin neutral to avoid neck compression.",
+      "Align hips to avoid excessive arching."
+    ],
+    "comfortCues": [
+      "Reassess pressure points after each movement change.",
+      "Slow pacing to maintain steady breathing."
+    ],
+    "modifications": [
+      "Increase recline angle to reduce abdominal pressure.",
+      "Add side bolsters for trunk stability."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "Uncontrolled reflux symptoms in reclined posture",
+      "Recent abdominal surgery without clearance"
+    ],
+    "documentationSources": [
+      {
+        "label": "Mayo Clinic: Painful intercourse",
+        "url": "https://www.mayoclinic.org/symptoms/painful-intercourse/basics/definition/sym-20050639"
+      },
+      {
+        "label": "AAFP: Dyspareunia in Women (2021)",
+        "url": "https://www.aafp.org/pubs/afp/issues/2021/0515/p597.html"
+      },
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      }
+    ]
+  },
+  "supported-top-led-control": {
+    "id": "supported-top-led-control",
+    "name": "Woman on Top (Supported)",
+    "inspirationTags": [
+      "comfort regulation",
+      "angle control",
+      "documented top-led"
+    ],
+    "comfortTags": [
+      "gentle-depth-control",
+      "pelvic-floor-tension",
+      "dryness-sensitive"
+    ],
+    "setup": [
+      "Use a reclined or seated supported base with pillows behind the back.",
+      "The leading partner controls pacing, angle, and movement range gradually."
+    ],
+    "alignmentCues": [
+      "Keep lumbar spine neutral by adding lower-back support.",
+      "Avoid abrupt angle changes; use small range adjustments."
+    ],
+    "comfortCues": [
+      "Pause every minute for verbal comfort rating.",
+      "If discomfort rises, reduce range and return to supported breathing."
+    ],
+    "modifications": [
+      "Increase backrest support for reduced hip load.",
+      "Use additional lubrication and slower transitions."
+    ],
+    "difficulty": "intermediate",
+    "contraindications": [
+      "Acute hip impingement symptoms",
+      "Current severe pelvic pain without clinician assessment"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      }
+    ]
+  },
+  "missionary-supported-pelvis-elevated": {
+    "id": "missionary-supported-pelvis-elevated",
+    "name": "Missionary (Pillow Under Hips)",
+    "inspirationTags": [
+      "missionary-style documented",
+      "pillow-supported"
+    ],
+    "comfortTags": [
+      "gentle-depth-control",
+      "low-back-sensitive",
+      "dryness-sensitive"
+    ],
+    "setup": [
+      "Use a small pillow under hips and optional lumbar support.",
+      "Keep knees comfortably bent and shoulders relaxed."
+    ],
+    "alignmentCues": [
+      "Avoid excessive lumbar extension.",
+      "Use neutral neck alignment with head support."
+    ],
+    "comfortCues": [
+      "Use slower pacing and frequent range adjustments.",
+      "Pause if pelvic pressure increases."
+    ],
+    "modifications": [
+      "Lower pillow height if extension discomfort appears.",
+      "Switch to side-lying for reduced pressure."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "Extension-sensitive low-back pain flare",
+      "Post-surgical abdominal restrictions"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "PubMed: Sexual disability in low back pain framework (2024)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38200986/"
+      },
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      }
+    ]
+  },
+  "coital-alignment-technique-supported": {
+    "id": "coital-alignment-technique-supported",
+    "name": "CAT Position (Supported)",
+    "inspirationTags": [
+      "alignment-focused",
+      "friction reduction"
+    ],
+    "comfortTags": [
+      "dryness-sensitive",
+      "gentle-depth-control",
+      "communication-focused"
+    ],
+    "setup": [
+      "Use supported supine alignment with controlled trunk contact and low range.",
+      "Maintain stable pelvis and avoid repetitive high-amplitude motion."
+    ],
+    "alignmentCues": [
+      "Keep pelvis and lower back supported.",
+      "Use consistent shallow range with synchronized breathing."
+    ],
+    "comfortCues": [
+      "Check comfort after each angle change.",
+      "Maintain low-friction pacing."
+    ],
+    "modifications": [
+      "Add side bolsters for stability.",
+      "Transition to side-lying if pressure increases."
+    ],
+    "difficulty": "intermediate",
+    "contraindications": [
+      "Current acute pelvic pain",
+      "Lower-back extension intolerance"
+    ],
+    "documentationSources": [
+      {
+        "label": "Mayo Clinic: Painful intercourse",
+        "url": "https://www.mayoclinic.org/symptoms/painful-intercourse/basics/definition/sym-20050639"
+      },
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      }
+    ]
+  },
+  "edge-of-bed-assisted": {
+    "id": "edge-of-bed-assisted",
+    "name": "Edge of Bed",
+    "inspirationTags": [
+      "alignment",
+      "moderate support",
+      "adjustable height"
+    ],
+    "comfortTags": [
+      "low-back-sensitive",
+      "mobility-limited",
+      "communication-focused"
+    ],
+    "setup": [
+      "Use a firm bed edge with feet grounded for stability.",
+      "Keep knees slightly bent and weight evenly distributed."
+    ],
+    "alignmentCues": [
+      "Avoid excessive forward lean by supporting trunk with hands or pillows.",
+      "Keep pelvis neutral and adjust height as needed."
+    ],
+    "comfortCues": [
+      "Check for lower-back tension every one to two minutes.",
+      "Pause and reset stance if balance feels unstable."
+    ],
+    "modifications": [
+      "Use a footstool for shorter leg length support.",
+      "Add lumbar roll for back comfort."
+    ],
+    "difficulty": "intermediate",
+    "contraindications": [
+      "Recent knee injury affecting weight-bearing",
+      "Balance disorders without support assist"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "PubMed: Sexual disability in low back pain framework (2024)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38200986/"
+      }
+    ]
+  },
+  "chair-supported-neutral": {
+    "id": "chair-supported-neutral",
+    "name": "Chair-Seated (Supported)",
+    "inspirationTags": [
+      "stability",
+      "mobility support",
+      "low effort"
+    ],
+    "comfortTags": [
+      "mobility-limited",
+      "low-back-sensitive",
+      "fatigue-aware"
+    ],
+    "setup": [
+      "Use a stable chair with back support and non-slip footing.",
+      "Keep knees and hips in pain-free angles with feet grounded."
+    ],
+    "alignmentCues": [
+      "Maintain trunk support against backrest to reduce lumbar strain.",
+      "Keep shoulders down and avoid forward rounding."
+    ],
+    "comfortCues": [
+      "Use short intervals and reassess comfort frequently.",
+      "Switch to side-lying rest if fatigue or strain appears."
+    ],
+    "modifications": [
+      "Add a lumbar roll to maintain neutral spine.",
+      "Use a footstool for height adjustments and better pelvic alignment."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "Unstable balance without support",
+      "Recent coccyx injury with seated intolerance"
+    ],
+    "documentationSources": [
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      },
+      {
+        "label": "AAFP: Dyspareunia in Women (2021)",
+        "url": "https://www.aafp.org/pubs/afp/issues/2021/0515/p597.html"
+      }
+    ]
+  },
+  "hip-neutral-pillow-bridge": {
+    "id": "hip-neutral-pillow-bridge",
+    "name": "Pillow Bridge",
+    "inspirationTags": [
+      "pelvic support",
+      "angle reduction",
+      "comfort first"
+    ],
+    "comfortTags": [
+      "pelvic-floor-tension",
+      "dryness-sensitive",
+      "gentle-depth-control"
+    ],
+    "setup": [
+      "Use pillows under hips and knees to keep hip joints in mid-range.",
+      "Start with low movement amplitude and stable support points."
+    ],
+    "alignmentCues": [
+      "Avoid extreme hip flexion or extension.",
+      "Keep neck and upper back supported to reduce whole-body tension."
+    ],
+    "comfortCues": [
+      "Use breathing synchronization before changing pace.",
+      "Stop and reset at first signs of sharp discomfort."
+    ],
+    "modifications": [
+      "Lower the hip elevation if pelvic pressure increases.",
+      "Combine with warm-up stretching and lubrication support."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "Recent abdominal or pelvic surgery without clearance",
+      "Persistent pain that does not improve with support changes"
+    ],
+    "documentationSources": [
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      },
+      {
+        "label": "AAFP: Dyspareunia in Women (2021)",
+        "url": "https://www.aafp.org/pubs/afp/issues/2021/0515/p597.html"
+      }
+    ]
+  },
+  "knee-supported-side-angle": {
+    "id": "knee-supported-side-angle",
+    "name": "Side-Lying with Knee Support",
+    "inspirationTags": [
+      "side-angle variation",
+      "joint support"
+    ],
+    "comfortTags": [
+      "mobility-limited",
+      "pelvic-floor-tension",
+      "low-back-sensitive"
+    ],
+    "setup": [
+      "Start in side-lying and place cushions under upper knee and hip.",
+      "Maintain stable side support with low movement amplitude."
+    ],
+    "alignmentCues": [
+      "Keep pelvis level and avoid twisting under load.",
+      "Use neutral trunk alignment."
+    ],
+    "comfortCues": [
+      "Reassess hip and knee comfort every minute.",
+      "Use pause/reset cues before angle changes."
+    ],
+    "modifications": [
+      "Increase knee support height to reduce hip strain.",
+      "Lower movement range if pelvic tension rises."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "Acute knee ligament injury",
+      "Unmanaged lateral hip pain"
+    ],
+    "documentationSources": [
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      },
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      }
+    ]
+  },
+  "missionary-low-extension-a": {
+    "id": "missionary-low-extension-a",
+    "name": "Missionary (Low Extension)",
+    "inspirationTags": [
+      "biomechanics documented",
+      "low-back adaptation"
+    ],
+    "comfortTags": [
+      "low-back-sensitive",
+      "gentle-depth-control",
+      "short-interval"
+    ],
+    "setup": [
+      "Use supported supine posture with slight knee flexion and lumbar support.",
+      "Maintain low movement amplitude and frequent resets."
+    ],
+    "alignmentCues": [
+      "Limit end-range lumbar extension.",
+      "Keep rib cage stacked over pelvis."
+    ],
+    "comfortCues": [
+      "Stop if extension discomfort appears.",
+      "Use slower transitions and shorter intervals."
+    ],
+    "modifications": [
+      "Add pelvis-neutral pillow support.",
+      "Switch to side-lying if extension sensitivity remains."
+    ],
+    "difficulty": "intermediate",
+    "contraindications": [
+      "Acute extension-intolerant low-back pain",
+      "Current radicular symptoms"
+    ],
+    "documentationSources": [
+      {
+        "label": "PubMed: Male coital spine biomechanics (2014)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/24342991/"
+      },
+      {
+        "label": "PubMed: Female coital spine biomechanics (2014)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/24562134/"
+      },
+      {
+        "label": "PubMed: Sexual disability in low back pain framework (2024)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38200986/"
+      }
+    ]
+  },
+  "missionary-low-extension-b": {
+    "id": "missionary-low-extension-b",
+    "name": "Missionary (Paced Range)",
+    "inspirationTags": [
+      "biomechanics documented",
+      "paced control"
+    ],
+    "comfortTags": [
+      "low-back-sensitive",
+      "communication-focused",
+      "gentle-depth-control"
+    ],
+    "setup": [
+      "Use supported supine posture with pacing controlled by comfort ratings.",
+      "Keep lumbar and cervical support consistent."
+    ],
+    "alignmentCues": [
+      "Avoid abrupt range changes.",
+      "Re-center neutral pelvis every short interval."
+    ],
+    "comfortCues": [
+      "Use 60-90 second intervals with reset breathing.",
+      "Stop if symptoms trend upward."
+    ],
+    "modifications": [
+      "Lower pelvis support to reduce extension load.",
+      "Switch to top-led support if more control is needed."
+    ],
+    "difficulty": "intermediate",
+    "contraindications": [
+      "Persistent extension pain despite support",
+      "Post-surgical restrictions without clearance"
+    ],
+    "documentationSources": [
+      {
+        "label": "PubMed: Male coital spine biomechanics (2014)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/24342991/"
+      },
+      {
+        "label": "PubMed: Female coital spine biomechanics (2014)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/24562134/"
+      },
+      {
+        "label": "PubMed: Sexual disability in low back pain framework (2024)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38200986/"
+      }
+    ]
+  },
+  "quadruped-supported-a": {
+    "id": "quadruped-supported-a",
+    "name": "Doggy Style (Pillow Support)",
+    "inspirationTags": [
+      "biomechanics documented",
+      "supported quadruped"
+    ],
+    "comfortTags": [
+      "low-back-sensitive",
+      "balance-support",
+      "short-interval"
+    ],
+    "setup": [
+      "Use forearm or pillow support to reduce lumbar loading.",
+      "Keep knees cushioned and trunk stable."
+    ],
+    "alignmentCues": [
+      "Maintain neutral lumbar curve.",
+      "Avoid rapid or high-amplitude movement."
+    ],
+    "comfortCues": [
+      "Monitor low-back response closely.",
+      "Switch promptly if symptoms increase."
+    ],
+    "modifications": [
+      "Raise torso support height to reduce extension.",
+      "Shorten intervals and add rest breaks."
+    ],
+    "difficulty": "advanced",
+    "contraindications": [
+      "Acute wrist or knee pain",
+      "Extension-sensitive low-back flare"
+    ],
+    "documentationSources": [
+      {
+        "label": "PubMed: Male coital spine biomechanics (2014)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/24342991/"
+      },
+      {
+        "label": "PubMed: Female coital spine biomechanics (2014)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/24562134/"
+      },
+      {
+        "label": "PubMed: Sexual disability in low back pain framework (2024)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38200986/"
+      }
+    ]
+  },
+  "quadruped-supported-b": {
+    "id": "quadruped-supported-b",
+    "name": "Doggy Style (Elevated Support)",
+    "inspirationTags": [
+      "biomechanics documented",
+      "controlled range"
+    ],
+    "comfortTags": [
+      "low-back-sensitive",
+      "balance-support",
+      "gentle-depth-control"
+    ],
+    "setup": [
+      "Use elevated torso support on pillows or a wedge.",
+      "Keep knees and hands/forearms evenly loaded."
+    ],
+    "alignmentCues": [
+      "Maintain trunk bracing with slow breathing.",
+      "Avoid end-range lumbar extension."
+    ],
+    "comfortCues": [
+      "Pause every minute to reassess spine comfort.",
+      "Reposition immediately if tension rises."
+    ],
+    "modifications": [
+      "Transition to edge-of-bed support for lower load.",
+      "Use side-lying as fallback option."
+    ],
+    "difficulty": "advanced",
+    "contraindications": [
+      "Current shoulder instability",
+      "Unmanaged extension-sensitive back pain"
+    ],
+    "documentationSources": [
+      {
+        "label": "PubMed: Male coital spine biomechanics (2014)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/24342991/"
+      },
+      {
+        "label": "PubMed: Female coital spine biomechanics (2014)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/24562134/"
+      }
+    ]
+  },
+  "supported-standing-wall-shift": {
+    "id": "supported-standing-wall-shift",
+    "name": "Standing Against Wall (Supported)",
+    "inspirationTags": [
+      "standing support",
+      "balance aided"
+    ],
+    "comfortTags": [
+      "balance-support",
+      "short-interval",
+      "communication-focused"
+    ],
+    "setup": [
+      "Stand with one or both partners supported by a wall.",
+      "Keep knees soft and feet shoulder-width for stability."
+    ],
+    "alignmentCues": [
+      "Keep rib cage stacked over pelvis.",
+      "Avoid locked knees and lumbar over-arching."
+    ],
+    "comfortCues": [
+      "Use short intervals with check-ins.",
+      "Switch to seated support if fatigue appears."
+    ],
+    "modifications": [
+      "Use a chair nearby for transition support.",
+      "Reduce duration and range as needed."
+    ],
+    "difficulty": "advanced",
+    "contraindications": [
+      "Current dizziness",
+      "Acute ankle/knee/hip instability"
+    ],
+    "documentationSources": [
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      },
+      {
+        "label": "Mayo Clinic: Painful intercourse",
+        "url": "https://www.mayoclinic.org/symptoms/painful-intercourse/basics/definition/sym-20050639"
+      }
+    ]
+  },
+  "counter-height-forearm-supported": {
+    "id": "counter-height-forearm-supported",
+    "name": "Standing at Counter (Forearm Support)",
+    "inspirationTags": [
+      "standing variation",
+      "forearm support"
+    ],
+    "comfortTags": [
+      "balance-support",
+      "low-back-sensitive",
+      "short-interval"
+    ],
+    "setup": [
+      "Use a stable counter-height surface for forearm support.",
+      "Keep hips and spine in neutral alignment."
+    ],
+    "alignmentCues": [
+      "Avoid excessive lumbar extension.",
+      "Maintain even lower-limb weight distribution."
+    ],
+    "comfortCues": [
+      "Run frequent comfort check-ins.",
+      "Transition out early if strain builds."
+    ],
+    "modifications": [
+      "Increase support height for reduced lumbar load.",
+      "Switch to chair support for lower intensity."
+    ],
+    "difficulty": "advanced",
+    "contraindications": [
+      "Current shoulder/forearm pain with load",
+      "Balance impairment without supervision"
+    ],
+    "documentationSources": [
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      },
+      {
+        "label": "PubMed: Sexual disability in low back pain framework (2024)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38200986/"
+      }
+    ]
+  },
+  "low-load-seated-knee-support": {
+    "id": "low-load-seated-knee-support",
+    "name": "Low-Effort Seated",
+    "inspirationTags": [
+      "joint-friendly",
+      "low-load"
+    ],
+    "comfortTags": [
+      "mobility-limited",
+      "fatigue-aware",
+      "communication-focused"
+    ],
+    "setup": [
+      "Use seated posture with cushions under knees and hips.",
+      "Maintain back support and grounded feet."
+    ],
+    "alignmentCues": [
+      "Keep spine upright with minimal trunk strain.",
+      "Use neutral neck alignment."
+    ],
+    "comfortCues": [
+      "Keep intervals short and controlled.",
+      "Use explicit stop/switch prompts."
+    ],
+    "modifications": [
+      "Add lumbar roll for back comfort.",
+      "Increase seat height to reduce hip flexion demand."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "Severe seated intolerance",
+      "Acute knee flare with flexion"
+    ],
+    "documentationSources": [
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      },
+      {
+        "label": "AAFP: Dyspareunia in Women (2021)",
+        "url": "https://www.aafp.org/pubs/afp/issues/2021/0515/p597.html"
+      }
+    ]
+  },
+  "top-sideways-supported": {
+    "id": "top-sideways-supported",
+    "name": "Sideways Cowgirl (Supported)",
+    "inspirationTags": [
+      "top-led documented",
+      "sideways variation"
+    ],
+    "comfortTags": [
+      "gentle-depth-control",
+      "pelvic-floor-tension",
+      "low-back-sensitive"
+    ],
+    "setup": [
+      "Use top-led positioning with lateral support pillows to reduce load.",
+      "Maintain controlled range and stable support points."
+    ],
+    "alignmentCues": [
+      "Avoid abrupt trunk rotation.",
+      "Keep pelvis neutral during transitions."
+    ],
+    "comfortCues": [
+      "Use comfort ratings each minute.",
+      "Reduce range if pressure increases."
+    ],
+    "modifications": [
+      "Increase side support to limit joint strain.",
+      "Switch to side-lying if fatigue appears."
+    ],
+    "difficulty": "intermediate",
+    "contraindications": [
+      "Current lateral hip pain",
+      "Uncontrolled trunk rotation pain"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "MDPI (2025): Position recommendation framework for painful sex",
+        "url": "https://www.mdpi.com/1660-4601/22/4/550"
+      }
+    ]
+  },
+  "top-facing-forward-supported": {
+    "id": "top-facing-forward-supported",
+    "name": "Cowgirl (Supported)",
+    "inspirationTags": [
+      "top-led documented",
+      "forward-facing variation"
+    ],
+    "comfortTags": [
+      "gentle-depth-control",
+      "communication-focused",
+      "dryness-sensitive"
+    ],
+    "setup": [
+      "Use top-led alignment with backrest or hand support for stability.",
+      "Control pacing and range with small, deliberate movement."
+    ],
+    "alignmentCues": [
+      "Keep trunk stacked and avoid lumbar collapse.",
+      "Use gradual transitions."
+    ],
+    "comfortCues": [
+      "Check comfort frequently and pause as needed.",
+      "Keep breathing steady."
+    ],
+    "modifications": [
+      "Add torso support for reduced low-back strain.",
+      "Lower range when pressure rises."
+    ],
+    "difficulty": "intermediate",
+    "contraindications": [
+      "Acute knee pain in loaded flexion",
+      "Current severe pelvic pain"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "Mayo Clinic: Painful intercourse",
+        "url": "https://www.mayoclinic.org/symptoms/painful-intercourse/basics/definition/sym-20050639"
+      }
+    ]
+  },
+  "top-facing-backward-supported": {
+    "id": "top-facing-backward-supported",
+    "name": "Reverse Cowgirl (Supported)",
+    "inspirationTags": [
+      "top-led documented",
+      "backward-facing variation"
+    ],
+    "comfortTags": [
+      "gentle-depth-control",
+      "low-back-sensitive",
+      "balance-support"
+    ],
+    "setup": [
+      "Use top-led backward-facing alignment with upper-limb support available.",
+      "Keep movement low range and paced."
+    ],
+    "alignmentCues": [
+      "Maintain neutral pelvis and avoid hyperextension.",
+      "Use stable base contact points."
+    ],
+    "comfortCues": [
+      "Use short rounds with pause resets.",
+      "Switch to seated neutral if balance drops."
+    ],
+    "modifications": [
+      "Add side support cushions.",
+      "Reduce motion amplitude and duration."
+    ],
+    "difficulty": "advanced",
+    "contraindications": [
+      "Balance impairment without support",
+      "Low-back extension sensitivity"
+    ],
+    "documentationSources": [
+      {
+        "label": "Cleveland Clinic: Best sex positions for endometriosis",
+        "url": "https://health.clevelandclinic.org/best-sex-positions-for-endometriosis"
+      },
+      {
+        "label": "PubMed: Sexual disability in low back pain framework (2024)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38200986/"
+      }
+    ]
+  },
+  "intimacy-rest-reset": {
+    "id": "intimacy-rest-reset",
+    "name": "Aftercare Rest Position",
+    "inspirationTags": [
+      "recovery posture",
+      "aftercare essential"
+    ],
+    "comfortTags": [
+      "fatigue-aware",
+      "communication-focused",
+      "safety-escalation"
+    ],
+    "setup": [
+      "Use supported side-lying or seated rest posture.",
+      "Focus on calm breathing and reduced muscular tension."
+    ],
+    "alignmentCues": [
+      "Support head, neck, and knees for neutral alignment.",
+      "Maintain relaxed shoulders and jaw."
+    ],
+    "comfortCues": [
+      "Use this posture when distress or pain appears.",
+      "Continue only after clear mutual consent."
+    ],
+    "modifications": [
+      "Add heat pack for muscle relaxation.",
+      "Remain in rest mode until symptoms settle."
+    ],
+    "difficulty": "beginner",
+    "contraindications": [
+      "None specific; this is a recovery posture"
+    ],
+    "documentationSources": [
+      {
+        "label": "NHS: Pain during sex",
+        "url": "https://www.nhs.uk/conditions/pain-during-sex/"
+      },
+      {
+        "label": "Mayo Clinic: Painful intercourse",
+        "url": "https://www.mayoclinic.org/symptoms/painful-intercourse/basics/definition/sym-20050639"
+      },
+      {
+        "label": "AAFP: Dyspareunia in Women (2021)",
+        "url": "https://www.aafp.org/pubs/afp/issues/2021/0515/p597.html"
+      }
+    ]
+  }
+}
