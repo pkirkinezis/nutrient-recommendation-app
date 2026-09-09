@@ -22,12 +22,21 @@ import {
 } from '../data/pragmaticTiers';
 import { buildSupplementSafetyAssessment } from '../utils/analyzer';
 import {
+  getSupplementSearchIntent,
   searchSupplementsWithScores,
   suggestClosestSupplementTerm,
 } from '../utils/supplementSearchEngine';
 import { dedupeSupplementsByCanonical, getCanonicalSupplementKey } from '../utils/supplementCanonical';
+import { getPersonalizedSupplementSuggestions } from '../utils/browsePersonalization';
+import { hasSignificantInteractionRisk } from '../utils/browseSafety';
+import {
+  ALL_SUPPLEMENT_TYPES,
+  BREASTFEEDING_LOWER_RISK_SUPPLEMENT_IDS,
+  FEATURED_SUPPLEMENT_SCORES,
+  PREGNANCY_FRIENDLY_SUPPLEMENT_IDS,
+} from '../constants/browse';
 
-type SortOption = 'relevance' | 'evidence' | 'pragmatic-tier' | 'name' | 'popularity';
+type SortOption = 'relevance' | 'evidence' | 'pragmatic-tier' | 'name' | 'featured';
 type ViewMode = 'grid' | 'list' | 'compact';
 type SafeForFilter =
   | 'pregnancy'
@@ -67,8 +76,6 @@ interface AdvancedBrowseProps {
   onSelectSupplement: (supplement: Supplement) => void;
   selectedSupplements: Supplement[];
 }
-
-type SupplementKnowledge = NonNullable<ReturnType<typeof getSupplementKnowledgeById>>;
 
 const browseSupplements = dedupeSupplementsByCanonical(supplements);
 
@@ -176,40 +183,12 @@ const safeForConfig: Record<SafeForFilter, { label: string; activeClass: string 
   'sedation-sensitive': { label: 'No sedative effect', activeClass: 'bg-indigo-100 text-indigo-700' },
 };
 
-const pregnancyFriendlySupplementIds = new Set(['folate', 'iodine', 'iron', 'choline', 'omega-3', 'vitamin-d3', 'vitamin-b12']);
-const breastfeedingLowerRiskSupplementIds = new Set(['omega-3', 'vitamin-d3', 'vitamin-b12', 'folate', 'magnesium', 'iodine', 'iron', 'choline']);
-
-const strongInteractionSignalPattern =
-  /warfarin|maoi|ssri|snri|anticoagul|blood thinner|antiplatelet|immunosuppress|digoxin|lithium|levodopa|carbidopa|contraindicat|do not combine|avoid with|major interaction/;
-
-const hasSignificantInteractionRisk = (
-  supplement: Supplement,
-  knowledge?: SupplementKnowledge
-): boolean => {
-  const interactionText = [
-    ...(supplement.drugInteractions || []),
-    ...(supplement.cautions || []),
-    ...(supplement.avoidIf || []),
-    ...(knowledge?.safetyNotes || []),
-  ]
-    .join(' ')
-    .toLowerCase();
-  return strongInteractionSignalPattern.test(interactionText);
-};
-
-const allSupplementTypes = Object.keys(typeConfig) as Supplement['type'][];
+const allSupplementTypes = [...ALL_SUPPLEMENT_TYPES];
 const supplementTypeCounts = allSupplementTypes.reduce((counts, type) => {
   counts[type] = browseSupplements.filter((supplement) => supplement.type === type).length;
   return counts;
 }, {} as Record<Supplement['type'], number>);
 const visibleSupplementTypes = allSupplementTypes.filter((type) => supplementTypeCounts[type] > 0);
-
-const popularityScores: Record<string, number> = {
-  'vitamin-d3': 100, 'omega-3': 98, 'magnesium': 97, 'vitamin-b12': 90, 'vitamin-c': 89,
-  'ashwagandha': 95, 'creatine': 94, 'probiotics': 88, 'zinc': 87, 'collagen': 86,
-  'turmeric-curcumin': 85, 'lions-mane': 80, 'melatonin': 82, 'coq10': 75, 'rhodiola': 70,
-  'l-theanine': 72, 'brahmi-bacopa': 65, 'nac': 60, 'glycine': 55, 'tongkat-ali': 68,
-};
 
 interface QuickFilter {
   id: string;
@@ -233,15 +212,21 @@ const quickFilters: QuickFilter[] = [
 ];
 
 export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupplements }: AdvancedBrowseProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('relevance');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get('q') || '');
+  const [sortBy, setSortBy] = useState<SortOption>(() => {
+    const value = new URLSearchParams(window.location.search).get('sort');
+    return ['relevance', 'evidence', 'pragmatic-tier', 'name', 'featured'].includes(value || '')
+      ? value as SortOption
+      : 'relevance';
+  });
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const value = new URLSearchParams(window.location.search).get('view');
+    return ['grid', 'list', 'compact'].includes(value || '') ? value as ViewMode : 'grid';
+  });
   const [activeQuickFilter, setActiveQuickFilter] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeSupplement, setActiveSupplement] = useState<Supplement | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const loadingTimeoutRef = useRef<number | null>(null);
   const listContainerRef = useRef<HTMLDivElement | null>(null);
   const [listScrollTop, setListScrollTop] = useState(0);
   const [listHeight, setListHeight] = useState(520);
@@ -262,22 +247,6 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     modernOnly: false,
   });
 
-  const triggerLoading = useCallback((): void => {
-    if (loadingTimeoutRef.current !== null) {
-      window.clearTimeout(loadingTimeoutRef.current);
-    }
-    setIsLoading(true);
-    loadingTimeoutRef.current = window.setTimeout(() => setIsLoading(false), 280);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (loadingTimeoutRef.current !== null) {
-        window.clearTimeout(loadingTimeoutRef.current);
-      }
-    };
-  }, []);
-
   useEffect(() => {
     const container = listContainerRef.current;
     if (!container) return;
@@ -290,56 +259,26 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
 
   const normalizedFilterGoals = useMemo(() => normalizeGoals(filters.goals), [filters.goals]);
 
-  const personalizedRecommendations = useMemo(() => {
-    const recs: { id: string; reason: string }[] = [];
-    const diet = userProfile.diet || userProfile.dietType;
-    const age = userProfile.age || userProfile.ageRange;
+  const personalizedRecommendations = useMemo(
+    () => getPersonalizedSupplementSuggestions(userProfile),
+    [userProfile]
+  );
+  const searchIntent = useMemo(
+    () => getSupplementSearchIntent(searchQuery, browseSupplements),
+    [searchQuery]
+  );
+  const isSafetySearch = searchIntent === 'safety';
 
-    if (diet === 'vegan') {
-      recs.push({ id: 'vitamin-b12', reason: 'Essential for vegans' });
-      recs.push({ id: 'omega-3', reason: 'Algae-based omega-3 for vegans' });
-      recs.push({ id: 'iron', reason: 'Plant iron less bioavailable' });
-      recs.push({ id: 'zinc', reason: 'Higher needs on plant-based diet' });
-    }
-    if (diet === 'vegetarian') {
-      recs.push({ id: 'vitamin-b12', reason: 'Important for vegetarians' });
-    }
-    if (userProfile.sleepQuality === 'poor') {
-      recs.push({ id: 'magnesium', reason: 'Glycinate form for sleep' });
-      recs.push({ id: 'glycine', reason: 'Improves sleep quality' });
-      recs.push({ id: 'l-theanine', reason: 'Promotes calm for sleep' });
-    }
-    if (userProfile.stressLevel === 'high' || userProfile.stressLevel === 'very-high') {
-      recs.push({ id: 'ashwagandha', reason: 'Proven cortisol reducer' });
-      recs.push({ id: 'rhodiola', reason: 'Anti-fatigue adaptogen' });
-      recs.push({ id: 'l-theanine', reason: 'Calming without sedation' });
-    }
-    if (userProfile.trainingStyle === 'strength') {
-      recs.push({ id: 'creatine', reason: 'Essential for strength' });
-      recs.push({ id: 'vitamin-d3', reason: 'Supports testosterone' });
-      recs.push({ id: 'zinc', reason: 'Recovery and hormones' });
-    }
-    if (userProfile.trainingStyle === 'endurance') {
-      recs.push({ id: 'beetroot-extract', reason: 'Proven endurance booster' });
-      recs.push({ id: 'l-citrulline', reason: 'Improves blood flow' });
-      recs.push({ id: 'iron', reason: 'Oxygen transport (test first)' });
-    }
-    if (age === '60+' || age === '45-59' || age === 'over-60' || age === '45-60') {
-      recs.push({ id: 'coq10', reason: 'Declines with age' });
-      recs.push({ id: 'vitamin-d3', reason: 'Critical for bone health' });
-      recs.push({ id: 'omega-3', reason: 'Brain and heart protection' });
-    }
-    if (userProfile.sex === 'female') {
-      recs.push({ id: 'iron', reason: 'Higher needs (test first)' });
-      recs.push({ id: 'shatavari', reason: 'Female hormonal support' });
-    }
-    if (userProfile.sex === 'male') {
-      recs.push({ id: 'zinc', reason: 'Testosterone support' });
-      recs.push({ id: 'tongkat-ali', reason: 'Male vitality' });
-    }
-
-    return recs.filter((rec, index, self) => self.findIndex(r => r.id === rec.id) === index);
-  }, [userProfile]);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (searchQuery.trim()) url.searchParams.set('q', searchQuery.trim());
+    else url.searchParams.delete('q');
+    if (sortBy !== 'relevance') url.searchParams.set('sort', sortBy);
+    else url.searchParams.delete('sort');
+    if (viewMode !== 'grid') url.searchParams.set('view', viewMode);
+    else url.searchParams.delete('view');
+    window.history.replaceState(window.history.state, '', url);
+  }, [searchQuery, sortBy, viewMode]);
 
   const selectedSupplementsByCanonical = useMemo(() => {
     const byCanonical = new Map<string, Supplement>();
@@ -494,13 +433,13 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         if (filters.safeFor.includes('pregnancy')) {
           const hasExplicitRisk = /pregnan|conceive|trying to conceive|ovulation/.test(avoidText) || knowledgeFlags.has('pregnancy');
           if (hasExplicitRisk) return false;
-          if (!pregnancyFriendlySupplementIds.has(s.id)) return false;
+          if (!PREGNANCY_FRIENDLY_SUPPLEMENT_IDS.has(s.id)) return false;
         }
 
         if (filters.safeFor.includes('breastfeeding')) {
           const hasExplicitRisk = /breastfeed|lactation/.test(avoidText) || knowledgeFlags.has('breastfeeding');
           if (hasExplicitRisk) return false;
-          if (!breastfeedingLowerRiskSupplementIds.has(s.id)) return false;
+          if (!BREASTFEEDING_LOWER_RISK_SUPPLEMENT_IDS.has(s.id)) return false;
         }
 
         if (filters.safeFor.includes('low-interaction')) {
@@ -542,8 +481,8 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           return evidenceConfig[b.evidence].score - evidenceConfig[a.evidence].score;
         });
         break;
-      case 'popularity':
-        result.sort((a, b) => (popularityScores[b.id] || 0) - (popularityScores[a.id] || 0));
+      case 'featured':
+        result.sort((a, b) => (FEATURED_SUPPLEMENT_SCORES[b.id] || 0) - (FEATURED_SUPPLEMENT_SCORES[a.id] || 0));
         break;
       case 'relevance':
       default:
@@ -567,10 +506,10 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           const bKnowledgeGoalMatches = queryGoalHints.filter(goal =>
             normalizeGoals(bKnowledge?.typicalUseCases || []).includes(goal)
           ).length * 4;
-          const aPersonalized = personalizedRecommendations.find(r => r.id === a.id) ? 24 : 0;
-          const bPersonalized = personalizedRecommendations.find(r => r.id === b.id) ? 24 : 0;
-          const aPopularity = popularityScores[a.id] || 0;
-          const bPopularity = popularityScores[b.id] || 0;
+          const aPersonalized = personalizedRecommendations.find(r => r.supplementId === a.id) ? 24 : 0;
+          const bPersonalized = personalizedRecommendations.find(r => r.supplementId === b.id) ? 24 : 0;
+          const aPopularity = FEATURED_SUPPLEMENT_SCORES[a.id] || 0;
+          const bPopularity = FEATURED_SUPPLEMENT_SCORES[b.id] || 0;
           const aEvidence = evidenceConfig[a.evidence].score * 10;
           const bEvidence = evidenceConfig[b.evidence].score * 10;
           const aPragmaticTier = getPragmaticTierScore(getPragmaticTierForSupplement(a)) * 8;
@@ -627,7 +566,6 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
 
   const handleQuickFilter = (filterId: string): void => {
     const next = activeQuickFilter === filterId ? null : filterId;
-    triggerLoading();
     setActiveQuickFilter(next);
     setFilters(prev => ({
       ...prev,
@@ -648,7 +586,6 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
   };
 
   const clearFilters = (): void => {
-    triggerLoading();
     setFilters({
       types: [],
       evidence: [],
@@ -673,30 +610,14 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
     const nextFilters = currentValues.includes(value)
       ? { ...filters, [key]: currentValues.filter(v => v !== value) }
       : { ...filters, [key]: [...currentValues, value] };
-    triggerLoading();
     setFilters(nextFilters);
     setActiveQuickFilter(null);
   };
 
-  const handleSearchChange = (value: string): void => {
-    triggerLoading();
-    setSearchQuery(value);
-  };
-
-  const handleClearSearch = (): void => {
-    triggerLoading();
-    setSearchQuery('');
-  };
-
-  const handleSortChange = (value: SortOption): void => {
-    triggerLoading();
-    setSortBy(value);
-  };
-
-  const handleViewModeChange = (mode: ViewMode): void => {
-    triggerLoading();
-    setViewMode(mode);
-  };
+  const handleSearchChange = (value: string): void => setSearchQuery(value);
+  const handleClearSearch = (): void => setSearchQuery('');
+  const handleSortChange = (value: SortOption): void => setSortBy(value);
+  const handleViewModeChange = (mode: ViewMode): void => setViewMode(mode);
 
   return (
     <div className="space-y-6">
@@ -709,6 +630,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           <button
             type="button"
             onClick={() => setShowFilters(prev => !prev)}
+            aria-expanded={showFilters}
             className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:border-emerald-300 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             {showFilters ? 'Hide Filters' : 'Show Filters'}
@@ -732,7 +654,9 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
+        <label htmlFor="supplement-catalog-search" className="sr-only">Search supplement catalog</label>
         <input
+          id="supplement-catalog-search"
           type="text"
           value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
@@ -751,15 +675,25 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         )}
       </div>
 
+      {isSafetySearch && (
+        <div role="status" className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
+          <p className="font-semibold">Safety lookup — these are not recommendations</p>
+          <p className="mt-1 text-sm">
+            Results appear because their safety or interaction notes match your search. Review details and consult a
+            pharmacist or clinician before changing supplements or medication.
+          </p>
+        </div>
+      )}
+
       {personalizedRecommendations.length > 0 && !searchQuery && activeFilterCount === 0 && (
         <div className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 p-5">
           <h3 className="text-sm font-semibold text-emerald-800 mb-3">Personalized starting points</h3>
           <div className="flex flex-wrap gap-2">
             {personalizedRecommendations.slice(0, 6).map(rec => {
               const supp = (() => {
-                const directMatch = browseSupplements.find(s => s.id === rec.id);
+                const directMatch = browseSupplements.find(s => s.id === rec.supplementId);
                 if (directMatch) return directMatch;
-                const sourceMatch = supplements.find(s => s.id === rec.id);
+                const sourceMatch = supplements.find(s => s.id === rec.supplementId);
                 if (!sourceMatch) return undefined;
                 const canonicalKey = getCanonicalSupplementKey(sourceMatch);
                 return browseSupplements.find(s => getCanonicalSupplementKey(s) === canonicalKey);
@@ -767,7 +701,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
               if (!supp) return null;
               return (
                 <button
-                  key={rec.id}
+                  key={rec.supplementId}
                   type="button"
                   onClick={() => setActiveSupplement(supp)}
                   className="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-left hover:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -791,6 +725,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                   key={filter.id}
                   type="button"
                   onClick={() => handleQuickFilter(filter.id)}
+                  aria-pressed={activeQuickFilter === filter.id}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                     activeQuickFilter === filter.id
                       ? 'bg-emerald-500 text-white'
@@ -816,10 +751,10 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                       const nextGoals = hasAny
                         ? filters.goals.filter(goal => !goals.includes(goal))
                         : [...filters.goals, ...goals.filter(goal => !filters.goals.includes(goal))];
-                      triggerLoading();
                       setFilters(prev => ({ ...prev, goals: nextGoals }));
                       setActiveQuickFilter(null);
                     }}
+                    aria-pressed={goals.some(goal => filters.goals.includes(goal))}
                     className={`rounded-xl border px-3 py-2 text-left text-xs font-medium transition ${
                       goals.some(goal => filters.goals.includes(goal))
                         ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
@@ -842,6 +777,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                     key={type}
                     type="button"
                     onClick={() => toggleFilter('types', type)}
+                    aria-pressed={filters.types.includes(type)}
                     className={`rounded-full px-3 py-1.5 text-sm font-medium transition flex items-center gap-1.5 ${
                       filters.types.includes(type as Supplement['type'])
                         ? `${config.bg} ${config.color}`
@@ -869,6 +805,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                     key={level}
                     type="button"
                     onClick={() => toggleFilter('evidence', level)}
+                    aria-pressed={filters.evidence.includes(level as Supplement['evidence'])}
                     className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                       filters.evidence.includes(level as Supplement['evidence'])
                         ? `${config.bg} ${config.color}`
@@ -888,6 +825,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                       key={tier}
                       type="button"
                       onClick={() => toggleFilter('pragmaticTiers', tier)}
+                      aria-pressed={filters.pragmaticTiers.includes(tier)}
                       className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
                         filters.pragmaticTiers.includes(tier)
                           ? `${config.bg} ${config.color}`
@@ -907,9 +845,9 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 <button
                   type="button"
                   onClick={() => {
-                    triggerLoading();
                     setFilters(prev => ({ ...prev, hasFormGuidance: !prev.hasFormGuidance }));
                   }}
+                  aria-pressed={filters.hasFormGuidance}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                     filters.hasFormGuidance ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -919,9 +857,9 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 <button
                   type="button"
                   onClick={() => {
-                    triggerLoading();
                     setFilters(prev => ({ ...prev, traditionalOnly: !prev.traditionalOnly, modernOnly: false }));
                   }}
+                  aria-pressed={filters.traditionalOnly}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                     filters.traditionalOnly ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -931,9 +869,9 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 <button
                   type="button"
                   onClick={() => {
-                    triggerLoading();
                     setFilters(prev => ({ ...prev, modernOnly: !prev.modernOnly, traditionalOnly: false }));
                   }}
+                  aria-pressed={filters.modernOnly}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                     filters.modernOnly ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -947,6 +885,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           <button
             type="button"
             onClick={() => setShowAdvancedFilters(prev => !prev)}
+            aria-expanded={showAdvancedFilters}
             className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-full px-2 py-1"
           >
             {showAdvancedFilters ? 'Hide advanced filters' : 'Show advanced filters'}
@@ -962,6 +901,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                       key={system}
                       type="button"
                       onClick={() => toggleFilter('systems', system)}
+                      aria-pressed={filters.systems.includes(system)}
                       className={`rounded-full px-3 py-1.5 text-sm font-medium capitalize transition ${
                         filters.systems.includes(system)
                           ? 'bg-blue-100 text-blue-700'
@@ -983,6 +923,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                         key={category}
                         type="button"
                         onClick={() => toggleFilter('knowledgeCategories', category)}
+                        aria-pressed={filters.knowledgeCategories.includes(category)}
                         className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                           filters.knowledgeCategories.includes(category)
                             ? `${config.bg} ${config.color}`
@@ -1005,6 +946,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                         key={tag}
                         type="button"
                         onClick={() => toggleFilter('evidenceTags', tag)}
+                        aria-pressed={filters.evidenceTags.includes(tag)}
                         className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                           filters.evidenceTags.includes(tag)
                             ? `${config.bg} ${config.color}`
@@ -1025,6 +967,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                       key={safeForKey}
                       type="button"
                       onClick={() => toggleFilter('safeFor', safeForKey)}
+                      aria-pressed={filters.safeFor.includes(safeForKey)}
                       className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                         filters.safeFor.includes(safeForKey)
                           ? safeForConfig[safeForKey].activeClass
@@ -1041,6 +984,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                         key={flag}
                         type="button"
                         onClick={() => toggleFilter('safetyFlags', flag)}
+                        aria-pressed={filters.safetyFlags.includes(flag)}
                         className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                           filters.safetyFlags.includes(flag)
                             ? `${config.bg} ${config.color}`
@@ -1064,12 +1008,14 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Search results</p>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 aria-live="polite" className="text-lg font-semibold text-gray-900">
             {filteredResults.length} results found
           </h3>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <label htmlFor="supplement-sort" className="sr-only">Sort supplement results</label>
           <select
+            id="supplement-sort"
             value={sortBy}
             onChange={(e) => handleSortChange(e.target.value as SortOption)}
             className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -1077,7 +1023,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
             <option value="relevance">Sort: Relevance</option>
             <option value="evidence">Sort: Evidence</option>
             <option value="pragmatic-tier">Sort: Pragmatic Tier</option>
-            <option value="popularity">Sort: Popularity</option>
+            <option value="featured">Sort: Featured</option>
             <option value="name">Sort: A-Z</option>
           </select>
           <div className="flex rounded-lg bg-gray-100 p-0.5">
@@ -1086,6 +1032,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 key={mode}
                 type="button"
                 onClick={() => handleViewModeChange(mode)}
+                aria-pressed={viewMode === mode}
                 className={`rounded-md px-2 py-1 text-xs font-medium transition ${
                   viewMode === mode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
                 }`}
@@ -1097,21 +1044,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={`skeleton-${index}`} className="rounded-2xl border border-gray-200 bg-white p-4 animate-pulse">
-              <div className="h-6 w-16 rounded-full bg-gray-200 mb-4" />
-              <div className="h-4 w-3/4 rounded bg-gray-200 mb-2" />
-              <div className="h-3 w-full rounded bg-gray-100 mb-4" />
-              <div className="flex gap-2">
-                <div className="h-5 w-16 rounded-full bg-gray-100" />
-                <div className="h-5 w-20 rounded-full bg-gray-100" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : filteredResults.length === 0 ? (
+      {filteredResults.length === 0 ? (
         <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
           <div className="text-4xl mb-3">🔍</div>
           <p className="text-gray-600 font-medium">No supplements match your filters</p>
@@ -1138,7 +1071,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           {visibleResults.map(({ supplement, matchReasons, cautionLevel, safetyFlags, excludedForSafety }) => {
             const canonicalKey = getCanonicalSupplementKey(supplement);
             const isSelected = selectedSupplementsByCanonical.has(canonicalKey);
-            const selectionDisabled = excludedForSafety && !isSelected;
+            const selectionDisabled = (excludedForSafety || isSafetySearch) && !isSelected;
             return (
               <CompactCard
                 key={supplement.id}
@@ -1148,10 +1081,11 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 safetyFlags={safetyFlags}
                 excludedForSafety={excludedForSafety}
                 selectionDisabled={selectionDisabled}
+                safetySearch={isSafetySearch}
                 isSelected={isSelected}
                 onSelect={() => handleSelectSupplement(supplement)}
                 onViewDetails={() => setActiveSupplement(supplement)}
-                personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
+                personalReason={personalizedRecommendations.find(r => r.supplementId === supplement.id)?.reason}
               />
             );
           })}
@@ -1166,7 +1100,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
             {visibleResults.map(({ supplement, matchReasons, cautionLevel, safetyFlags, excludedForSafety }) => {
               const canonicalKey = getCanonicalSupplementKey(supplement);
               const isSelected = selectedSupplementsByCanonical.has(canonicalKey);
-              const selectionDisabled = excludedForSafety && !isSelected;
+              const selectionDisabled = (excludedForSafety || isSafetySearch) && !isSelected;
               return (
                 <ListCard
                   key={supplement.id}
@@ -1176,10 +1110,11 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                   safetyFlags={safetyFlags}
                   excludedForSafety={excludedForSafety}
                   selectionDisabled={selectionDisabled}
+                  safetySearch={isSafetySearch}
                   isSelected={isSelected}
                   onSelect={() => handleSelectSupplement(supplement)}
                   onViewDetails={() => setActiveSupplement(supplement)}
-                  personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
+                  personalReason={personalizedRecommendations.find(r => r.supplementId === supplement.id)?.reason}
                 />
               );
             })}
@@ -1190,7 +1125,7 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
           {visibleResults.map(({ supplement, matchReasons, cautionLevel, safetyFlags, excludedForSafety }) => {
             const canonicalKey = getCanonicalSupplementKey(supplement);
             const isSelected = selectedSupplementsByCanonical.has(canonicalKey);
-            const selectionDisabled = excludedForSafety && !isSelected;
+            const selectionDisabled = (excludedForSafety || isSafetySearch) && !isSelected;
             return (
               <GridCard
                 key={supplement.id}
@@ -1200,10 +1135,11 @@ export function AdvancedBrowse({ userProfile, onSelectSupplement, selectedSupple
                 safetyFlags={safetyFlags}
                 excludedForSafety={excludedForSafety}
                 selectionDisabled={selectionDisabled}
+                safetySearch={isSafetySearch}
                 isSelected={isSelected}
                 onSelect={() => handleSelectSupplement(supplement)}
                 onViewDetails={() => setActiveSupplement(supplement)}
-                personalReason={personalizedRecommendations.find(r => r.id === supplement.id)?.reason}
+                personalReason={personalizedRecommendations.find(r => r.supplementId === supplement.id)?.reason}
               />
             );
           })}
@@ -1224,6 +1160,7 @@ interface CardProps {
   supplement: Supplement;
   isSelected: boolean;
   selectionDisabled?: boolean;
+  safetySearch?: boolean;
   onSelect: () => void;
   onViewDetails: () => void;
   personalReason?: string;
@@ -1257,6 +1194,7 @@ function CompactCard({
   supplement,
   isSelected,
   selectionDisabled,
+  safetySearch,
   onSelect,
   onViewDetails,
   personalReason,
@@ -1277,7 +1215,8 @@ function CompactCard({
         type="button"
         disabled={selectionDisabled}
         onClick={onSelect}
-        title={selectionDisabled ? 'Complete intake profile to add this supplement.' : undefined}
+        title={selectionDisabled ? (safetySearch ? 'Adding is disabled during a safety lookup.' : 'Complete intake profile to add this supplement.') : undefined}
+        aria-label={isSelected ? `Remove ${supplement.name} from stack` : `Add ${supplement.name} to stack`}
         className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition ${
           isSelected
             ? 'border-emerald-500 bg-emerald-500 text-white'
@@ -1339,6 +1278,7 @@ function GridCard({
   supplement,
   isSelected,
   selectionDisabled,
+  safetySearch,
   onSelect,
   onViewDetails,
   personalReason,
@@ -1362,7 +1302,8 @@ function GridCard({
             type="button"
             disabled={selectionDisabled}
             onClick={onSelect}
-            title={selectionDisabled ? 'Complete intake profile to add this supplement.' : undefined}
+            title={selectionDisabled ? (safetySearch ? 'Adding is disabled during a safety lookup.' : 'Complete intake profile to add this supplement.') : undefined}
+            aria-label={isSelected ? `Remove ${supplement.name} from stack` : `Add ${supplement.name} to stack`}
             className={`flex h-8 w-8 items-center justify-center rounded-lg border-2 transition ${
               isSelected
                 ? 'border-emerald-500 bg-emerald-500 text-white'
@@ -1438,6 +1379,7 @@ function ListCard({
   supplement,
   isSelected,
   selectionDisabled,
+  safetySearch,
   onSelect,
   onViewDetails,
   personalReason,
@@ -1460,7 +1402,8 @@ function ListCard({
           type="button"
           disabled={selectionDisabled}
           onClick={onSelect}
-          title={selectionDisabled ? 'Complete intake profile to add this supplement.' : undefined}
+          title={selectionDisabled ? (safetySearch ? 'Adding is disabled during a safety lookup.' : 'Complete intake profile to add this supplement.') : undefined}
+          aria-label={isSelected ? `Remove ${supplement.name} from stack` : `Add ${supplement.name} to stack`}
           className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border-2 transition ${
             isSelected
               ? 'border-emerald-500 bg-emerald-500 text-white'

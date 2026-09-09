@@ -1,4 +1,4 @@
-import { Supplement } from '../types';
+import { Supplement, SupplementSearchIntent } from '../types';
 import {
   getKnowledgeBenefitSearchTerms,
   getKnowledgeSafetySearchTerms,
@@ -19,6 +19,7 @@ export interface SearchMatchReason {
 
 export interface ScoredSupplementMatch {
   supplement: Supplement;
+  intent: SupplementSearchIntent;
   score: number;
   reasons: SearchMatchReason[];
   textScore: number;
@@ -52,6 +53,16 @@ const SAFETY_INTENT_TOKENS = new Set([
   'contraindications',
   'interaction',
   'interactions',
+  'medication',
+  'medications',
+  'drug',
+  'drugs',
+  'warfarin',
+  'ssri',
+  'snri',
+  'maoi',
+  'anticoagulant',
+  'anticoagulants',
   'avoid',
   'pregnancy',
   'pregnant',
@@ -86,7 +97,9 @@ const tokenize = (value: string): string[] =>
     .filter(Boolean);
 
 const containsToken = (terms: string[], token: string): boolean =>
-  terms.some((term) => term.includes(token));
+  terms.some((term) => tokenize(term).some((termToken) =>
+    termToken === token || (token.length >= 4 && termToken.startsWith(token))
+  ));
 
 const levenshteinDistance = (a: string, b: string): number => {
   if (a === b) return 0;
@@ -123,6 +136,22 @@ const addReason = (reasons: SearchMatchReason[], seen: Set<string>, code: string
 export function isSafetyIntentQuery(query: string): boolean {
   const tokens = tokenize(query);
   return tokens.some((token) => SAFETY_INTENT_TOKENS.has(token));
+}
+
+export function getSupplementSearchIntent(
+  query: string,
+  catalog: Supplement[] = []
+): SupplementSearchIntent {
+  if (isSafetyIntentQuery(query)) return 'safety';
+
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) return 'discovery';
+  const hasExactProduct = catalog.some((supplement) =>
+    getSupplementSearchCandidates(supplement).some(
+      (candidate) => normalizeSearchText(candidate) === normalizedQuery
+    )
+  );
+  return hasExactProduct ? 'exact-product' : 'discovery';
 }
 
 export function getSupplementSearchCandidates(supplement: Supplement): string[] {
@@ -200,6 +229,7 @@ export function searchSupplementsWithScores(
   const hasQuery = normalizedQuery.length > 0;
   const hasGoal = Boolean(normalizedGoal);
   const safetyIntent = isSafetyIntentQuery(query);
+  const searchIntent = getSupplementSearchIntent(query, supplements);
 
   const fertilitySignal = [...queryTokens, ...rawGoalTokens].some((token) => FERTILITY_TOKENS.has(token));
 
@@ -341,6 +371,7 @@ export function searchSupplementsWithScores(
 
     results.push({
       supplement,
+      intent: searchIntent,
       score,
       reasons: reasons.slice(0, 4),
       textScore,

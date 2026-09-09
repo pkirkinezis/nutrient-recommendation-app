@@ -16,13 +16,14 @@ const normalize = (value) =>
 
 const runtimeEntrySource = `
 import { analyzeGoal } from '../src/utils/analyzer.ts';
-import { searchSupplementsWithScores, suggestClosestSupplementTerm } from '../src/utils/supplementSearchEngine.ts';
+import { getSupplementSearchIntent, searchSupplementsWithScores, suggestClosestSupplementTerm } from '../src/utils/supplementSearchEngine.ts';
 import { supplements } from '../src/data/supplements.ts';
 import { dedupeSupplementsByCanonical, getCanonicalSupplementKey } from '../src/utils/supplementCanonical.ts';
 
 export {
   analyzeGoal,
   searchSupplementsWithScores,
+  getSupplementSearchIntent,
   suggestClosestSupplementTerm,
   supplements,
   dedupeSupplementsByCanonical,
@@ -51,6 +52,7 @@ try {
   const {
     analyzeGoal,
     searchSupplementsWithScores,
+    getSupplementSearchIntent,
     suggestClosestSupplementTerm,
     supplements,
     dedupeSupplementsByCanonical,
@@ -88,6 +90,26 @@ try {
   assert(
     safetyIntent.length > 0,
     'Expected "warfarin interaction" to return safety-oriented matches.'
+  );
+  assert(
+    getSupplementSearchIntent('warfarin interaction', supplements) === 'safety',
+    'Expected interaction queries to use safety intent.'
+  );
+  assert(
+    getSupplementSearchIntent('warfarin', supplements) === 'safety',
+    'Expected a medication-only query to use safety intent.'
+  );
+  assert(
+    getSupplementSearchIntent('magnesium', supplements) === 'exact-product',
+    'Expected an exact catalog name to use exact-product intent.'
+  );
+  assert(
+    getSupplementSearchIntent('better sleep', supplements) === 'discovery',
+    'Expected a benefit query to use discovery intent.'
+  );
+  assert(
+    search('warfarin interaction').every((result) => result.intent === 'safety'),
+    'Expected every interaction result to retain safety intent metadata.'
   );
 
   const firstRun = topSearchIds('energy support', 20);

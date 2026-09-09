@@ -6,6 +6,12 @@ export type SupplementType = 'vitamin' | 'mineral' | 'amino-acid' | 'herb' | 'te
 export type Priority = 'essential' | 'beneficial' | 'optional';
 export type ReproductiveStatus = 'unknown' | 'yes' | 'no' | 'not-applicable';
 export type MedicationIntakeStatus = 'unknown' | 'none' | 'taking';
+export type SupplementSearchIntent = 'discovery' | 'safety' | 'exact-product';
+
+export interface PersonalizedSupplementSuggestion {
+  supplementId: string;
+  reason: string;
+}
 
 // ============================================
 // SUPPLEMENT TYPES
