@@ -18,6 +18,7 @@ import { buildTrackingChartData, buildTrackingCsv } from './utils/trackingExport
 import { getTranslation, type Language } from './utils/i18n';
 import { hasReproductiveRiskSignalInText, isReproductiveScopeQuery } from './constants/reproductiveScope';
 import { clearIntimacyLocalData, DEFAULT_USER_PREFERENCES, loadIntimacyConsentCheckIns, loadIntimacyPreferences, saveIntimacyConsentCheckIns, saveIntimacyPreferences } from './utils/intimacyStorage';
+import { RecommendationEvidence } from './components/RecommendationEvidence';
 
 const EducationalGuide = lazy(() => import('./components/EducationalGuide'));
 const IntimacyWellnessSection = lazy(async () => {
@@ -75,27 +76,6 @@ const getTypeLabel = (type: Supplement['type']): string => {
     'other': 'Supplement',
   };
   return labels[type] || 'Supplement';
-};
-
-const getEvidenceInfo = (evidence: Supplement['evidence']): { color: string; label: string; description: string } => {
-  const info = {
-    'strong': { 
-      color: 'bg-emerald-100 text-emerald-700', 
-      label: 'Strong Evidence',
-      description: 'Multiple human trials support this indication'
-    },
-    'moderate': { 
-      color: 'bg-yellow-100 text-yellow-700', 
-      label: 'Moderate Evidence',
-      description: 'Human evidence exists, but findings are mixed or limited'
-    },
-    'limited': { 
-      color: 'bg-gray-100 text-gray-600', 
-      label: 'Traditional/Limited',
-      description: 'Traditional context or early evidence only; benefit remains uncertain'
-    },
-  };
-  return info[evidence];
 };
 
 const getPriorityColor = (priority: Recommendation['priority']): string => {
@@ -1764,7 +1744,8 @@ export function App() {
                     </div>
                   )}
                   <p className="mb-3 text-xs text-gray-500">
-                    Educational guidance only. This app does not diagnose or replace care from a licensed clinician.
+                    Ranked by goal relevance, profile context, evidence, and safety screening. A high match does not
+                    confirm a deficiency or guarantee benefit. Educational guidance only; this does not replace care.
                   </p>
                   
                   {recommendations.length === 0 ? (
@@ -2523,7 +2504,6 @@ function SupplementCard({
   recommendation?: Recommendation;
   onViewDetails: () => void;
 }) {
-  const evidenceInfo = getEvidenceInfo(supplement.evidence);
   const pragmaticTier = getPragmaticTierForSupplement(supplement);
   const pragmaticTierInfo = getPragmaticTierInfo(pragmaticTier);
   const cautionInfo = recommendation ? getCautionInfo(recommendation.cautionLevel) : null;
@@ -2554,23 +2534,16 @@ function SupplementCard({
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${getTypeColor(supplement.type)}`}>
               {getTypeLabel(supplement.type)}
             </span>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${evidenceInfo.color}`}>
-              {evidenceInfo.label}
-            </span>
             {pragmaticTierInfo && (
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${pragmaticTierInfo.bg} ${pragmaticTierInfo.color}`}>
                 Tier {pragmaticTierInfo.shortLabel}
               </span>
             )}
-            {recommendation && (
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                recommendation.priority === 'essential' ? 'bg-emerald-500 text-white' :
-                recommendation.priority === 'beneficial' ? 'bg-blue-500 text-white' :
-                'bg-gray-200 text-gray-600'
-              }`}>
-                {recommendation.priority}
-              </span>
-            )}
+            <RecommendationEvidence
+              evidence={supplement.evidence}
+              priority={recommendation?.priority}
+              compact
+            />
             {cautionInfo && (
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cautionInfo.className}`}>
                 {cautionInfo.label}
@@ -2579,8 +2552,13 @@ function SupplementCard({
           </div>
           <p className="text-sm text-gray-600 line-clamp-2">{supplement.description}</p>
           {recommendation && (
-            <div className="space-y-1">
+            <div className="space-y-2">
               <p className="text-xs text-emerald-600 font-medium">{recommendation.reason}</p>
+              <RecommendationEvidence
+                evidence={supplement.evidence}
+                relevanceScore={recommendation.relevanceScore}
+                showEvidence={false}
+              />
               {recommendation.safetyFlags && recommendation.safetyFlags.length > 0 && (
                 <ul className="text-xs text-amber-700 space-y-0.5">
                   {recommendation.safetyFlags.map((flag, index) => (

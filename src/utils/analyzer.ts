@@ -678,7 +678,8 @@ function scoreSupplementForGoals(
   matchedGoals: MatchedGoal[],
   matchedSystems: MatchedSystem[]
 ): number {
-  let score = 0;
+  let goalScore = 0;
+  let supportingScore = 0;
   const normalizedGoals = normalizeGoals(supplement.goals);
   const normalizedSystems = normalizeSystems(supplement.systems);
   const knowledge = getSupplementKnowledgeById(supplement.id);
@@ -689,22 +690,22 @@ function scoreSupplementForGoals(
     if (normalizedGoals.includes(goal.id)) {
       const evidenceLevel = getGoalEvidenceLevel(supplement, goal.id);
       const evidenceMultiplier = EVIDENCE_MULTIPLIERS[evidenceLevel] || 1;
-      score += goal.score * 10 * evidenceMultiplier;
+      goalScore += goal.score * 10 * evidenceMultiplier;
     }
 
     if (normalizedKnowledgeUseCases.includes(goal.id)) {
-      score += goal.score * 6;
+      supportingScore += goal.score * 6;
     }
     // Check benefits text for goal keywords
     for (const keyword of goal.matchedKeywords) {
       if (supplement.benefits?.some(b => b.toLowerCase().includes(keyword))) {
-        score += 2;
+        supportingScore += 2;
       }
       if (supplement.description?.toLowerCase().includes(keyword)) {
-        score += 1;
+        supportingScore += 1;
       }
       if (knowledge?.typicalUseCases.some(useCase => useCase.toLowerCase().includes(keyword))) {
-        score += 1.5;
+        supportingScore += 1.5;
       }
     }
   }
@@ -712,15 +713,14 @@ function scoreSupplementForGoals(
   // Score based on systems
   for (const system of matchedSystems) {
     if (normalizedSystems.includes(system.id)) {
-      score += system.score * 5;
+      supportingScore += system.score * 5;
     }
   }
   
-  // Boost for evidence level
+  // Goal matches already use indication-specific evidence. Apply overall evidence only
+  // to supporting text/system signals so evidence is never multiplied twice.
   const overallMultiplier = EVIDENCE_MULTIPLIERS[supplement.evidence] || 1;
-  score *= overallMultiplier;
-  
-  return score;
+  return goalScore + supportingScore * overallMultiplier;
 }
 
 /**

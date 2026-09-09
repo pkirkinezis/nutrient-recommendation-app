@@ -4,6 +4,7 @@ import { formGuidance } from '../data/supplements';
 import { getSupplementKnowledgeById, knowledgeDisclaimers } from '../data/supplementKnowledge';
 import NutrientFoodSources from './NutrientFoodSources';
 import { SupplementFoodLookup } from './SupplementFoodLookup';
+import { RecommendationEvidence } from './RecommendationEvidence';
 
 interface SupplementDetailModalProps {
   supplement: Supplement | null;
@@ -204,22 +205,11 @@ export function SupplementDetailModal({
               <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${typeStyle.color}`}>
                 {typeStyle.label}
               </span>
-              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${evidence.color}`}>
-                {evidence.label}
-              </span>
-              {recommendation && (
-                <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                    recommendation.priority === 'essential'
-                      ? 'bg-emerald-500 text-white'
-                      : recommendation.priority === 'beneficial'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-600'
-                  }`}
-                >
-                  {recommendation.priority}
-                </span>
-              )}
+              <RecommendationEvidence
+                evidence={supplement.evidence}
+                priority={recommendation?.priority}
+                compact
+              />
             </div>
           </div>
           <button
