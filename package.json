@@ -9,6 +9,7 @@
     "build:knowledge": "node scripts/buildKnowledge.mjs",
     "check:knowledge": "node scripts/checkKnowledge.mjs",
     "check:search": "node scripts/checkSearch.mjs",
+    "check:storage": "node scripts/checkStorage.mjs",
     "check:safety": "node scripts/checkSafety.cjs",
     "check:intimacy": "node scripts/checkIntimacy.cjs",
     "import:positions": "node scripts/importPositionData.mjs",

@@ -1,4 +1,4 @@
-import { Supplement } from '../types';
+import { Supplement, SupplementSearchIntent } from '../types';
 import {
   getKnowledgeBenefitSearchTerms,
   getKnowledgeSafetySearchTerms,
@@ -19,10 +19,12 @@ export interface SearchMatchReason {
 
 export interface ScoredSupplementMatch {
   supplement: Supplement;
+  intent: SupplementSearchIntent;
   score: number;
   reasons: SearchMatchReason[];
   textScore: number;
   goalScore: number;
+  safetyScore: number;
 }
 
 const STOP_TOKENS = new Set([
@@ -52,6 +54,16 @@ const SAFETY_INTENT_TOKENS = new Set([
   'contraindications',
   'interaction',
   'interactions',
+  'medication',
+  'medications',
+  'drug',
+  'drugs',
+  'warfarin',
+  'ssri',
+  'snri',
+  'maoi',
+  'anticoagulant',
+  'anticoagulants',
   'avoid',
   'pregnancy',
   'pregnant',
@@ -73,6 +85,13 @@ const FERTILITY_TOKENS = new Set([
   'libido',
 ]);
 
+const INTERACTION_VOCABULARY_STOP_TOKENS = new Set([
+  ...STOP_TOKENS,
+  'blood', 'pressure', 'heart', 'thyroid', 'diabetes', 'medication', 'medications',
+  'drug', 'drugs', 'supplement', 'supplements', 'vitamin', 'vitamins', 'taking',
+  'include', 'includes', 'including', 'oral', 'therapy', 'treatment',
+]);
+
 const normalizeSearchText = (value: string): string =>
   value
     .toLowerCase()
@@ -86,7 +105,9 @@ const tokenize = (value: string): string[] =>
     .filter(Boolean);
 
 const containsToken = (terms: string[], token: string): boolean =>
-  terms.some((term) => term.includes(token));
+  terms.some((term) => tokenize(term).some((termToken) =>
+    termToken === token || (token.length >= 4 && termToken.startsWith(token))
+  ));
 
 const levenshteinDistance = (a: string, b: string): number => {
   if (a === b) return 0;
@@ -123,6 +144,42 @@ const addReason = (reasons: SearchMatchReason[], seen: Set<string>, code: string
 export function isSafetyIntentQuery(query: string): boolean {
   const tokens = tokenize(query);
   return tokens.some((token) => SAFETY_INTENT_TOKENS.has(token));
+}
+
+export function getSupplementSearchIntent(
+  query: string,
+  catalog: Supplement[] = []
+): SupplementSearchIntent {
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) return 'discovery';
+  const hasExactProduct = catalog.some((supplement) =>
+    getSupplementSearchCandidates(supplement).some(
+      (candidate) => normalizeSearchText(candidate) === normalizedQuery
+    )
+  );
+  if (hasExactProduct) return 'exact-product';
+  if (isSafetyIntentQuery(query)) return 'safety';
+
+  const medicationTokens = tokenize(query).filter(
+    (token) => token.length >= 4 && !INTERACTION_VOCABULARY_STOP_TOKENS.has(token)
+  );
+  const matchesInteraction = medicationTokens.length > 0 && catalog.some((supplement) =>
+    medicationTokens.some((token) => containsToken(getSupplementInteractionSearchTerms(supplement), token))
+  );
+  if (matchesInteraction) return 'safety';
+
+  return 'discovery';
+}
+
+function getSafetyProductQuery(query: string): string {
+  return tokenize(query)
+    .filter((token) => !SAFETY_INTENT_TOKENS.has(token))
+    .join(' ');
+}
+
+export function getSupplementInteractionSearchTerms(supplement: Supplement): string[] {
+  if (!supplement) return [];
+  return (supplement.drugInteractions || []).map(normalizeSearchText).filter(Boolean);
 }
 
 export function getSupplementSearchCandidates(supplement: Supplement): string[] {
@@ -199,7 +256,9 @@ export function searchSupplementsWithScores(
   const rawGoalTokens = options.goal ? tokenize(options.goal) : [];
   const hasQuery = normalizedQuery.length > 0;
   const hasGoal = Boolean(normalizedGoal);
-  const safetyIntent = isSafetyIntentQuery(query);
+  const searchIntent = getSupplementSearchIntent(query, supplements);
+  const safetyIntent = searchIntent === 'safety';
+  const productQuery = safetyIntent ? getSafetyProductQuery(query) : normalizedQuery;
 
   const fertilitySignal = [...queryTokens, ...rawGoalTokens].some((token) => FERTILITY_TOKENS.has(token));
 
@@ -211,12 +270,13 @@ export function searchSupplementsWithScores(
     const seenReasons = new Set<string>();
     let textScore = 0;
     let goalScore = 0;
+    let safetyScore = 0;
     let matchedGoal = false;
 
     const nameCandidates = [supplement.name, supplement.id.replace(/-/g, ' ')];
     const aliasCandidates = knowledge?.aliases || [];
-    const nameMatch = getBestTextMatch(normalizedQuery, nameCandidates);
-    const aliasMatch = getBestTextMatch(normalizedQuery, aliasCandidates);
+    const nameMatch = getBestTextMatch(productQuery, nameCandidates);
+    const aliasMatch = getBestTextMatch(productQuery, aliasCandidates);
 
     if (hasQuery) {
       const nameWeight = scoreTextMatch(nameMatch.kind, {
@@ -249,9 +309,10 @@ export function searchSupplementsWithScores(
     const normalizedSystems = normalizeSystems(supplement.systems);
     const normalizedKnowledgeGoals = normalizeGoals(knowledge?.typicalUseCases || []);
     const benefitTerms = knowledge ? getKnowledgeBenefitSearchTerms(knowledge).map(normalizeSearchText) : [];
-    const safetyTerms = knowledge
-      ? getKnowledgeSafetySearchTerms(knowledge).map(normalizeSearchText)
-      : [];
+    const safetyTerms = Array.from(new Set([
+      ...(knowledge ? getKnowledgeSafetySearchTerms(knowledge).map(normalizeSearchText) : []),
+      ...getSupplementInteractionSearchTerms(supplement),
+    ]));
 
     for (const token of queryTokens) {
       if (token.length < 3) continue;
@@ -270,7 +331,9 @@ export function searchSupplementsWithScores(
       }
 
       if (containsToken(safetyTerms, token)) {
-        textScore += safetyIntent ? 8 : 4;
+        const safetyWeight = safetyIntent ? 12 : 4;
+        textScore += safetyWeight;
+        safetyScore += safetyWeight;
         if (safetyIntent) {
           addReason(reasons, seenReasons, `safety-${token}`, `Safety: ${token}`);
         }
@@ -334,6 +397,11 @@ export function searchSupplementsWithScores(
       continue;
     }
 
+    const hasProductMatch = nameMatch.kind !== 'none' || aliasMatch.kind !== 'none';
+    if (safetyIntent && safetyScore === 0 && !hasProductMatch) {
+      continue;
+    }
+
     const score = textScore + goalScore;
     if (hasQuery && score <= 0) {
       continue;
@@ -341,10 +409,12 @@ export function searchSupplementsWithScores(
 
     results.push({
       supplement,
+      intent: searchIntent,
       score,
       reasons: reasons.slice(0, 4),
       textScore,
       goalScore,
+      safetyScore,
     });
   }
 

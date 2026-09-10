@@ -34,7 +34,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run type checking
         run: npm run typecheck
@@ -50,6 +50,9 @@ jobs:
 
       - name: Run search checks
         run: npm run check:search
+
+      - name: Run browser storage checks
+        run: npm run check:storage
 
       - name: Run knowledge checks
         run: npm run check:knowledge
