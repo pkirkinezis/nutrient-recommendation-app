@@ -150,10 +150,16 @@ export function getSupplementSearchIntent(
   query: string,
   catalog: Supplement[] = []
 ): SupplementSearchIntent {
-  if (isSafetyIntentQuery(query)) return 'safety';
-
   const normalizedQuery = normalizeSearchText(query);
   if (!normalizedQuery) return 'discovery';
+  const hasExactProduct = catalog.some((supplement) =>
+    getSupplementSearchCandidates(supplement).some(
+      (candidate) => normalizeSearchText(candidate) === normalizedQuery
+    )
+  );
+  if (hasExactProduct) return 'exact-product';
+  if (isSafetyIntentQuery(query)) return 'safety';
+
   const medicationTokens = tokenize(query).filter(
     (token) => token.length >= 4 && !INTERACTION_VOCABULARY_STOP_TOKENS.has(token)
   );
@@ -162,12 +168,13 @@ export function getSupplementSearchIntent(
   );
   if (matchesInteraction) return 'safety';
 
-  const hasExactProduct = catalog.some((supplement) =>
-    getSupplementSearchCandidates(supplement).some(
-      (candidate) => normalizeSearchText(candidate) === normalizedQuery
-    )
-  );
-  return hasExactProduct ? 'exact-product' : 'discovery';
+  return 'discovery';
+}
+
+function getSafetyProductQuery(query: string): string {
+  return tokenize(query)
+    .filter((token) => !SAFETY_INTENT_TOKENS.has(token))
+    .join(' ');
 }
 
 export function getSupplementInteractionSearchTerms(supplement: Supplement): string[] {
@@ -251,6 +258,7 @@ export function searchSupplementsWithScores(
   const hasGoal = Boolean(normalizedGoal);
   const searchIntent = getSupplementSearchIntent(query, supplements);
   const safetyIntent = searchIntent === 'safety';
+  const productQuery = safetyIntent ? getSafetyProductQuery(query) : normalizedQuery;
 
   const fertilitySignal = [...queryTokens, ...rawGoalTokens].some((token) => FERTILITY_TOKENS.has(token));
 
@@ -267,8 +275,8 @@ export function searchSupplementsWithScores(
 
     const nameCandidates = [supplement.name, supplement.id.replace(/-/g, ' ')];
     const aliasCandidates = knowledge?.aliases || [];
-    const nameMatch = getBestTextMatch(normalizedQuery, nameCandidates);
-    const aliasMatch = getBestTextMatch(normalizedQuery, aliasCandidates);
+    const nameMatch = getBestTextMatch(productQuery, nameCandidates);
+    const aliasMatch = getBestTextMatch(productQuery, aliasCandidates);
 
     if (hasQuery) {
       const nameWeight = scoreTextMatch(nameMatch.kind, {

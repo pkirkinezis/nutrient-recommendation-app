@@ -17,7 +17,7 @@ createRoot(rootElement).render(
   </StrictMode>
 );
 
-if ("serviceWorker" in navigator) {
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     const basePath = import.meta.env.BASE_URL;
     navigator.serviceWorker.register(`${basePath}sw.js`, {

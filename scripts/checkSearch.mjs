@@ -83,9 +83,9 @@ try {
     `Expected typo suggestion for "thaimine" to point to thiamine-related term, got ${suggestion || 'none'}.`
   );
 
-  const noSafetyIntent = topSearchIds('warfarin', 5);
+  const medicationOnlySafetyResults = topSearchIds('warfarin', 5);
   assert(
-    noSafetyIntent.length > 0,
+    medicationOnlySafetyResults.length > 0,
     'Expected "warfarin" to return safety-aware matches even without extra intent keywords.'
   );
 
@@ -106,6 +106,12 @@ try {
     getSupplementSearchIntent('magnesium', supplements) === 'exact-product',
     'Expected an exact catalog name to use exact-product intent.'
   );
+  for (const supplementName of ['iron', 'calcium', 'potassium', 'copper', 'caffeine', 'taurine']) {
+    assert(
+      getSupplementSearchIntent(supplementName, supplements) === 'exact-product',
+      `Expected exact supplement "${supplementName}" to take precedence over interaction inference.`
+    );
+  }
   assert(
     getSupplementSearchIntent('better sleep', supplements) === 'discovery',
     'Expected a benefit query to use discovery intent.'
@@ -137,6 +143,18 @@ try {
     ),
     'Expected safety-mode results to match a product name or safety text.'
   );
+  const namedSafetyQueries = [
+    ['magnesium safety', 'magnesium'],
+    ['creatine side effects', 'creatine'],
+    ['vitamin d3 safety', 'vitamin-d3'],
+  ];
+  for (const [safetyQuery, expectedId] of namedSafetyQueries) {
+    const resultIds = topSearchIds(safetyQuery, 10);
+    assert(
+      resultIds.includes(expectedId),
+      `Expected "${safetyQuery}" to retain named product "${expectedId}".`
+    );
+  }
   assert(
     getInitialFindMode('?q=warfarin&view=list') === 'browse',
     'Expected shared browse parameters to open Browse Catalog.'
