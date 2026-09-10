@@ -228,7 +228,7 @@ try {
   );
 
   const parityQueries = [
-    'better sleep and morning energy',
+    'better sleep and relaxation',
     'high stress and focus',
     'support libido and blood flow',
     'vegan fatigue',

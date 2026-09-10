@@ -443,21 +443,18 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
     ],
     "evidenceSummary": "Human trials suggest possible benefits for stress and sleep outcomes, but study size, extracts, and endpoints vary.",
     "typicalUseCases": [
-      "anxiety",
       "calm focus",
-      "cortisol",
-      "energy",
-      "fertility",
-      "libido",
-      "male reproductive",
-      "muscle"
+      "sleep",
+      "sleep quality",
+      "stress",
+      "stress resilience"
     ],
     "safetyNotes": [
-      "Can be overly sedating for some.",
-      "May cause mild GI upset initially.",
+      "May cause drowsiness, diarrhea, vomiting, or stomach upset.",
       "Potential medication interactions can include thyroid, sedative, blood pressure, or immune-modulating therapies.",
       "Potential medication interactions include: Thyroid medications, Immunosuppressants, Sedatives.",
-      "Pregnancy and breastfeeding use should be clinician-guided due to limited safety data."
+      "Pregnancy and breastfeeding use should be clinician-guided due to limited safety data.",
+      "Short-term use up to about 3 months appears tolerable, but long-term safety is unknown."
     ],
     "safetyFlags": [
       "pregnancy",
@@ -466,8 +463,7 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
       "blood-pressure",
       "sedation",
       "thyroid",
-      "liver",
-      "autoimmune"
+      "liver"
     ],
     "dosageRangeNote": "Commonly studied extracts are often used in the low hundreds of milligrams per day depending on standardization.",
     "citations": [
@@ -3217,7 +3213,7 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
       "Caffeine sensitivity may cause jitters or insomnia.",
       "Caffeine-related effects include insomnia, jitteriness, and heart-rate sensitivity in some users.",
       "Concentrated green tea extracts have been linked to rare liver injury cases.",
-      "May reduce iron absorption if consumed with meals.",
+      "May reduce non-heme iron absorption if consumed with meals.",
       "Potential medication interactions include: Blood thinners (vitamin K content), Stimulants."
     ],
     "safetyFlags": [
@@ -3228,6 +3224,12 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
       "liver"
     ],
     "citations": [
+      {
+        "title": "EFSA: Scientific opinion on the safety of green tea catechins",
+        "publisher": "doi.org",
+        "url": "https://doi.org/10.2903/j.efsa.2018.5239",
+        "accessedAt": "2026-02-10"
+      },
       {
         "title": "Green Tea: Usefulness and Safety",
         "publisher": "National Center for Complementary and Integrative Health",
@@ -5560,22 +5562,19 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
     ],
     "evidenceSummary": "Red clover isoflavones show mixed evidence for menopausal symptom support and other outcomes.",
     "typicalUseCases": [
-      "cervical mucus",
-      "female reproductive",
-      "fertility",
-      "hormonal balance",
+      "menopause",
       "menopause support",
-      "sexual health",
       "women wellness support"
     ],
     "safetyNotes": [
       "Estrogenic effects.",
       "Potential medication interactions include: Blood thinners, Estrogen therapies.",
       "Use caution with hormone-sensitive conditions and with anticoagulant or antiplatelet medications.",
-      "Use clinician guidance with: Estrogen-sensitive cancers."
+      "Use clinician guidance with: Pregnancy or breastfeeding, Hormone-sensitive condition unless a clinician approves use."
     ],
     "safetyFlags": [
       "pregnancy",
+      "breastfeeding",
       "drug-interaction",
       "bleeding-risk"
     ],
@@ -5584,6 +5583,12 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
         "title": "Herbs at a Glance",
         "publisher": "National Center for Complementary and Integrative Health",
         "url": "https://www.nccih.nih.gov/health/herbsataglance",
+        "accessedAt": "2026-02-10"
+      },
+      {
+        "title": "NCCIH: Red Clover",
+        "publisher": "National Center for Complementary and Integrative Health",
+        "url": "https://www.nccih.nih.gov/health/red-clover",
         "accessedAt": "2026-02-10"
       },
       {
@@ -7245,10 +7250,10 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
       "vegan nutrition support"
     ],
     "safetyNotes": [
-      "Cyanocobalamin less effective than methylcobalamin.",
+      "No tolerable upper intake level has been established, but that does not make unnecessary megadoses more effective.",
       "Potential medication interactions include: Metformin (depletes B12), Acid-reducing drugs.",
-      "Use clinician guidance with: Generally safe for everyone.",
-      "Very safe even at high doses."
+      "Seek clinical testing when deficiency or neurologic symptoms are suspected.",
+      "Use clinician guidance with: Generally safe for everyone."
     ],
     "safetyFlags": [
       "general-caution"
@@ -7267,9 +7272,9 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
         "accessedAt": "2026-02-10"
       },
       {
-        "title": "NIH ODS: Vitamin B12 Fact Sheet",
+        "title": "NIH ODS: Vitamin B12 Fact Sheet for Health Professionals",
         "publisher": "NIH Office of Dietary Supplements",
-        "url": "https://ods.od.nih.gov/factsheets/VitaminB12-Consumer/",
+        "url": "https://ods.od.nih.gov/factsheets/VitaminB12-HealthProfessional/",
         "accessedAt": "2026-02-10"
       },
       {
@@ -7335,6 +7340,12 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
         "title": "Dietary Supplement Fact Sheets",
         "publisher": "NIH Office of Dietary Supplements",
         "url": "https://ods.od.nih.gov/factsheets/list-all/",
+        "accessedAt": "2026-02-10"
+      },
+      {
+        "title": "NIH ODS: Vitamin C Fact Sheet for Health Professionals",
+        "publisher": "NIH Office of Dietary Supplements",
+        "url": "https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/",
         "accessedAt": "2026-02-10"
       },
       {
@@ -7571,10 +7582,10 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
       "teeth"
     ],
     "safetyNotes": [
-      "K2 does not affect blood clotting like K1.",
       "Potential medication interactions include: Warfarin and similar anticoagulants.",
       "Use clinician guidance with: On warfarin or similar blood thinners (consult doctor).",
-      "Vitamin K can alter anticoagulant response, especially with warfarin, so intake changes should be coordinated with clinicians."
+      "Vitamin K can alter anticoagulant response, especially with warfarin, so intake changes should be coordinated with clinicians.",
+      "Vitamin K2 is biologically active in clotting and can interfere with vitamin K antagonist anticoagulants; intake should remain consistent."
     ],
     "safetyFlags": [
       "drug-interaction",
@@ -7592,6 +7603,12 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
         "title": "Dietary Supplement Fact Sheets",
         "publisher": "NIH Office of Dietary Supplements",
         "url": "https://ods.od.nih.gov/factsheets/list-all/",
+        "accessedAt": "2026-02-10"
+      },
+      {
+        "title": "NIH ODS: Vitamin K Fact Sheet for Health Professionals",
+        "publisher": "NIH Office of Dietary Supplements",
+        "url": "https://ods.od.nih.gov/factsheets/VitaminK-HealthProfessional/",
         "accessedAt": "2026-02-10"
       },
       {
@@ -7620,33 +7637,35 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
       "herb"
     ],
     "evidenceStrengthTags": [
-      "well-supported"
+      "emerging",
+      "traditional"
     ],
-    "evidenceSummary": "Vitex has human clinical evidence for select wellness outcomes, with response varying by dose, formulation, and individual context.",
+    "evidenceSummary": "Vitex is informed by traditional use and emerging research, while higher-quality clinical evidence remains limited.",
     "typicalUseCases": [
-      "cycle regulation",
-      "female reproductive",
-      "fertility",
-      "hormonal balance",
-      "ovulation",
-      "pms",
-      "progesterone",
-      "sexual health"
+      "pms"
     ],
     "safetyNotes": [
-      "Discontinue once pregnancy is confirmed.",
-      "May cause dopamine-related effects.",
+      "Can cause nausea, stomach pain, diarrhea, headache, or itching.",
+      "Hormonal and dopaminergic effects may create clinically important interactions.",
       "Potential medication interactions include: Dopamine antagonists, Antipsychotics, Hormonal contraceptives.",
-      "Use clinician guidance with: On dopamine-blocking medications, Pregnancy (use for conception only)."
+      "Use clinician guidance with: On dopamine-related or hormonal medications unless a clinician approves use, Pregnancy or breastfeeding, Hormone-sensitive condition."
     ],
     "safetyFlags": [
-      "pregnancy"
+      "pregnancy",
+      "breastfeeding",
+      "drug-interaction"
     ],
     "citations": [
       {
         "title": "Herbs at a Glance",
         "publisher": "National Center for Complementary and Integrative Health",
         "url": "https://www.nccih.nih.gov/health/herbsataglance",
+        "accessedAt": "2026-02-10"
+      },
+      {
+        "title": "NCCIH: Chasteberry",
+        "publisher": "National Center for Complementary and Integrative Health",
+        "url": "https://www.nccih.nih.gov/health/chasteberry",
         "accessedAt": "2026-02-10"
       },
       {
