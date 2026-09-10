@@ -16,17 +16,20 @@ const normalize = (value) =>
 
 const runtimeEntrySource = `
 import { analyzeGoal } from '../src/utils/analyzer.ts';
-import { searchSupplementsWithScores, suggestClosestSupplementTerm } from '../src/utils/supplementSearchEngine.ts';
+import { getSupplementSearchIntent, searchSupplementsWithScores, suggestClosestSupplementTerm } from '../src/utils/supplementSearchEngine.ts';
 import { supplements } from '../src/data/supplements.ts';
 import { dedupeSupplementsByCanonical, getCanonicalSupplementKey } from '../src/utils/supplementCanonical.ts';
+import { getInitialFindMode } from '../src/utils/browseUrlState.ts';
 
 export {
   analyzeGoal,
   searchSupplementsWithScores,
+  getSupplementSearchIntent,
   suggestClosestSupplementTerm,
   supplements,
   dedupeSupplementsByCanonical,
   getCanonicalSupplementKey,
+  getInitialFindMode,
 };
 `;
 
@@ -51,10 +54,12 @@ try {
   const {
     analyzeGoal,
     searchSupplementsWithScores,
+    getSupplementSearchIntent,
     suggestClosestSupplementTerm,
     supplements,
     dedupeSupplementsByCanonical,
     getCanonicalSupplementKey,
+    getInitialFindMode,
   } = runtime;
 
   const search = (query, options = {}) => searchSupplementsWithScores(query, supplements, options);
@@ -88,6 +93,57 @@ try {
   assert(
     safetyIntent.length > 0,
     'Expected "warfarin interaction" to return safety-oriented matches.'
+  );
+  assert(
+    getSupplementSearchIntent('warfarin interaction', supplements) === 'safety',
+    'Expected interaction queries to use safety intent.'
+  );
+  assert(
+    getSupplementSearchIntent('warfarin', supplements) === 'safety',
+    'Expected a medication-only query to use safety intent.'
+  );
+  assert(
+    getSupplementSearchIntent('magnesium', supplements) === 'exact-product',
+    'Expected an exact catalog name to use exact-product intent.'
+  );
+  assert(
+    getSupplementSearchIntent('better sleep', supplements) === 'discovery',
+    'Expected a benefit query to use discovery intent.'
+  );
+  assert(
+    search('warfarin interaction').every((result) => result.intent === 'safety'),
+    'Expected every interaction result to retain safety intent metadata.'
+  );
+  for (const medication of ['metformin', 'digoxin']) {
+    assert(
+      getSupplementSearchIntent(medication, supplements) === 'safety',
+      `Expected catalog medication "${medication}" to use safety intent.`
+    );
+    const medicationResults = search(medication);
+    assert(medicationResults.length > 0, `Expected safety matches for "${medication}".`);
+    assert(
+      medicationResults.every((result) => result.safetyScore > 0),
+      `Expected every "${medication}" result to match safety or interaction text.`
+    );
+  }
+  assert(
+    getSupplementSearchIntent('blood pressure', supplements) === 'discovery',
+    'Expected a general health-goal phrase not to become safety intent from generic interaction wording.'
+  );
+  const mixedSafetyResults = search('magnesium side effects');
+  assert(
+    mixedSafetyResults.every((result) =>
+      result.safetyScore > 0 || result.reasons.some((reason) => reason.code.startsWith('name-') || reason.code.startsWith('alias-'))
+    ),
+    'Expected safety-mode results to match a product name or safety text.'
+  );
+  assert(
+    getInitialFindMode('?q=warfarin&view=list') === 'browse',
+    'Expected shared browse parameters to open Browse Catalog.'
+  );
+  assert(
+    getInitialFindMode('?mode=browse') === 'browse' && getInitialFindMode('') === 'recommend',
+    'Expected explicit browse mode and default recommendation mode to restore correctly.'
   );
 
   const firstRun = topSearchIds('energy support', 20);

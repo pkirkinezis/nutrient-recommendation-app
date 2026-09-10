@@ -18,6 +18,17 @@ import { buildTrackingChartData, buildTrackingCsv } from './utils/trackingExport
 import { getTranslation, type Language } from './utils/i18n';
 import { hasReproductiveRiskSignalInText, isReproductiveScopeQuery } from './constants/reproductiveScope';
 import { clearIntimacyLocalData, DEFAULT_USER_PREFERENCES, loadIntimacyConsentCheckIns, loadIntimacyPreferences, saveIntimacyConsentCheckIns, saveIntimacyPreferences } from './utils/intimacyStorage';
+import { RecommendationEvidence } from './components/RecommendationEvidence';
+import {
+  isStoredLabResults,
+  isStoredStringArray,
+  isStoredSyncMeta,
+  isStoredTrackingData,
+  isStoredUserProfile,
+  readStorageJson,
+  readStorageString,
+} from './utils/browserStorage';
+import { getInitialFindMode } from './utils/browseUrlState';
 
 const EducationalGuide = lazy(() => import('./components/EducationalGuide'));
 const IntimacyWellnessSection = lazy(async () => {
@@ -35,6 +46,12 @@ const STORAGE_KEYS = {
   cloudSyncEnabled: 'nutricompass_cloud_sync_enabled',
   cloudSyncMeta: 'nutricompass_cloud_sync_meta'
 };
+
+const createDefaultTrackingData = (): TrackingData => ({
+  logs: [],
+  startDate: new Date().toISOString().split('T')[0],
+  supplements: [],
+});
 
 // Helper functions for display
 const getTypeColor = (type: Supplement['type']): string => {
@@ -75,27 +92,6 @@ const getTypeLabel = (type: Supplement['type']): string => {
     'other': 'Supplement',
   };
   return labels[type] || 'Supplement';
-};
-
-const getEvidenceInfo = (evidence: Supplement['evidence']): { color: string; label: string; description: string } => {
-  const info = {
-    'strong': { 
-      color: 'bg-emerald-100 text-emerald-700', 
-      label: 'Strong Evidence',
-      description: 'Multiple human trials support this indication'
-    },
-    'moderate': { 
-      color: 'bg-yellow-100 text-yellow-700', 
-      label: 'Moderate Evidence',
-      description: 'Human evidence exists, but findings are mixed or limited'
-    },
-    'limited': { 
-      color: 'bg-gray-100 text-gray-600', 
-      label: 'Traditional/Limited',
-      description: 'Traditional context or early evidence only; benefit remains uncertain'
-    },
-  };
-  return info[evidence];
 };
 
 const getPriorityColor = (priority: Recommendation['priority']): string => {
@@ -153,16 +149,8 @@ export function App() {
   const { user, status: authStatus, error: authError, isConfigured: firebaseConfigured, signInWithEmail, registerWithEmail, signInWithGoogle, signOutUser } = useAuth();
 
   // Load persisted state from localStorage
-  const [query, setQuery] = useState(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEYS.lastQuery) || '';
-    } catch { return ''; }
-  });
-  const [analyzedQuery, setAnalyzedQuery] = useState(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEYS.lastQuery) || '';
-    } catch { return ''; }
-  });
+  const [query, setQuery] = useState(() => readStorageString(STORAGE_KEYS.lastQuery));
+  const [analyzedQuery, setAnalyzedQuery] = useState(() => readStorageString(STORAGE_KEYS.lastQuery));
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [identifiedGoals, setIdentifiedGoals] = useState<string[]>([]);
@@ -172,39 +160,28 @@ export function App() {
   const [directSupplementIds, setDirectSupplementIds] = useState<string[]>([]);
   const [relatedSupplementIds, setRelatedSupplementIds] = useState<string[]>([]);
   const [selectedSupplements, setSelectedSupplements] = useState<Supplement[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.selectedSupplements);
-      if (saved) {
-        const ids = JSON.parse(saved) as string[];
-        return supplements.filter(s => ids.includes(s.id));
-      }
-    } catch { /* ignore */ }
-    return [];
+    const ids = readStorageJson(STORAGE_KEYS.selectedSupplements, isStoredStringArray, []);
+    return supplements.filter((supplement) => ids.includes(supplement.id));
   });
   const [showProfile, setShowProfile] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.profile);
-      return saved ? JSON.parse(saved) : {};
-    } catch { return {}; }
-  });
+  const [userProfile, setUserProfile] = useState<UserProfile>(() =>
+    readStorageJson(STORAGE_KEYS.profile, isStoredUserProfile, {})
+  );
   const [activeTab, setActiveTab] = useState<'find' | 'stacks' | 'learn' | 'about'>('find');
-  const [findMode, setFindMode] = useState<'recommend' | 'browse'>('recommend');
+  const [findMode, setFindMode] = useState<'recommend' | 'browse'>(() =>
+    getInitialFindMode(window.location.search)
+  );
   const [learnMode, setLearnMode] = useState<'guide' | 'insights' | 'track' | 'intimacy'>('insights');
   const [intimacyPreferences, setIntimacyPreferences] = useState<UserPreferences>(() => loadIntimacyPreferences());
   const [intimacyConsentCheckIns, setIntimacyConsentCheckIns] = useState<ConsentCheckIn[]>(() => loadIntimacyConsentCheckIns());
   const [language, setLanguage] = useState<Language>(() => {
-    try {
-      const saved = localStorage.getItem('nutricompass_language') as Language | null;
-      return saved ?? 'en';
-    } catch {
-      return 'en';
-    }
+    const saved = readStorageString('nutricompass_language', 'en');
+    return saved === 'el' ? 'el' : 'en';
   });
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
-      const saved = localStorage.getItem('nutricompass_theme') as 'light' | 'dark' | null;
-      if (saved) return saved;
+      const saved = readStorageString('nutricompass_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     } catch {
       return 'light';
@@ -213,18 +190,12 @@ export function App() {
   const [activeSupplement, setActiveSupplement] = useState<Supplement | null>(null);
   const [expandedStack, setExpandedStack] = useState<string | null>(null);
   const [tips, setTips] = useState<string[]>([]);
-  const [trackingData, setTrackingData] = useState<TrackingData>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.tracking);
-      return saved ? JSON.parse(saved) : { logs: [], startDate: new Date().toISOString().split('T')[0], supplements: [] };
-    } catch { return { logs: [], startDate: new Date().toISOString().split('T')[0], supplements: [] }; }
-  });
-  const [labResults, setLabResults] = useState<LabResult[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.labs);
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
+  const [trackingData, setTrackingData] = useState<TrackingData>(() =>
+    readStorageJson(STORAGE_KEYS.tracking, isStoredTrackingData, createDefaultTrackingData())
+  );
+  const [labResults, setLabResults] = useState<LabResult[]>(() =>
+    readStorageJson(STORAGE_KEYS.labs, isStoredLabResults, [])
+  );
   const [labDraft, setLabDraft] = useState<LabResult>({
     id: '',
     name: '',
@@ -241,20 +212,12 @@ export function App() {
     setActiveTab('find');
     setFindMode('browse');
   };
-  const [syncEnabled, setSyncEnabled] = useState(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEYS.cloudSyncEnabled) === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [syncEnabled, setSyncEnabled] = useState(() =>
+    readStorageString(STORAGE_KEYS.cloudSyncEnabled) === 'true'
+  );
   const [syncMeta, setSyncMeta] = useState<LocalSyncMeta>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.cloudSyncMeta);
-      return saved ? buildLocalSyncMeta(JSON.parse(saved) as Partial<LocalSyncMeta>) : buildLocalSyncMeta();
-    } catch {
-      return buildLocalSyncMeta();
-    }
+    const fallback = buildLocalSyncMeta();
+    return readStorageJson(STORAGE_KEYS.cloudSyncMeta, isStoredSyncMeta, fallback);
   });
   const [cloudReady, setCloudReady] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -263,6 +226,19 @@ export function App() {
   const [authPassword, setAuthPassword] = useState('');
   const [showUploadPrompt, setShowUploadPrompt] = useState(false);
   const [pendingCloudSync, setPendingCloudSync] = useState(false);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (activeTab === 'find' && findMode === 'browse') {
+      url.searchParams.set('mode', 'browse');
+    } else if (activeTab === 'find') {
+      url.searchParams.delete('mode');
+      url.searchParams.delete('q');
+      url.searchParams.delete('sort');
+      url.searchParams.delete('view');
+    }
+    window.history.replaceState(window.history.state, '', url);
+  }, [activeTab, findMode]);
   const pendingSnapshot = useRef<Awaited<ReturnType<typeof fetchCloudSnapshot>> | null>(null);
   const profileInitialized = useRef(false);
   const selectedInitialized = useRef(false);
@@ -1128,7 +1104,7 @@ export function App() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Age Range</label>
                 <select
                   value={userProfile.age || userProfile.ageRange || ''}
-                  onChange={(e) => setUserProfile(p => ({ ...p, age: e.target.value as UserProfile['age'] }))}
+                  onChange={(e) => setUserProfile(p => ({ ...p, age: (e.target.value || undefined) as UserProfile['age'] }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Select...</option>
@@ -1166,7 +1142,7 @@ export function App() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Diet Type</label>
                 <select
                   value={userProfile.diet || userProfile.dietType || ''}
-                  onChange={(e) => setUserProfile(p => ({ ...p, diet: e.target.value as UserProfile['diet'] }))}
+                  onChange={(e) => setUserProfile(p => ({ ...p, diet: (e.target.value || undefined) as UserProfile['diet'] }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Select...</option>
@@ -1182,7 +1158,7 @@ export function App() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Training Style</label>
                 <select
                   value={userProfile.trainingStyle || ''}
-                  onChange={(e) => setUserProfile(p => ({ ...p, trainingStyle: e.target.value as UserProfile['trainingStyle'] }))}
+                  onChange={(e) => setUserProfile(p => ({ ...p, trainingStyle: (e.target.value || undefined) as UserProfile['trainingStyle'] }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Select...</option>
@@ -1199,7 +1175,7 @@ export function App() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Activity Level</label>
                 <select
                   value={userProfile.activityLevel || ''}
-                  onChange={(e) => setUserProfile(p => ({ ...p, activityLevel: e.target.value as UserProfile['activityLevel'] }))}
+                  onChange={(e) => setUserProfile(p => ({ ...p, activityLevel: (e.target.value || undefined) as UserProfile['activityLevel'] }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Select...</option>
@@ -1214,7 +1190,7 @@ export function App() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Sleep Quality</label>
                 <select
                   value={userProfile.sleepQuality || ''}
-                  onChange={(e) => setUserProfile(p => ({ ...p, sleepQuality: e.target.value as UserProfile['sleepQuality'] }))}
+                  onChange={(e) => setUserProfile(p => ({ ...p, sleepQuality: (e.target.value || undefined) as UserProfile['sleepQuality'] }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Select...</option>
@@ -1228,7 +1204,7 @@ export function App() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Stress Level</label>
                 <select
                   value={userProfile.stressLevel || ''}
-                  onChange={(e) => setUserProfile(p => ({ ...p, stressLevel: e.target.value as UserProfile['stressLevel'] }))}
+                  onChange={(e) => setUserProfile(p => ({ ...p, stressLevel: (e.target.value || undefined) as UserProfile['stressLevel'] }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Select...</option>
@@ -1242,7 +1218,7 @@ export function App() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Sex</label>
                 <select
                   value={userProfile.sex || ''}
-                  onChange={(e) => setUserProfile(p => ({ ...p, sex: e.target.value as UserProfile['sex'] }))}
+                  onChange={(e) => setUserProfile(p => ({ ...p, sex: (e.target.value || undefined) as UserProfile['sex'] }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Select...</option>
@@ -1300,7 +1276,7 @@ export function App() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Caffeine Intake</label>
                 <select
                   value={userProfile.caffeineIntake || ''}
-                  onChange={(e) => setUserProfile(p => ({ ...p, caffeineIntake: e.target.value as UserProfile['caffeineIntake'] }))}
+                  onChange={(e) => setUserProfile(p => ({ ...p, caffeineIntake: (e.target.value || undefined) as UserProfile['caffeineIntake'] }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Select...</option>
@@ -1314,7 +1290,7 @@ export function App() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Budget</label>
                 <select
                   value={userProfile.budgetLevel || ''}
-                  onChange={(e) => setUserProfile(p => ({ ...p, budgetLevel: e.target.value as UserProfile['budgetLevel'] }))}
+                  onChange={(e) => setUserProfile(p => ({ ...p, budgetLevel: (e.target.value || undefined) as UserProfile['budgetLevel'] }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Select...</option>
@@ -1327,7 +1303,7 @@ export function App() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Form Preference</label>
                 <select
                   value={userProfile.formPreference || ''}
-                  onChange={(e) => setUserProfile(p => ({ ...p, formPreference: e.target.value as UserProfile['formPreference'] }))}
+                  onChange={(e) => setUserProfile(p => ({ ...p, formPreference: (e.target.value || undefined) as UserProfile['formPreference'] }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="">Select...</option>
@@ -1764,7 +1740,8 @@ export function App() {
                     </div>
                   )}
                   <p className="mb-3 text-xs text-gray-500">
-                    Educational guidance only. This app does not diagnose or replace care from a licensed clinician.
+                    Ranked by goal relevance, profile context, evidence, and safety screening. A high match does not
+                    confirm a deficiency or guarantee benefit. Educational guidance only; this does not replace care.
                   </p>
                   
                   {recommendations.length === 0 ? (
@@ -2523,7 +2500,6 @@ function SupplementCard({
   recommendation?: Recommendation;
   onViewDetails: () => void;
 }) {
-  const evidenceInfo = getEvidenceInfo(supplement.evidence);
   const pragmaticTier = getPragmaticTierForSupplement(supplement);
   const pragmaticTierInfo = getPragmaticTierInfo(pragmaticTier);
   const cautionInfo = recommendation ? getCautionInfo(recommendation.cautionLevel) : null;
@@ -2554,23 +2530,16 @@ function SupplementCard({
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${getTypeColor(supplement.type)}`}>
               {getTypeLabel(supplement.type)}
             </span>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${evidenceInfo.color}`}>
-              {evidenceInfo.label}
-            </span>
             {pragmaticTierInfo && (
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${pragmaticTierInfo.bg} ${pragmaticTierInfo.color}`}>
                 Tier {pragmaticTierInfo.shortLabel}
               </span>
             )}
-            {recommendation && (
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                recommendation.priority === 'essential' ? 'bg-emerald-500 text-white' :
-                recommendation.priority === 'beneficial' ? 'bg-blue-500 text-white' :
-                'bg-gray-200 text-gray-600'
-              }`}>
-                {recommendation.priority}
-              </span>
-            )}
+            <RecommendationEvidence
+              evidence={supplement.evidence}
+              priority={recommendation?.priority}
+              compact
+            />
             {cautionInfo && (
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cautionInfo.className}`}>
                 {cautionInfo.label}
@@ -2579,8 +2548,13 @@ function SupplementCard({
           </div>
           <p className="text-sm text-gray-600 line-clamp-2">{supplement.description}</p>
           {recommendation && (
-            <div className="space-y-1">
+            <div className="space-y-2">
               <p className="text-xs text-emerald-600 font-medium">{recommendation.reason}</p>
+              <RecommendationEvidence
+                evidence={supplement.evidence}
+                relevanceScore={recommendation.relevanceScore}
+                showEvidence={false}
+              />
               {recommendation.safetyFlags && recommendation.safetyFlags.length > 0 && (
                 <ul className="text-xs text-amber-700 space-y-0.5">
                   {recommendation.safetyFlags.map((flag, index) => (

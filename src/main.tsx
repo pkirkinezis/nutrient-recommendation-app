@@ -19,8 +19,9 @@ createRoot(rootElement).render(
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/nutrient-recommendation-app/sw.js", {
-      scope: "/nutrient-recommendation-app/",
+    const basePath = import.meta.env.BASE_URL;
+    navigator.serviceWorker.register(`${basePath}sw.js`, {
+      scope: basePath,
     }).catch(() => {
       // ignore registration errors in unsupported environments
     });
