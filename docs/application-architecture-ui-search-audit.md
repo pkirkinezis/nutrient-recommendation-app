@@ -10,6 +10,67 @@ copy, accessible browse toggles, URL-restorable query/sort/view state, transpare
 of simulated loading. The unused root-level legacy supplement and NRV files were also removed; the GitHub Pages
 single-file build remains intentionally enabled because this application has no backend.
 
+The second pass adds validated local-storage hydration for profile, stack, tracking, laboratory, language, theme,
+and sync metadata. Malformed or obsolete browser data now falls back to safe defaults rather than entering typed
+React state unchecked.
+
+## Second-pass findings
+
+### Static/offline architecture boundary
+
+- The application is deployable as a static GitHub Pages artifact, but it is not currently network-independent:
+  Firebase authentication/Firestore modules are eagerly imported, and the food lookup calls USDA FoodData Central
+  and Open Food Facts. Decide whether “no backend” means “no owned server” or “fully offline.”
+- If cloud sync will never be configured, remove Firebase and its UI rather than shipping dormant SDK code in the
+  single HTML file. If it remains optional, lazy-load the Firebase adapter only after the user enables cloud sync.
+- The service-worker URL and scope are hardcoded to `/nutrient-recommendation-app/`. Derive both from
+  `import.meta.env.BASE_URL` so forks and renamed GitHub repositories continue to work.
+
+### Data and type ownership
+
+- `EvidenceLevel` is defined independently in both `src/types/index.ts` and `src/constants/taxonomy.ts`. Export the
+  domain type once and make taxonomy data satisfy it.
+- Browse has a private `FilterState` while `src/types/index.ts` exposes a different `FilterState`. Consolidate or
+  rename them; two shapes with the same domain name invite incorrect imports.
+- `supplementKnowledge.generated.ts` is nearly twice the size of the primary catalog. Keep generation deterministic,
+  but consider emitting compact JSON plus a typed adapter instead of thousands of lines of generated TypeScript.
+- `goalEvidence` exists in the supplement schema but is not populated in the catalog. Until indication-specific
+  evidence is researched, the UI must continue labeling ratings as overall evidence—not evidence for the searched goal.
+
+### Recommendation engine
+
+- Analyzer and catalog search still own separate tokenizers, stemming/fuzzy behavior, stop words, and scoring
+  constants. Extract one query parser before making further ranking changes.
+- Scoring weights, diversity limits, recommendation count, and priority thresholds remain embedded in
+  `analyzer.ts`. Move them to a typed/versioned ranking policy so regression tests can describe intended ordering.
+- Profile boosts rely partly on English name matching. Prefer supplement IDs and normalized taxonomy metadata;
+  display names should never control clinical ranking.
+- Tracking-based score adjustment uses small samples without exposing the sample size in the recommendation UI.
+  Require a meaningful observation threshold and label personalized trends as self-reported associations.
+
+### UI and accessibility
+
+- `App.tsx`, `AdvancedBrowse.tsx`, and `EducationalGuide.tsx` remain too large for isolated behavioral testing.
+  The next extraction should be a `useLocalAppState` hook followed by Find, Stack, Track, and Learn page components.
+- Dialogs should share one accessible modal primitive with focus trapping, initial focus, scroll locking, Escape,
+  backdrop close, and focus restoration rather than implementing subsets independently.
+- Emoji are frequently used as standalone visual icons. Decorative emoji should be hidden from assistive technology;
+  meaningful ones need accessible text.
+- Result cards truncate descriptions and match reasons without always offering the full text programmatically.
+  Prefer visible concise copy plus an accessible full explanation.
+
+### Reliability and privacy
+
+- Local persistence previously trusted parsed JSON as TypeScript types. Runtime validators are now used for the main
+  application state; apply the same boundary validation to intimacy preferences, consent records, food API caches,
+  and optional Firestore documents.
+- Storage failures are intentionally ignored, so users cannot tell when tracking or profile changes were not saved.
+  Add a small non-blocking persistence status/toast after repeated quota or privacy-mode failures.
+- Health profile, lab, tracking, medication, and intimacy data have different sensitivity levels but share browser
+  storage without a retention policy. Add a single privacy/data screen showing storage location, export, and deletion.
+- Network food searches need cancellation and stale-response protection so a slower old query cannot replace a newer
+  result set.
+
 ## Executive summary
 
 The application has a strong safety baseline: strict TypeScript is enabled, the supplement knowledge build is deterministic, and the dedicated knowledge, search, safety, and intimacy checks all pass. The main risk is no longer missing functionality; it is **complexity and unclear product semantics**. The UI contains several product surfaces inside a few very large components, while recommendation, browse, and safety search use overlapping but different decision paths.
