@@ -463,7 +463,8 @@ export const supplementKnowledgeGenerated: SupplementKnowledgeMap = {
       "blood-pressure",
       "sedation",
       "thyroid",
-      "liver"
+      "liver",
+      "autoimmune"
     ],
     "dosageRangeNote": "Commonly studied extracts are often used in the low hundreds of milligrams per day depending on standardization.",
     "citations": [

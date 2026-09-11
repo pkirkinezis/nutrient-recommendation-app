@@ -119,6 +119,7 @@ export interface Supplement {
   conflicts?: string[];
   systems: string[];
   goals: string[];
+  excludedRecommendationIntents?: string[];
   formGuidance?: FormGuidance;
 }
 

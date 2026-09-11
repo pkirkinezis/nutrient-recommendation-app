@@ -21,7 +21,11 @@ import { premadeStacks } from '../data/stacks';
 import { semanticIntentDataset } from '../data/semanticIntents';
 import { rankByCosineSimilarity } from './similarity';
 import { getSupplementKnowledgeById } from '../data/supplementKnowledge';
-import { getSupplementSearchCandidates, searchSupplementsWithScores } from './supplementSearchEngine';
+import {
+  getSupplementSearchCandidates,
+  matchesExcludedRecommendationIntent,
+  searchSupplementsWithScores
+} from './supplementSearchEngine';
 import { choosePreferredCanonicalSupplement, dedupeSupplementsByCanonical, getCanonicalSupplementKey } from './supplementCanonical';
 import {
   BREASTFEEDING_TEXT_PATTERN,
@@ -1966,6 +1970,9 @@ export function analyzeGoal(
   
   // Score all supplements
   let scoredSupplements = supplements.map(supplement => {
+    if (matchesExcludedRecommendationIntent(supplement, input)) {
+      return { supplement, score: 0 };
+    }
     let score = scoreSupplementForGoals(supplement, matchedGoals, matchedSystems);
     const lexicalScore = lexicalScoreById.get(supplement.id) || 0;
     if (lexicalScore > 0) {

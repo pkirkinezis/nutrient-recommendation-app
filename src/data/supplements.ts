@@ -26,7 +26,7 @@ export const supplements: Supplement[] = [
     foodSources: ['Not available in food - supplement only'],
     cautions: ['May cause drowsiness, diarrhea, vomiting, or stomach upset', 'Short-term use up to about 3 months appears tolerable, but long-term safety is unknown', 'Rare liver injury has been reported; stop and seek care for jaundice, dark urine, severe fatigue, or abdominal pain', 'Can affect thyroid function'],
     drugInteractions: ['Thyroid medications', 'Immunosuppressants', 'Sedatives', 'Blood pressure medications'],
-    avoidIf: ['Pregnancy', 'Breastfeeding', 'About to have surgery', 'Thyroid or autoimmune disorder unless a clinician approves use'],
+    avoidIf: ['Pregnancy', 'Breastfeeding', 'About to have surgery', 'Avoid with thyroid or autoimmune disorders unless a clinician approves use'],
     cycleTiming: 'Do not infer that cycling prevents adverse effects; safety beyond about 3 months is not established.',
     synergies: ['Rhodiola (for stress)', 'Magnesium (for sleep)', 'Shilajit (for energy)'],
     conflicts: [],
@@ -3191,10 +3191,9 @@ export const supplements: Supplement[] = [
     category: 'both',
     description: 'Chasteberry has some evidence for premenstrual symptoms, but reliable evidence is insufficient for infertility, luteal-phase defects, or improved pregnancy rates.',
     traditionalUse: 'Used for centuries in Europe for female fertility and cycle regulation. Called "Female Viagra" for reproductive hormones.',
-    safetyNote: 'Discontinue immediately upon positive pregnancy test.',
+    safetyNote: 'Fertility, ovulation, progesterone, and pregnancy-rate benefits are unproven. Avoid during pregnancy and breastfeeding.',
     benefits: [
-      'May reduce some premenstrual syndrome symptoms',
-      'Fertility, ovulation, progesterone, and pregnancy-rate benefits are unproven'
+      'May reduce some premenstrual syndrome symptoms'
     ],
     dosage: 'No evidence-based fertility dose exists. Products and extracts vary; discuss use with a clinician, especially when trying to conceive or using hormonal treatment.',
     timing: 'Follow the product label; trials use different extracts and schedules.',
@@ -3215,7 +3214,8 @@ export const supplements: Supplement[] = [
     synergies: ['Maca', 'Red Clover', 'CoQ10'],
     conflicts: [],
     systems: ['reproductive', 'endocrine', 'hormonal'],
-    goals: ['pms']
+    goals: ['pms'],
+    excludedRecommendationIntents: ['fertility', 'conception', 'pregnancy', 'ovulation', 'progesterone']
   },
   {
     id: 'red-clover',
@@ -3224,9 +3224,9 @@ export const supplements: Supplement[] = [
     category: 'traditional',
     description: 'Contains estrogen-like isoflavones. Human studies have focused mostly on menopausal symptoms, with inconsistent results; fertility and cervical-mucus benefits have not been established.',
     traditionalUse: 'Traditional women\'s tonic for fertility and hormone balance.',
+    safetyNote: 'Fertility, cervical-mucus, and uterine-health benefits are unproven.',
     benefits: [
-      'Menopausal symptom results are inconsistent',
-      'Fertility, cervical-mucus, and uterine-health benefits are unproven'
+      'Menopausal symptom results are inconsistent'
     ],
     dosage: 'No evidence-based fertility dose exists. Isoflavone content varies; seek clinical advice before using a concentrated extract.',
     timing: 'Any time',
@@ -3247,7 +3247,8 @@ export const supplements: Supplement[] = [
     synergies: ['Vitex', 'Shatavari'],
     conflicts: [],
     systems: ['reproductive', 'hormonal'],
-    goals: ['menopause']
+    goals: ['menopause'],
+    excludedRecommendationIntents: ['fertility', 'conception', 'pregnancy', 'ovulation', 'cervical-mucus']
   },
   /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {

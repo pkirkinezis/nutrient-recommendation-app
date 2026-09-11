@@ -39,6 +39,11 @@ for (const entry of Object.values(first.knowledgeMap)) {
   }
 }
 
+const ashwagandha = first.knowledgeMap.ashwagandha;
+if (!ashwagandha?.safetyFlags.includes('autoimmune')) {
+  failures.push('Expected ashwagandha to retain the autoimmune safety flag.');
+}
+
 let generatedOnDisk = '';
 try {
   generatedOnDisk = readFileSync(generatedOutputPath, 'utf8');

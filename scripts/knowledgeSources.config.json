@@ -364,7 +364,8 @@
         "pregnancy",
         "breastfeeding",
         "thyroid",
-        "drug-interaction"
+        "drug-interaction",
+        "autoimmune"
       ],
       "dosageRangeNote": "Commonly studied extracts are often used in the low hundreds of milligrams per day depending on standardization.",
       "citationSourceKeys": [
