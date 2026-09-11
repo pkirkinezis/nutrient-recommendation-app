@@ -8,14 +8,14 @@ export const supplements: Supplement[] = [
     name: 'Ashwagandha (Withania somnifera)',
     type: 'ayurvedic',
     category: 'both',
-    description: 'Premier Ayurvedic adaptogen used for over 3000 years. KSM-66 (root, ~5% withanolides) and Sensoril (root + leaf, ~10% withanolides) are the best-studied extracts.',
+    description: 'Ayurvedic herb studied mainly in small, short-term trials. Some preparations may help perceived stress or sleep, but products and withanolide concentrations vary and results do not establish a class-wide effect.',
     traditionalUse: 'In Ayurveda, classified as a Rasayana (rejuvenative) and Balya (strength-giving). Used to promote longevity, vitality, and as a general tonic for weakness.',
-    mechanism: 'Acts as an adaptogen by modulating HPA-axis stress response and reducing cortisol while supporting GABAergic calm.',
-    benefits: ['Reduces cortisol 14-28%', 'Decreases anxiety', 'Improves sleep quality', 'Supports testosterone', 'Enhances strength gains', 'Reduces stress'],
-    dosage: '300-600mg/day for stress or sleep (KSM-66 or Sensoril). 600-1000mg/day for performance or hormonal goals.',
+    mechanism: 'Proposed stress-response and GABAergic effects are based on preclinical work and biomarker changes; a clinically established mechanism has not been confirmed.',
+    benefits: ['May modestly reduce perceived stress', 'May modestly improve sleep in some adults', 'Testosterone, fertility, and exercise findings remain preliminary'],
+    dosage: 'No authoritative standard dose exists. Trials often use 300-600mg/day of a specific standardized extract for 6-12 weeks; results and safety cannot be assumed for other extracts.',
     timing: 'Morning or evening, with food. Evening if using for sleep.',
-    timeframe: 'Stress relief within 2-4 weeks. Strength/hormonal effects 6-8 weeks.',
-    evidence: 'strong',
+    timeframe: 'Most stress and sleep studies assess outcomes after 6-12 weeks; long-term effectiveness is unknown.',
+    evidence: 'limited',
     evidenceSources: [
       {
         title: 'NCCIH: Ashwagandha',
@@ -24,14 +24,14 @@ export const supplements: Supplement[] = [
       }
     ],
     foodSources: ['Not available in food - supplement only'],
-    cautions: ['May cause mild GI upset initially', 'Can be overly sedating for some', 'Long-term continuous use may cause anhedonia (emotional blunting) in rare cases', 'Cyclical use recommended to prevent potential anhedonia (emotional blunting)', 'Discontinue once pregnancy is confirmed due to limited human pregnancy data', 'Rare case reports of reversible liver injury at high doses.'],
+    cautions: ['May cause drowsiness, diarrhea, vomiting, or stomach upset', 'Short-term use up to about 3 months appears tolerable, but long-term safety is unknown', 'Rare liver injury has been reported; stop and seek care for jaundice, dark urine, severe fatigue, or abdominal pain', 'Can affect thyroid function'],
     drugInteractions: ['Thyroid medications', 'Immunosuppressants', 'Sedatives', 'Blood pressure medications'],
-    avoidIf: ['Pregnancy (discontinue once pregnant)', 'Breastfeeding', 'Hyperthyroidism', 'Autoimmune conditions (use with caution)'],
-    cycleTiming: 'Can use continuously, but some prefer 8 weeks on, 2 weeks off',
+    avoidIf: ['Pregnancy', 'Breastfeeding', 'About to have surgery', 'Avoid with thyroid or autoimmune disorders unless a clinician approves use'],
+    cycleTiming: 'Do not infer that cycling prevents adverse effects; safety beyond about 3 months is not established.',
     synergies: ['Rhodiola (for stress)', 'Magnesium (for sleep)', 'Shilajit (for energy)'],
     conflicts: [],
     systems: ['nervous', 'endocrine', 'immune', 'muscular'],
-    goals: ['stress', 'anxiety', 'sleep', 'energy', 'testosterone', 'muscle', 'recovery', 'libido', 'sexual-health', 'cortisol', 'fertility', 'male-reproductive', 'sperm-quality', 'sperm-count', 'sperm-motility']
+    goals: ['stress', 'sleep']
   },
   /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
@@ -1026,14 +1026,21 @@ export const supplements: Supplement[] = [
     description: 'Polyphenol-rich tea with EGCG and L-theanine for antioxidant and cognitive support. Matcha provides a higher catechin and caffeine concentration.',
     traditionalUse: 'Consumed for centuries in China and Japan for calm alertness, digestion, and longevity rituals.',
     benefits: ['Powerful antioxidant support', 'Calm alertness and focus', 'Cardiovascular support', 'Metabolic support', 'Supports fat oxidation'],
-    dosage: '1-3 cups brewed tea daily or 1-2 tsp matcha powder. Extracts typically 300-800mg EGCG (prefer â‰¥50% EGCG standardization).',
+    dosage: '1-3 cups brewed tea daily. Concentrated extracts are not equivalent to tea; avoid self-prescribing high-dose EGCG, particularly 800mg/day or more.',
     timing: 'Morning or early afternoon. Avoid late evening if caffeine-sensitive.',
     timeframe: 'Focus and energy within 30-60 minutes. Metabolic effects over 4-8 weeks.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'EFSA: Scientific opinion on the safety of green tea catechins',
+        url: 'https://doi.org/10.2903/j.efsa.2018.5239',
+        note: 'Identifies liver-enzyme elevations at supplemental EGCG doses of 800mg/day or above.'
+      }
+    ],
     foodSources: ['Brewed green tea', 'Matcha powder'],
-    cautions: ['Caffeine sensitivity may cause jitters or insomnia', 'May reduce iron absorption if consumed with meals', 'Rarely raises liver enzymes with high-dose extracts'],
+    cautions: ['Caffeine sensitivity may cause jitters or insomnia', 'May reduce non-heme iron absorption if consumed with meals', 'Concentrated catechin extracts can injure the liver; risk rises when taken fasting and liver-enzyme elevations have been observed at 800mg/day EGCG'],
     drugInteractions: ['Blood thinners (vitamin K content)', 'Stimulants'],
-    avoidIf: ['Severe caffeine sensitivity', 'Iron deficiency (separate from iron-rich meals)', 'Active liver disease (avoid high-dose extracts)'],
+    avoidIf: ['Severe caffeine sensitivity', 'Iron deficiency (separate from iron-rich meals)', 'Liver disease or a prior reaction to green-tea extract'],
     cycleTiming: 'Can be used continuously. Consider breaks if sensitive to caffeine.',
     synergies: ['L-Theanine', 'Citrus (enhances catechin absorption)'],
     conflicts: ['Excess caffeine intake'],
@@ -1710,23 +1717,23 @@ export const supplements: Supplement[] = [
     name: 'Vitamin B12 (Methylcobalamin)',
     type: 'vitamin',
     category: 'modern',
-    description: 'Essential for energy, brain function, and blood cell formation. Methylcobalamin is active form. Common deficiency, especially in vegetarians/vegans.',
+    description: 'Essential for neurologic function, DNA synthesis, and red blood cell formation. Deficiency risk is higher with vegan diets, malabsorption, metformin, and acid-suppressing medicines; methylcobalamin has not been shown superior to cyanocobalamin for routine supplementation.',
     traditionalUse: 'N/A - modern understanding. Traditionally obtained from animal foods.',
     mechanism: 'Supports methylation cycles and red blood cell formation while protecting nerve myelin.',
-    benefits: ['Increases energy', 'Supports brain function', 'Red blood cell formation', 'Nerve health', 'Methylation support', 'Mood'],
-    dosage: '1000-5000mcg methylcobalamin daily (higher if deficient)',
-    timing: 'Morning (can be energizing). Sublingual for best absorption.',
-    timeframe: 'Energy effects 1-2 weeks if deficient. Nerve repair longer.',
+    benefits: ['Prevents or treats vitamin B12 deficiency', 'Supports normal red blood cell formation', 'Supports normal neurologic function and DNA synthesis', 'Does not reliably increase energy in people with adequate B12 status'],
+    dosage: 'Adults need 2.4mcg/day from food and supplements. High-dose oral treatment (often 1000-2000mcg/day) is used for diagnosed deficiency under clinical guidance; the cause and severity determine the regimen.',
+    timing: 'Any time, with or without food. Sublingual products have not demonstrated superior effectiveness to swallowed tablets.',
+    timeframe: 'Blood markers can begin improving within days to weeks when deficiency is treated; neurologic recovery may take months and can be incomplete.',
     evidence: 'strong',
     evidenceSources: [
       {
-        title: 'NIH ODS: Vitamin B12 Fact Sheet',
-        url: 'https://ods.od.nih.gov/factsheets/VitaminB12-Consumer/',
-        note: 'Deficiency, dosing, and safety guidance.'
+        title: 'NIH ODS: Vitamin B12 Fact Sheet for Health Professionals',
+        url: 'https://ods.od.nih.gov/factsheets/VitaminB12-HealthProfessional/',
+        note: 'Requirements, deficiency treatment evidence, supplement forms, and safety.'
       }
     ],
     foodSources: ['Meat', 'Fish', 'Eggs', 'Dairy', 'Nutritional yeast (fortified)'],
-    cautions: ['Very safe even at high doses', 'Cyanocobalamin less effective than methylcobalamin'],
+    cautions: ['No tolerable upper intake level has been established, but that does not make unnecessary megadoses more effective', 'Seek clinical testing when deficiency or neurologic symptoms are suspected'],
     drugInteractions: ['Metformin (depletes B12)', 'Acid-reducing drugs'],
     avoidIf: ['Generally safe for everyone'],
     cycleTiming: 'Used continuously.',
@@ -1743,15 +1750,22 @@ export const supplements: Supplement[] = [
     description: 'Essential antioxidant and immune supporter. Humans cannot produce it unlike most animals. Supports collagen, iron absorption, and more.',
     traditionalUse: 'N/A - understood through scurvy prevention history. Obtained from fruits and vegetables.',
     benefits: ['Immune support', 'Powerful antioxidant', 'Collagen synthesis', 'Iron absorption', 'Reduces cold duration', 'Skin health'],
-    dosage: '500-2000mg daily (more during illness, divided doses)',
+    dosage: 'Meet the adult RDA (75mg/day for women; 90mg/day for men, plus 35mg/day for smokers), preferably through food. Do not exceed the adult upper limit of 2000mg/day unless clinically directed.',
     timing: 'Divided doses throughout day for best absorption',
-    timeframe: 'Immune support ongoing. Skin effects over weeks.',
+    timeframe: 'Regular use may modestly shorten a cold; starting vitamin C after symptoms begin has not consistently helped.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NIH ODS: Vitamin C Fact Sheet for Health Professionals',
+        url: 'https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/',
+        note: 'Adult requirements, upper limit, common-cold evidence, and safety.'
+      }
+    ],
     foodSources: ['Citrus fruits', 'Bell peppers', 'Kiwi', 'Strawberries', 'Broccoli', 'Tomatoes'],
     cautions: ['High doses may cause GI upset or diarrhea', 'Kidney stone risk with very high doses in susceptible individuals'],
     drugInteractions: ['May affect some chemotherapy drugs', 'Increases iron absorption'],
     avoidIf: ['Hemochromatosis (iron overload)', 'History of kidney stones (high doses)'],
-    cycleTiming: 'Used continuously.',
+    cycleTiming: 'Routine megadosing is not needed when dietary intake is adequate.',
     synergies: ['Vitamin E', 'Zinc', 'Iron (enhances absorption)', 'Collagen'],
     conflicts: ['May interfere with some blood tests'],
     systems: ['immune', 'skin', 'connective-tissue'],
@@ -1762,15 +1776,22 @@ export const supplements: Supplement[] = [
     name: 'Vitamin K2 (MK-7)',
     type: 'vitamin',
     category: 'modern',
-    description: 'Directs calcium to bones and away from arteries. Essential partner to vitamin D. MK-7 form has longest half-life.',
+    description: 'Vitamin K is required for normal clotting and participates in bone proteins. MK-7 is a long-lived form of vitamin K2, but evidence has not established that supplements prevent arterial calcification or cardiovascular disease.',
     traditionalUse: 'N/A - modern understanding. Traditionally from fermented foods and animal fats.',
-    benefits: ['Bone strength', 'Prevents arterial calcification', 'Cardiovascular protection', 'Dental health', 'Synergizes with D3'],
-    dosage: '100-200mcg MK-7 form daily',
+    benefits: ['Supports normal blood clotting', 'Participates in bone metabolism', 'Fracture and cardiovascular benefits from K2 supplementation remain uncertain'],
+    dosage: 'Adequate intake for total vitamin K is 90mcg/day for adult women and 120mcg/day for adult men. No evidence-based MK-7 dose has been established for cardiovascular prevention.',
     timing: 'With vitamin D and fatty food',
     timeframe: 'Effects on calcium metabolism ongoing. Bone/arterial effects over months to years.',
     evidence: 'strong',
+    evidenceSources: [
+      {
+        title: 'NIH ODS: Vitamin K Fact Sheet for Health Professionals',
+        url: 'https://ods.od.nih.gov/factsheets/VitaminK-HealthProfessional/',
+        note: 'Adequate intakes, bone and cardiovascular evidence, and anticoagulant interaction.'
+      }
+    ],
     foodSources: ['Natto (highest source)', 'Hard cheeses', 'Egg yolks', 'Liver', 'Butter from grass-fed cows'],
-    cautions: ['K2 does not affect blood clotting like K1'],
+    cautions: ['Vitamin K2 is biologically active in clotting and can interfere with vitamin K antagonist anticoagulants; intake should remain consistent'],
     drugInteractions: ['Warfarin and similar anticoagulants'],
     avoidIf: ['On warfarin or similar blood thinners (consult doctor)'],
     cycleTiming: 'Used continuously alongside vitamin D.',
@@ -2920,9 +2941,9 @@ export const supplements: Supplement[] = [
     name: 'Astaxanthin',
     type: 'other',
     category: 'modern',
-    description: 'Most powerful carotenoid antioxidant from algae. 6000x stronger than vitamin C. Gives salmon and flamingos pink color.',
+    description: 'Carotenoid pigment from microalgae that gives salmon and some crustaceans their color. Laboratory antioxidant comparisons do not establish that it is thousands of times more effective than vitamin C in the human body.',
     traditionalUse: 'Consumed through salmon and shrimp.',
-    benefits: ['Powerful antioxidant', 'Skin protection from UV', 'Eye health', 'Exercise recovery', 'Reduces wrinkles', 'Anti-inflammatory'],
+    benefits: ['Antioxidant activity', 'Skin, eye, and exercise outcomes remain preliminary', 'Not proven to prevent UV injury or replace sun protection'],
     dosage: '4-12mg daily',
     timing: 'With fatty food',
     timeframe: 'Skin effects 4-8 weeks. Exercise benefits 2-4 weeks.',
@@ -3168,56 +3189,66 @@ export const supplements: Supplement[] = [
     name: 'Vitex (Chasteberry)',
     type: 'herb',
     category: 'both',
-    description: 'Premier herbal fertility support. Clinical trials show 26-36% pregnancy rate improvement. Works through LH/FSH modulation.',
+    description: 'Chasteberry has some evidence for premenstrual symptoms, but reliable evidence is insufficient for infertility, luteal-phase defects, or improved pregnancy rates.',
     traditionalUse: 'Used for centuries in Europe for female fertility and cycle regulation. Called "Female Viagra" for reproductive hormones.',
-    safetyNote: 'Discontinue immediately upon positive pregnancy test.',
+    safetyNote: 'Fertility, ovulation, progesterone, and pregnancy-rate benefits are unproven. Avoid during pregnancy and breastfeeding.',
     benefits: [
-      'Improves ovulation quality',
-      'Increases progesterone levels',
-      'Regulates menstrual cycle length',
-      'Reduces luteal phase defect',
-      'Improves fertility rates',
-      'Reduces PMS symptoms'
+      'May reduce some premenstrual syndrome symptoms'
     ],
-    dosage: '400mg standardized extract (0.6% casticin) daily',
-    timing: 'Morning on empty stomach',
-    timeframe: 'Cycle regulation 1-3 months. Fertility effects 3-6 months.',
-    evidence: 'strong',
+    dosage: 'No evidence-based fertility dose exists. Products and extracts vary; discuss use with a clinician, especially when trying to conceive or using hormonal treatment.',
+    timing: 'Follow the product label; trials use different extracts and schedules.',
+    timeframe: 'PMS studies generally evaluate multiple menstrual cycles; a fertility timeframe has not been established.',
+    evidence: 'limited',
+    evidenceSources: [
+      {
+        title: 'NCCIH: Chasteberry',
+        url: 'https://www.nccih.nih.gov/health/chasteberry',
+        note: 'Evidence is insufficient for infertility; includes hormonal-drug and pregnancy cautions.'
+      }
+    ],
     foodSources: ['Not available in food'],
-    cautions: ['May cause dopamine-related effects', 'Discontinue once pregnancy is confirmed'],
+    cautions: ['Can cause nausea, stomach pain, diarrhea, headache, or itching', 'Hormonal and dopaminergic effects may create clinically important interactions'],
     drugInteractions: ['Dopamine antagonists', 'Antipsychotics', 'Hormonal contraceptives'],
-    avoidIf: ['On dopamine-blocking medications', 'Pregnancy (use for conception only)'],
-    cycleTiming: 'Daily throughout cycle. Minimum 3 months.',
+    avoidIf: ['On dopamine-related or hormonal medications unless a clinician approves use', 'Pregnancy or breastfeeding', 'Hormone-sensitive condition'],
+    cycleTiming: 'Do not use as a substitute for an infertility evaluation or evidence-based treatment.',
     synergies: ['Maca', 'Red Clover', 'CoQ10'],
     conflicts: [],
     systems: ['reproductive', 'endocrine', 'hormonal'],
-    goals: ['fertility', 'sexual-health', 'female-reproductive', 'hormonal-balance', 'ovulation', 'progesterone', 'pms', 'cycle-regulation']
+    goals: ['pms'],
+    excludedRecommendationIntents: ['fertility', 'conception', 'pregnancy', 'ovulation', 'progesterone']
   },
   {
     id: 'red-clover',
     name: 'Red Clover',
     type: 'herb',
     category: 'traditional',
-    description: 'Rich in isoflavones that support estrogen balance and cervical mucus quality. Efficacy is dose-dependent.',
+    description: 'Contains estrogen-like isoflavones. Human studies have focused mostly on menopausal symptoms, with inconsistent results; fertility and cervical-mucus benefits have not been established.',
     traditionalUse: 'Traditional women\'s tonic for fertility and hormone balance.',
+    safetyNote: 'Fertility, cervical-mucus, and uterine-health benefits are unproven.',
     benefits: [
-      'Supports estrogen balance',
-      'Improves cervical mucus',
-      'Supports uterine health'
+      'Menopausal symptom results are inconsistent'
     ],
-    dosage: '80-160mg isoflavones daily (40mg often ineffective)',
+    dosage: 'No evidence-based fertility dose exists. Isoflavone content varies; seek clinical advice before using a concentrated extract.',
     timing: 'Any time',
-    timeframe: '8-12 weeks for hormone symptom shifts.',
-    evidence: 'moderate',
+    timeframe: 'No fertility timeframe is established; menopause trials use varying durations.',
+    evidence: 'limited',
+    evidenceSources: [
+      {
+        title: 'NCCIH: Red Clover',
+        url: 'https://www.nccih.nih.gov/health/red-clover',
+        note: 'Summarizes inconsistent menopause evidence and reproductive safety uncertainty.'
+      }
+    ],
     foodSources: ['Red clover tea'],
     cautions: ['Estrogenic effects'],
     drugInteractions: ['Blood thinners', 'Estrogen therapies'],
-    avoidIf: ['Estrogen-sensitive cancers'],
-    cycleTiming: 'Continuous.',
+    avoidIf: ['Pregnancy or breastfeeding', 'Hormone-sensitive condition unless a clinician approves use'],
+    cycleTiming: 'No evidence-based cycle schedule is established.',
     synergies: ['Vitex', 'Shatavari'],
     conflicts: [],
     systems: ['reproductive', 'hormonal'],
-    goals: ['fertility', 'sexual-health', 'female-reproductive', 'hormonal-balance', 'cervical-mucus']
+    goals: ['menopause'],
+    excludedRecommendationIntents: ['fertility', 'conception', 'pregnancy', 'ovulation', 'cervical-mucus']
   },
   /** Source: STACKS_ALIGNMENT_RESEARCH_REPORT.md */
   {
@@ -3225,14 +3256,14 @@ export const supplements: Supplement[] = [
     name: 'L-Carnitine',
     type: 'amino-acid',
     category: 'modern',
-    description: 'Essential for sperm mitochondrial energy. Improves sperm motility by 30-40%.',
+    description: 'Participates in fatty-acid transport into mitochondria. Trials in male infertility report mixed improvements in semen parameters; a specific 30-40% motility gain and improved pregnancy or live-birth rate cannot be promised.',
     traditionalUse: 'Modern supplement.',
     benefits: [
-      'Improves sperm motility',
-      'Supports mitochondrial energy',
-      'Reduces sperm DNA fragmentation'
+      'May improve some semen parameters in selected men with infertility',
+      'Supports normal mitochondrial fatty-acid metabolism',
+      'Evidence for pregnancy and live-birth outcomes is uncertain'
     ],
-    dosage: '2-3g daily',
+    dosage: 'Trials commonly use 1-3g/day, sometimes with acetyl-L-carnitine, but an evidence-based fertility dose is not established; use as part of a clinician-led infertility evaluation.',
     timing: 'With food',
     timeframe: '3-6 months for sperm quality.',
     evidence: 'moderate',
@@ -4370,4 +4401,3 @@ export const getFormGuidance = (supplementId: string) => {
 export const getComparisons = () => supplementComparisons;
 
 export const getMisinformationAlerts = () => misinformationAlerts;
-

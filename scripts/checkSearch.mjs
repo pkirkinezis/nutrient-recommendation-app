@@ -116,6 +116,25 @@ try {
     getSupplementSearchIntent('better sleep', supplements) === 'discovery',
     'Expected a benefit query to use discovery intent.'
   );
+  for (const unsupportedQuery of ['fertility', 'ovulation']) {
+    const browseIds = topSearchIds(unsupportedQuery, 20);
+    const recommendationIds = analyzeGoal(unsupportedQuery, supplements).recommendations
+      .map((item) => item.supplement.id);
+    for (const unsupportedId of ['vitex', 'red-clover']) {
+      assert(
+        !browseIds.includes(unsupportedId),
+        `Expected "${unsupportedQuery}" browse results to exclude unsupported ${unsupportedId}.`
+      );
+      assert(
+        !recommendationIds.includes(unsupportedId),
+        `Expected "${unsupportedQuery}" recommendations to exclude unsupported ${unsupportedId}.`
+      );
+    }
+  }
+  assert(
+    topSearchIds('vitex', 1)[0] === 'vitex',
+    'Expected an exact Vitex product query to remain available.'
+  );
   assert(
     search('warfarin interaction').every((result) => result.intent === 'safety'),
     'Expected every interaction result to retain safety intent metadata.'
@@ -228,7 +247,7 @@ try {
   );
 
   const parityQueries = [
-    'better sleep and morning energy',
+    'better sleep and relaxation',
     'high stress and focus',
     'support libido and blood flow',
     'vegan fatigue',

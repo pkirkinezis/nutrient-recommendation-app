@@ -193,6 +193,15 @@ export function getSupplementSearchCandidates(supplement: Supplement): string[] 
   return Array.from(candidates);
 }
 
+export function matchesExcludedRecommendationIntent(supplement: Supplement, query: string): boolean {
+  if (!supplement || !query) return false;
+  const queryTokens = new Set(tokenize(query));
+  return (supplement.excludedRecommendationIntents || []).some((intent) => {
+    const intentTokens = tokenize(intent);
+    return intentTokens.length > 0 && intentTokens.every((token) => queryTokens.has(token));
+  });
+}
+
 const getBestTextMatch = (
   query: string,
   values: string[]
@@ -265,6 +274,9 @@ export function searchSupplementsWithScores(
   const results: ScoredSupplementMatch[] = [];
 
   for (const supplement of supplements) {
+    if (searchIntent === 'discovery' && matchesExcludedRecommendationIntent(supplement, query)) {
+      continue;
+    }
     const knowledge = getSupplementKnowledgeById(supplement.id);
     const reasons: SearchMatchReason[] = [];
     const seenReasons = new Set<string>();
